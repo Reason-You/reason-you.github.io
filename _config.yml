@@ -6,7 +6,8 @@ theme: jekyll-theme-chirpy
 # The language of the webpage › http://www.lingoes.net/en/translator/langcode.htm
 # If it has the same name as one of the files in folder `_data/locales`, the layout language will also be changed,
 # otherwise, the layout language will use the default value of 'en'.
-lang: zh-CN # change to your language code
+# lang: zh-CN # change to your language code
+lang: en
 
 # Change to your timezone › https://kevinnovak.github.io/Time-Zone-Picker
 timezone: Asia/Shanghai # change to your timezone
@@ -16,7 +17,7 @@ timezone: Asia/Shanghai # change to your timezone
 
 title: You Li's website # the main title
 
-tagline: 理论是灰色的，生命之树常青 # it will display as the subtitle
+tagline: Grau, teurer Freund, ist alle Theorie, Und grün des Lebens goldner Baum. (理论是灰色的，生命之树常青) # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
   A minimal, responsive and feature-rich Jekyll theme for technical writing.
@@ -98,7 +99,7 @@ theme_mode: # [light | dark]
 cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar:
+avatar: "/assets/images/avatar.png" # string, local or CORS resources
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
