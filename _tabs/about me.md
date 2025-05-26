@@ -1,14 +1,16 @@
 ---
 # the default layout is 'page'
 icon: fas fa-info-circle
-order: 4
+order: 1
 ---
-<!-- # You Li -->
-
+# You Li
 
 ## About Me
 
-I am a Master's student in Computer Technology at Fudan University, expected to graduate in June 2025. My master's research focuses on applying artificial intelligence and computer vision techniques to medical image analysis. I am currently interested in Multimodal Large Language Models (MLLMs) and their applications. I am actively seeking funded research assistant or PhD opportunities for 2025/2026 in these areas, with openness to positions in Shanghai, Hong Kong, or other regions. Please feel free to reach out via email if you are interested in my background and research.
+I am a Master's student in Computer Technology at Fudan University, expected to graduate in June 2025. My master's research focuses on applying artificial intelligence and computer vision techniques to medical image analysis. I am currently interested in Multimodal Large Language Models (MLLMs) and their applications. 
+
+**I am actively seeking funded research assistant or PhD opportunities for 2025/2026 in these areas, with openness to positions in Shanghai, Hong Kong, or other regions. Please feel free to reach out via email if you are interested in my background and research.**
+
 
 **Email:** [youli22@m.fudan.edu.cn](mailto:youli22@m.fudan.edu.cn)  
 **Alternative Email:** [reasonlee665@gmail.com](mailto:reasonlee665@gmail.com)
