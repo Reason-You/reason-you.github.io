@@ -53,7 +53,7 @@ bundle exec jekyll serve
 
 比较需要注意的点是
 
-其他的请直接参考官方博客[]()
+其他的请直接参考官方博客
 
 ## 利用markdown来撰写
 
