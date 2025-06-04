@@ -5,12 +5,12 @@ order: 1
 ---
 # You Li
 
+>I am actively seeking **funded research assistant** or **PhD** opportunities, with openness to positions in **Shanghai**, **Hong Kong**, or other regions. Please feel free to reach out via email if you are interested in my background and research.
+{: .prompt-info }
+
 ## About Me
 
-I am a Master's student in Computer Technology at Fudan University, expected to graduate in June 2025. My master's research focuses on applying artificial intelligence and computer vision techniques to medical image analysis. I am currently interested in Multimodal Large Language Models (MLLMs) and their applications. 
-
-**I am actively seeking funded research assistant or PhD opportunities in these areas, with openness to positions in Shanghai, Hong Kong, or other regions. Please feel free to reach out via email if you are interested in my background and research.**
-
+I am a Master's student in Computer Technology at Fudan University, expected to graduate in June 2025. My master's research focuses on applying artificial intelligence and computer vision techniques to medical image analysis. I am currently interested in **Multimodal Large Language Models (MLLMs)** and their applications. 
 
 **Email:** [youli22@m.fudan.edu.cn](mailto:youli22@m.fudan.edu.cn)  
 **Alternative Email:** [liyou.mllm@gmail.com](mailto:liyou.mllm@gmail.com)
@@ -26,8 +26,8 @@ Fudan University, Shanghai
 Beijing Jiaotong University, Beijing  
 
 - Specialization: Medical Information Technology
-- Program Recognition: 4th MoE Discipline Evaluation A-
-- Relevant Coursework: Machine Learning, Medical Information Technology Training, Data Structures, Operating Systems
+- 4th MoE Discipline Evaluation A-
+- Relevant Courses: Machine Learning, Medical Information Technology Training, Data Structures, Operating Systems
 
 ## Publications and Patents
 
@@ -91,6 +91,8 @@ Beijing Jiaotong University, Beijing
 
 ---
 
-*Last Updated: May 2025*
+*Last Updated: May 2025.*
+
+*This content are not permitted to use elsewhere without the permission of the author.*
 <!-- > Add Markdown syntax content to file `_tabs/about.md`{: .filepath } and it will show up on this page.
 {: .prompt-tip } -->
