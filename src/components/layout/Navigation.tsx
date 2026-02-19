@@ -20,6 +20,7 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [activeHash, setActiveHash] = useState('');
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,6 +79,20 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
     }
   }, [enableOnePageMode, items]);
 
+  const isDesktopItemActive = (item: SiteConfig['navigation'][number]) =>
+    enableOnePageMode
+      ? activeHash === `#${item.target}` || (!activeHash && item.target === 'about')
+      : (item.href === '/'
+        ? pathname === '/'
+        : pathname.startsWith(item.href));
+
+  const getDesktopItemHref = (item: SiteConfig['navigation'][number]) =>
+    enableOnePageMode ? `/#${item.target}` : item.href;
+
+  const activeItem = items.find((item) => isDesktopItemActive(item)) ?? null;
+  const activeHref = activeItem ? getDesktopItemHref(activeItem) : null;
+  const indicatorHref = hoveredHref ?? activeHref;
+
   return (
     <Disclosure as="nav" className="fixed top-0 left-0 right-0 z-50">
       {({ open }) => (
@@ -112,17 +127,14 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                 {/* Desktop Navigation */}
                 <div className="hidden lg:block">
                   <div className="ml-10 flex items-center space-x-8">
-                    <div className="flex items-baseline space-x-8">
+                    <div
+                      className="flex items-baseline space-x-1"
+                      onMouseLeave={() => setHoveredHref(null)}
+                    >
                       {items.map((item) => {
-                        const isActive = enableOnePageMode
-                          ? activeHash === `#${item.target}` || (!activeHash && item.target === 'about')
-                          : (item.href === '/'
-                            ? pathname === '/'
-                            : pathname.startsWith(item.href));
-
-                        const href = enableOnePageMode
-                          ? `/#${item.target}`
-                          : item.href;
+                        const isActive = isDesktopItemActive(item);
+                        const href = getDesktopItemHref(item);
+                        const showIndicator = indicatorHref === href;
 
                         return (
                           <Link
@@ -130,23 +142,33 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                             href={href}
                             prefetch={true}
                             onClick={() => enableOnePageMode && setActiveHash(`#${item.target}`)}
+                            onMouseEnter={() => setHoveredHref(href)}
                             className={cn(
-                              'relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded hover:bg-accent/10 hover:shadow-sm',
+                              'relative px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150',
                               isActive
                                 ? 'text-primary'
-                                : 'text-neutral-600 hover:text-primary'
+                                : hoveredHref === href
+                                  ? 'text-primary'
+                                  : 'text-neutral-600'
                             )}
                           >
                             <span className="relative z-10">{item.title}</span>
-                            {isActive && (
+                            {showIndicator && (
                               <motion.div
-                                layoutId="activeTab"
-                                className="absolute inset-0 bg-accent/10 rounded-lg"
+                                layoutId="navIndicator"
+                                className={cn(
+                                  'absolute inset-0 rounded-lg',
+                                  isActive && hoveredHref === null
+                                    ? 'bg-accent/10'
+                                    : isActive
+                                      ? 'bg-accent/10'
+                                      : 'bg-accent/[0.07]'
+                                )}
                                 initial={false}
                                 transition={{
                                   type: 'spring',
-                                  stiffness: 500,
-                                  damping: 30
+                                  stiffness: 400,
+                                  damping: 28
                                 }}
                               />
                             )}

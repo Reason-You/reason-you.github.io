@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.1 on Feb 19, 2026
+- Updated the navigation bar implementation to make it more responsive, dynamic, and natural.
+- The demo site is updated as well.
+
 ## v1.2.0 on Dec 6, 2025
 
 - Added GitHub Actions workflow for automatic deployment to GitHub Pages.
