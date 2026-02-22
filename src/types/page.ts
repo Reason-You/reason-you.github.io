@@ -1,12 +1,13 @@
 export interface BasePageConfig {
-    type: 'about' | 'publication' | 'card' | 'text';
+    type: 'about' | 'publication' | 'research' | 'card' | 'text';
     title: string;
     description?: string;
 }
 
 export interface PublicationPageConfig extends BasePageConfig {
-    type: 'publication';
+    type: 'publication' | 'research';
     source: string;
+    show_bibtex?: boolean;
 }
 
 export interface TextPageConfig extends BasePageConfig {

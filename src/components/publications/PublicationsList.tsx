@@ -28,6 +28,7 @@ export default function PublicationsList({ config, publications, embedded = fals
     const [showFilters, setShowFilters] = useState(false);
     const [expandedBibtexId, setExpandedBibtexId] = useState<string | null>(null);
     const [expandedAbstractId, setExpandedAbstractId] = useState<string | null>(null);
+    const showBibtex = config.show_bibtex !== false;
 
     // Extract unique years and types for filters
     const years = useMemo(() => {
@@ -79,7 +80,7 @@ export default function PublicationsList({ config, publications, embedded = fals
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Search publications..."
+                            placeholder="Search research..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
@@ -181,11 +182,11 @@ export default function PublicationsList({ config, publications, embedded = fals
                 </AnimatePresence>
             </div>
 
-            {/* Publications Grid */}
+            {/* Research Grid */}
             <div className="space-y-6">
                 {filteredPublications.length === 0 ? (
                     <div className="text-center py-12 text-neutral-500">
-                        No publications found matching your criteria.
+                        No research items found matching your criteria.
                     </div>
                 ) : (
                     filteredPublications.map((pub, index) => (
@@ -272,7 +273,7 @@ export default function PublicationsList({ config, publications, embedded = fals
                                                 Abstract
                                             </button>
                                         )}
-                                        {pub.bibtex && (
+                                        {showBibtex && pub.bibtex && (
                                             <button
                                                 onClick={() => setExpandedBibtexId(expandedBibtexId === pub.id ? null : pub.id)}
                                                 className={cn(
@@ -304,7 +305,7 @@ export default function PublicationsList({ config, publications, embedded = fals
                                                 </div>
                                             </motion.div>
                                         ) : null}
-                                        {expandedBibtexId === pub.id && pub.bibtex ? (
+                                        {showBibtex && expandedBibtexId === pub.id && pub.bibtex ? (
                                             <motion.div
                                                 key="bibtex"
                                                 initial={{ opacity: 0, height: 0 }}

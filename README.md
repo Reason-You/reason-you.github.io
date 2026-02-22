@@ -8,6 +8,13 @@
 
 **If you like this project, please give it a star ⭐️**
 
+## Note
+
+This repository hosts You Li's personal website. 
+Please visit [my website](reason-you.github.io).
+Special thanks to the PRISM developers for their excellent work.  
+The original README is provided below.  
+
 PRISM stands for **P**ortfolio & **R**esearch **I**nterface **S**ite **M**aker. It is a modern, configurable, and high-performance personal website template built with Next.js, Tailwind CSS, and TypeScript. It is designed for researchers, developers, and academics to showcase their work, publications, and portfolio with ease.
 
 ![PRISM Preview](screenshot.png)

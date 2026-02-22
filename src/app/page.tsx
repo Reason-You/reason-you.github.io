@@ -15,7 +15,7 @@ import { BasePageConfig, PublicationPageConfig, TextPageConfig, CardPageConfig }
 // Define types for section config
 interface SectionConfig {
   id: string;
-  type: 'markdown' | 'publications' | 'list';
+  type: 'markdown' | 'publications' | 'research' | 'list';
   title?: string;
   source?: string;
   filter?: string;
@@ -27,7 +27,7 @@ interface SectionConfig {
 
 type PageData =
   | { type: 'about', id: string, sections: SectionConfig[] }
-  | { type: 'publication', id: string, config: PublicationPageConfig, publications: Publication[] }
+  | { type: 'research', id: string, config: PublicationPageConfig, publications: Publication[] }
   | { type: 'text', id: string, config: TextPageConfig, content: string }
   | { type: 'card', id: string, config: CardPageConfig };
 
@@ -48,8 +48,9 @@ export default function Home() {
             ...section,
             content: section.source ? getMarkdownContent(section.source) : ''
           };
-        case 'publications': {
-          const bibtex = getBibtexContent('publications.bib');
+        case 'publications':
+        case 'research': {
+          const bibtex = getBibtexContent('research.bib');
           const allPubs = parseBibTeX(bibtex);
           const filteredPubs = section.filter === 'selected'
             ? allPubs.filter(p => p.selected)
@@ -90,11 +91,11 @@ export default function Home() {
             id: item.target,
             sections: processSections((rawConfig as { sections: SectionConfig[] }).sections || [])
           } as PageData;
-        } else if (pageConfig.type === 'publication') {
+        } else if (pageConfig.type === 'publication' || pageConfig.type === 'research') {
           const pubConfig = pageConfig as PublicationPageConfig;
           const bibtex = getBibtexContent(pubConfig.source);
           return {
-            type: 'publication',
+            type: 'research',
             id: item.target,
             config: pubConfig,
             publications: parseBibTeX(bibtex)
@@ -157,6 +158,7 @@ export default function Home() {
                       />
                     );
                   case 'publications':
+                  case 'research':
                     return (
                       <SelectedPublications
                         key={section.id}
@@ -177,7 +179,7 @@ export default function Home() {
                     return null;
                 }
               })}
-              {page.type === 'publication' && (
+              {page.type === 'research' && (
                 <PublicationsList
                   config={page.config}
                   publications={page.publications}
@@ -204,4 +206,3 @@ export default function Home() {
     </div>
   );
 }
-

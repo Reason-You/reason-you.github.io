@@ -1,0 +1,5 @@
+type = "research"
+title = "Research"
+description = "Technical reports, patents, and peer-reviewed research outputs."
+source = "research.bib"
+show_bibtex = false

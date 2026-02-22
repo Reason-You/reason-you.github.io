@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Disclosure } from '@headlessui/react';
@@ -118,9 +119,16 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                 >
                   <Link
                     href="/"
-                    className="text-xl lg:text-2xl font-serif font-semibold text-primary hover:text-accent transition-colors duration-200"
+                    className="inline-flex items-center"
                   >
-                    {siteTitle}
+                    <Image
+                      src="/brand-logo.png"
+                      alt={`${siteTitle} logo`}
+                      width={320}
+                      height={96}
+                      className="h-12 w-auto lg:h-14"
+                      priority
+                    />
                   </Link>
                 </motion.div>
 

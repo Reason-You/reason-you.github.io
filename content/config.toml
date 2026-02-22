@@ -1,35 +1,29 @@
 [site]
-title = "Jiale Liu"
-description = "PhD student at the University of Example."
-favicon = "/favicon.svg"
-last_updated = "November 18, 2025"
+title = "You Li"
+description = "Incoming Ph.D. student at Fudan University."
+favicon = "/favicon-32.png"
+last_updated = "February 22, 2026"
 
 [author]
-name = "Jiale Liu"
-title = "PhD Student"
-institution = "University of Example"
-avatar = "/bio.jpg"
+name = "You Li 李由"
+title = "RA / Incoming Ph.D. Student"
+institution = "Fudan University"
+avatar = "/avatar.jpg"
 
 [social]
-# Contact information (leave blank or delete to hide)
-
-email = "john.doe@example.com"
-location = "City, Country"
-location_url = "https://maps.google.com"
+email = "youli@alu.fudan.edu.cn"
+location = "Shanghai, China"
 location_details = [
-  "Room 123, Science Building,",
-  "University Avenue, City, Country"
+  "579 Guoquan Road",
+  "School of Data Science, Fudan University",
+  "Shanghai, China"
 ]
-google_scholar = "https://scholar.google.com"
-orcid = "https://orcid.org"
-github = "https://github.com"
-linkedin = "https://linkedin.com"
+github = "https://github.com/Reason-You"
+linkedin = "https://www.linkedin.com/in/you-li-122765185/"
+google_scholar = "https://scholar.google.com/citations?user=L4F0vw4AAAAJ&hl=zh-CN"
 
 [features]
-# Show a like button on the about page
 enable_likes = true
-
-# Display all subpages on a single page
 enable_one_page_mode = false
 
 [[navigation]]
@@ -39,28 +33,10 @@ target = "about"
 href = "/"
 
 [[navigation]]
-title = "Publications"
+title = "Research"
 type = "page"
-target = "publications"
-href = "/publications"
-
-[[navigation]]
-title = "Teaching"
-type = "page"
-target = "teaching"
-href = "/teaching"
-
-[[navigation]]
-title = "Awards"
-type = "page"
-target = "awards"
-href = "/awards"
-
-[[navigation]]
-title = "Services"
-type = "page"
-target = "services"
-href = "/services"
+target = "research"
+href = "/research"
 
 [[navigation]]
 title = "CV"

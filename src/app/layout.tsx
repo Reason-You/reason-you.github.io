@@ -7,6 +7,7 @@ import { getConfig } from "@/lib/config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
+  const iconVersion = "20260222c";
   return {
     title: {
       default: config.site.title,
@@ -18,7 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: config.author.name,
     publisher: config.author.name,
     icons: {
-      icon: config.site.favicon,
+      icon: [{ url: `${config.site.favicon}?v=${iconVersion}`, type: "image/png", sizes: "32x32" }],
+      shortcut: [{ url: `/favicon-32.png?v=${iconVersion}` }],
+      apple: [{ url: `/apple-touch-icon.png?v=${iconVersion}`, sizes: "180x180" }],
     },
     openGraph: {
       type: "website",
@@ -40,7 +43,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
-        <link rel="icon" href={config.site.favicon} type="image/svg+xml" />
         {/* Speed up font connections */}
         <link rel="dns-prefetch" href="https://google-fonts.jialeliu.com" />
         <link rel="preconnect" href="https://google-fonts.jialeliu.com" crossOrigin="" />

@@ -3,9 +3,9 @@ title = "About"
 
 [profile]
 research_interests = [
-  "Computational Physics",
-  "Mathematical Principles",
-  "Proof of Theorems"
+  "LLM-based Multi-Agent Systems",
+  "Social Simulation",
+  "Visual Analytics",
 ]
 
 [[sections]]
@@ -15,9 +15,9 @@ source = "bio.md"
 title = "About"
 
 [[sections]]
-id = "featured_publications"
-type = "publications"
-title = "Selected Publications"
+id = "featured_research"
+type = "research"
+title = "Selected Research"
 filter = "selected"
 limit = 5
 
@@ -26,4 +26,3 @@ id = "news"
 type = "list"
 title = "News"
 source = "news.toml"
-

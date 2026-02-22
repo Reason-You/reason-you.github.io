@@ -120,6 +120,7 @@ export function parseBibTeX(bibtexContent: string): Publication[] {
 
 function parseAuthors(authorsStr: string, highlightName?: string): Array<{ name: string; isHighlighted?: boolean; isCorresponding?: boolean; isCoAuthor?: boolean }> {
   if (!authorsStr) return [];
+  const highlightCandidates = highlightName ? buildHighlightCandidates(highlightName) : [];
 
   // Split by "and" and clean up
   return authorsStr
@@ -145,20 +146,13 @@ function parseAuthors(authorsStr: string, highlightName?: string): Array<{ name:
 
       // Check if this is the site owner (to highlight)
       let isHighlighted = false;
-      if (highlightName) {
-        const lowerName = name.toLowerCase();
-        const lowerHighlight = highlightName.toLowerCase();
-        isHighlighted = lowerName.includes(lowerHighlight);
-
-        // Also check for reversed order (Last First) if not found
-        if (!isHighlighted && lowerHighlight.includes(' ')) {
-          const parts = lowerHighlight.split(' ');
-          // Handle simple First Last case
-          if (parts.length === 2) {
-            const reversed = `${parts[1]} ${parts[0]}`;
-            isHighlighted = lowerName.includes(reversed);
-          }
-        }
+      if (highlightCandidates.length > 0) {
+        const normalizedName = normalizeNameForMatch(name);
+        isHighlighted = highlightCandidates.some(candidate =>
+          normalizedName === candidate ||
+          normalizedName.includes(candidate) ||
+          candidate.includes(normalizedName)
+        );
       }
 
       return {
@@ -169,6 +163,34 @@ function parseAuthors(authorsStr: string, highlightName?: string): Array<{ name:
       };
     })
     .filter(author => author.name);
+}
+
+function normalizeNameForMatch(name: string): string {
+  return name.toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function buildHighlightCandidates(highlightName: string): string[] {
+  const candidates = new Set<string>();
+  const addCandidate = (value: string) => {
+    const normalized = normalizeNameForMatch(value);
+    if (normalized) {
+      candidates.add(normalized);
+    }
+  };
+
+  // Original config value, e.g. "You Li 李由"
+  addCandidate(highlightName);
+
+  // Latin-only tokens for matching BibTeX author names
+  const latinParts = highlightName.match(/[A-Za-z]+/g) || [];
+  if (latinParts.length > 0) {
+    addCandidate(latinParts.join(' '));
+  }
+  if (latinParts.length >= 2) {
+    addCandidate(`${latinParts[1]} ${latinParts[0]}`);
+  }
+
+  return Array.from(candidates);
 }
 
 function cleanBibTeXString(str?: string): string {

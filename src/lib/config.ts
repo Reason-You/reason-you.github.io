@@ -38,7 +38,7 @@ export interface SiteConfig {
     }>;
     sections: Array<{
         id: string;
-        type: 'markdown' | 'publications' | 'list' | 'cards';
+        type: 'markdown' | 'publications' | 'research' | 'list' | 'cards';
         source?: string;
         title?: string;
         filter?: string;
