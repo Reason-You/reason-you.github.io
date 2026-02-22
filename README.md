@@ -8,7 +8,7 @@
 
 
 This repository hosts You Li's personal website. 
-Please visit [my website](reason-you.github.io).
+Please visit [my website](https://reason-you.github.io).
 Special thanks to the PRISM developers for their excellent work.  
 The original README is provided below.  
 
