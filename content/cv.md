@@ -14,12 +14,13 @@
 
 ## Selected Research Projects
 
-**ChoiceVerse: Visual Analytics for Data-Driven Multi-Agent College Admission Simulation**
+**ChoiceVerse: Visual Analytics of Competitive College Choice Behavior via Multi-Agent What-If Simulation**
 FDU-VIS Lab, Fudan University
-*2025.09 - Present*
-- Designed a heterogeneous architecture combining rule-based and LLM-based agents.
-- Proposed profile-semantic alignment from sparse survey data to 300+ heterogeneous agents.
-- Built visual analytics views including cognitive fishbone diagrams and Sankey-based evolution paths.
+*2025.09 - 2026.04*
+- Built a multi-agent what-if visual analytics system for exploring how public signals reshape collective competition in centralized college admissions (*Gaokao*).
+- Designed a two-tier agent framework combining rule-based agents with LLM-driven agents, grounded in a survey of 300+ recent college entrants, to simulate heterogeneous decision-making under finite-capacity constraints.
+- Developed three coordinated visual analytics views spanning competitive positioning, group-level reallocation, and stage-aligned individual reasoning comparison.
+- Paper submitted to IEEE VIS 2026 (first author).
 
 **Human-in-the-Loop Segmentation and SAM-Based Bronchial Annotation System**
 Shanghai Municipal Science and Technology Commission Project
@@ -30,10 +31,11 @@ Shanghai Municipal Science and Technology Commission Project
 
 ## Experience
 
-**Research Assistant**, FDU-VIS Lab, Fudan University
-*2025.09 - Present*
-- Leading ChoiceVerse research; 
-- Participating in a Weibo social simulation project for user behavior modeling.
+**Research Assistant**, FDU-VIS Lab, School of Data Science, Fudan University, 2025.09 - Present
+
+- Leading the ChoiceVerse project on multi-agent what-if simulation and visual analytics for competitive reasoning in centralized allocation settings.
+- Participating in a Weibo social simulation project for large-scale user behavior modeling with LLM-driven agents.
+- Facilitating interdisciplinary collaboration between the School of Data Science and the Institute of Higher Education at Fudan University.
 
 **Algorithm Intern**, Shanghai MicroPort MedBot (Group) Co., Ltd.
 *2023.09 - 2024.05*
@@ -46,10 +48,9 @@ Shanghai Municipal Science and Technology Commission Project
 - **LLM Technologies:** Transformers, LangChain, LLM deployment and optimization
 - **Programming:** Python, C++, LLM API integration and optimization
 - **Deep Learning:** PyTorch, NumPy, Pandas, OpenCV
-- **Tools:** Git, Shell, Linux, LaTeX
+- **Tools:** Git, Shell, Linux, LaTeX, Figma
 
 ## Interdisciplinary Practice
 
 - Organized interdisciplinary lectures in NLP, computational social science, and visual analytics (200+ attendees per session).
 - Completed coursework in Economics and Sociology to support computational social science research.
-- Facilitated collaboration between the School of Data Science and the Institute of Higher Education at Fudan University.
