@@ -18,9 +18,10 @@
 FDU-VIS Lab, Fudan University
 *2025.09 - 2026.04*
 - Built a multi-agent what-if visual analytics system for exploring how public signals reshape collective competition in centralized college admissions (*Gaokao*).
-- Designed a two-tier agent framework combining rule-based agents with LLM-driven agents, grounded in a survey of 300+ recent college entrants, to simulate heterogeneous decision-making under finite-capacity constraints.
+- Conducted empirical analysis of survey data from 300+ recent college entrants to characterize heterogeneous college-choice behavior and decision factors.
+- Designed a two-tier agent framework combining rule-based agents with LLM-driven agents to simulate heterogeneous decision-making under finite-capacity constraints.
 - Developed three coordinated visual analytics views spanning competitive positioning, group-level reallocation, and stage-aligned individual reasoning comparison.
-- Paper submitted to IEEE VIS 2026 (first author).
+- Produced two project outputs: a visual analytics paper submitted to IEEE VIS 2026 (first author), and an empirical conference abstract accepted for oral presentation at the HERA 2026 Young Scholars and Doctoral Students Forum (co-first author; led the empirical analysis).
 
 **Human-in-the-Loop Segmentation and SAM-Based Bronchial Annotation System**
 Shanghai Municipal Science and Technology Commission Project
@@ -41,6 +42,11 @@ Shanghai Municipal Science and Technology Commission Project
 *2023.09 - 2024.05*
 - Fine-tuned ZoeDepth for real-time monocular depth estimation in bronchoscopic surgical navigation.
 - Built coronary artery segmentation with nnUNet for surgical map construction (Dice: 86%).
+
+## Academic Service
+
+- **Reviewer**, IEEE International Conference on Multimedia and Expo (ICME), 2025
+- **Organizing Team Member**, UbiComp/ISWC 2026 Workshop: *Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures*, 2026
 
 ## Skills
 
