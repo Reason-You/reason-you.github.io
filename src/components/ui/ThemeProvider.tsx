@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useThemeStore, resolveTheme } from '@/lib/stores/themeStore';
 
 type MediaQueryListWithDeprecated = MediaQueryList & {
@@ -10,8 +10,15 @@ type MediaQueryListWithDeprecated = MediaQueryList & {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme } = useThemeStore();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     const root = document.documentElement;
 
     const apply = () => {
@@ -46,7 +53,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       }
     };
-  }, [theme]);
+  }, [theme, mounted]);
+
+  // Prevent flash of unstyled content
+  if (!mounted) {
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
+  }
 
   return <>{children}</>;
 } 

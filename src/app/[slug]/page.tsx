@@ -26,29 +26,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
     const pageConfig = getPageConfig(slug) as BasePageConfig | null;
-    const config = getConfig();
-    const siteUrl = config.site.url || 'https://reason-you.github.io/';
 
     if (!pageConfig) {
         return {};
     }
 
-    const canonical = new URL(`${slug}/`, siteUrl).toString();
-    const description = pageConfig.description || config.site.description;
-
     return {
         title: pageConfig.title,
-        description,
-        alternates: {
-            canonical,
-        },
-        openGraph: {
-            title: `${pageConfig.title} | ${config.site.title}`,
-            description,
-            url: canonical,
-            type: 'website',
-            siteName: `${config.author.name}'s Academic Website`,
-        },
+        description: pageConfig.description,
     };
 }
 
