@@ -9,9 +9,10 @@ import { getConfig } from "@/lib/config";
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
   const iconVersion = "20260222c";
+  const seoTitle = config.site.seo_title || config.site.title;
   return {
     title: {
-      default: config.site.title,
+      default: seoTitle,
       template: `%s | ${config.site.title}`
     },
     description: config.site.description,
@@ -27,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: config.site.title,
+      title: seoTitle,
       description: config.site.description,
       siteName: `${config.author.name}'s Academic Website`,
     },

@@ -1,6 +1,7 @@
 [site]
 title = "You Li"
-description = "Incoming Ph.D. student at Fudan University."
+seo_title = "You Li | Fudan University"
+description = "You Li is a Research Assistant at the FDU-VIS Lab, School of Data Science, Fudan University, supervised by Prof. Siming Chen. His research focuses on visual analytics, LLM-based multi-agent systems, and social simulation."
 favicon = "/favicon-32.png"
 last_updated = "May 6, 2026"
 
