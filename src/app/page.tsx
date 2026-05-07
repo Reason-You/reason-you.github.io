@@ -11,6 +11,28 @@ import CardPage from '@/components/pages/CardPage';
 
 import { Publication } from '@/types/publication';
 import { BasePageConfig, PublicationPageConfig, TextPageConfig, CardPageConfig } from '@/types/page';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = getConfig();
+  const title = config.site.seo_title || `${config.site.title} | ${config.author.institution}`;
+  const url = config.site.url || 'https://reason-you.github.io/';
+
+  return {
+    title,
+    description: config.site.description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description: config.site.description,
+      url,
+      type: 'website',
+      siteName: `${config.author.name}'s Academic Website`,
+    },
+  };
+}
 
 // Define types for section config
 interface SectionConfig {
@@ -34,6 +56,41 @@ type PageData =
 export default function Home() {
   const config = getConfig();
   const enableOnePageMode = config.features.enable_one_page_mode;
+  const siteUrl = config.site.url || 'https://reason-you.github.io/';
+  const sameAs = [
+    config.social.google_scholar,
+    config.social.github,
+    config.social.linkedin,
+    config.social.orcid,
+  ].filter((url): url is string => Boolean(url));
+  const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: config.author.name,
+    url: siteUrl,
+    jobTitle: 'Research Assistant',
+    affiliation: {
+      '@type': 'CollegeOrUniversity',
+      name: config.author.institution,
+    },
+    worksFor: {
+      '@type': 'Organization',
+      name: 'FDU-VIS Lab',
+      url: 'https://fduvis.net',
+    },
+    memberOf: {
+      '@type': 'CollegeOrUniversity',
+      name: 'School of Data Science, Fudan University',
+      url: 'https://sds.fudan.edu.cn/',
+    },
+    sameAs,
+    knowsAbout: [
+      'visual analytics',
+      'large language models',
+      'multi-agent systems',
+      'computational social science',
+    ],
+  };
 
   // Always load about page config for profile info
   const aboutConfig = getPageConfig('about');
@@ -130,6 +187,12 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-background min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(personJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 

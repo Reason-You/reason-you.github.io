@@ -5,6 +5,8 @@ import { parse } from 'smol-toml';
 export interface SiteConfig {
     site: {
         title: string;
+        seo_title?: string;
+        url?: string;
         description: string;
         favicon: string;
         last_updated?: string;

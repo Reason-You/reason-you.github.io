@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://reason-you.github.io/sitemap.xml

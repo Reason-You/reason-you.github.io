@@ -9,13 +9,25 @@ import { getConfig } from "@/lib/config";
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
   const iconVersion = "20260222c";
+  const seoTitle = config.site.seo_title || `${config.site.title} | ${config.author.institution}`;
+  const siteUrl = config.site.url || "https://reason-you.github.io/";
   return {
+    metadataBase: new URL(siteUrl),
     title: {
-      default: config.site.title,
+      default: seoTitle,
       template: `%s | ${config.site.title}`
     },
     description: config.site.description,
-    keywords: [config.author.name, "PhD", "Research", config.author.institution],
+    keywords: [
+      config.author.name,
+      "Fudan University",
+      "FDU-VIS Lab",
+      "School of Data Science",
+      "visual analytics",
+      "large language models",
+      "multi-agent systems",
+      "computational social science"
+    ],
     authors: [{ name: config.author.name }],
     creator: config.author.name,
     publisher: config.author.name,
@@ -27,8 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: config.site.title,
+      title: seoTitle,
       description: config.site.description,
+      url: siteUrl,
       siteName: `${config.author.name}'s Academic Website`,
     },
   };

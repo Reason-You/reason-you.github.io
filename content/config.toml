@@ -1,11 +1,13 @@
 [site]
 title = "You Li"
-description = "Incoming Ph.D. student at Fudan University."
+seo_title = "You Li | Fudan University"
+url = "https://reason-you.github.io/"
+description = "You Li is a Research Assistant at the FDU-VIS Lab, School of Data Science, Fudan University, supervised by Prof. Siming Chen. His research includes visual analytics, large language models, multi-agent systems, and computational social science."
 favicon = "/favicon-32.png"
-last_updated = "May 6, 2026"
+last_updated = "May 7, 2026"
 
 [author]
-name = "You Li 李由"
+name = "You Li"
 title = "RA / Incoming Ph.D. Student"
 institution = "Fudan University"
 avatar = "/avatar.jpg"
