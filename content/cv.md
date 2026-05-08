@@ -46,7 +46,7 @@ Shanghai Municipal Science and Technology Commission Project
 ## Academic Service
 
 - **Reviewer**, IEEE International Conference on Multimedia and Expo (ICME), 2025
-- **Organizing Team Member**, UbiComp/ISWC 2026 Workshop: *Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures*, 2026
+- **Organizing Team Member**, [UbiComp/ISWC 2026 Workshop: *Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures*](https://vischi.org/ubicomp-workshop-home), 2026
 
 ## Skills
 
