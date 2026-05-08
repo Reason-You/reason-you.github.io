@@ -15,14 +15,14 @@ source = "bio.md"
 title = "About"
 
 [[sections]]
+id = "news"
+type = "list"
+title = "News"
+source = "news.toml"
+
+[[sections]]
 id = "featured_research"
 type = "research"
 title = "Selected Research"
 filter = "selected"
 limit = 5
-
-[[sections]]
-id = "news"
-type = "list"
-title = "News"
-source = "news.toml"
