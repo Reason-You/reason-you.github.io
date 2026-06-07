@@ -21,7 +21,7 @@ FDU-VIS Lab, Fudan University
 - Conducted empirical analysis of survey data from 300+ recent college entrants to characterize heterogeneous college-choice behavior and decision factors.
 - Designed a two-tier agent framework combining rule-based agents with LLM-driven agents to simulate heterogeneous decision-making under finite-capacity constraints.
 - Developed three coordinated visual analytics views spanning competitive positioning, group-level reallocation, and stage-aligned individual reasoning comparison.
-- Produced two project outputs: a visual analytics paper submitted to IEEE VIS 2026 (first author), and an empirical conference abstract accepted for oral presentation at the HERA 2026 Young Scholars and Doctoral Students Forum (co-first author; led the empirical analysis).
+- Produced two project outputs: a visual analytics paper under review at IEEE Transactions on Visualization and Computer Graphics (first author), and a co-authored empirical conference abstract accepted for oral presentation at the [HERA 2026 Young Scholars and Doctoral Students Forum](https://hera2026.org/program/program#:~:text=Visual%20Analytics%20of,Siming%20%28Fudan%20University%29) (led the empirical analysis).
 
 **Human-in-the-Loop Segmentation and SAM-Based Bronchial Annotation System**
 Shanghai Municipal Science and Technology Commission Project
