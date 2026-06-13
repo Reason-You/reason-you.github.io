@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>影迷与奥斯卡的对峙</title>
+<style>
+  :root{
+    --bg:#08080b; --text:#f4ece0;
+    --muted:rgba(244,236,224,.66); --quiet:rgba(244,236,224,.4); --faint:rgba(244,236,224,.24);
+    --warm:#d98a52; --warm-hot:#f6ad5e; --cool:#6f93b8; --cool-hot:#a9ccff; --consensus:#ead7a8;
+    --wall-opacity:.42; --wall-brightness:.46;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000;}
+  body{color:var(--text);font-family:"Source Han Serif SC","Noto Serif CJK SC","思源宋体","Songti SC","STSong",serif;-webkit-font-smoothing:antialiased;}
+  .stage{position:relative;width:100%;height:100svh;min-height:640px;overflow:hidden;isolation:isolate;
+    background:radial-gradient(ellipse at 50% 46%,#0d0d12 0%,#08080b 62%,#050507 100%);cursor:none;}
+  .stage[data-mode="intro"]{background:#000;}
+  .stage::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,0) 36%,rgba(0,0,0,.36) 74%,rgba(0,0,0,.85) 100%);}
+
+  .poster-wall{position:absolute;inset:-2%;z-index:0;pointer-events:none;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(132px,1fr));grid-auto-rows:1fr;gap:2px;
+    opacity:var(--wall-opacity);filter:brightness(var(--wall-brightness)) contrast(.9) saturate(.5);
+    -webkit-mask-image:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,.18) 0%,rgba(0,0,0,.5) 44%,#000 100%);
+    mask-image:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,.18) 0%,rgba(0,0,0,.5) 44%,#000 100%);
+    transition:opacity 800ms ease;}
+  .stage[data-mode="intro"] .poster-wall{opacity:0;}
+  .wall-cell{position:relative;width:100%;padding-top:56.25%;overflow:hidden;background:#0b0b0f;}
+  .wall-cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .poster-wall::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 48%,rgba(8,8,11,.34) 0%,rgba(8,8,11,.6) 50%,rgba(8,8,11,.9) 100%);}
+
+  .intro-layer{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#000;
+    opacity:0;transition:opacity 600ms ease;}
+  .stage[data-mode="intro"] .intro-layer{opacity:1;}
+  .intro-text{margin:0;max-width:min(76vw,900px);text-align:center;text-wrap:balance;
+    opacity:0;transform:translateY(6px);transition:opacity 800ms ease,transform 800ms ease;}
+  .intro-text.show{opacity:1;transform:translateY(0);}
+  .intro-text.is-cue{color:rgba(244,236,224,.62);font-size:clamp(1.4rem,2vw,2.2rem);font-weight:400;letter-spacing:.42em;text-indent:.42em;}
+  .intro-text.is-quote{color:rgba(244,236,224,.82);font-size:clamp(1.9rem,3.6vw,4rem);font-weight:400;font-style:italic;}
+  .intro-text .cue-cn{display:block;margin-top:.9rem;font-style:normal;font-size:.4em;letter-spacing:.1em;color:rgba(244,236,224,.5);}
+
+  .story-layer{position:absolute;inset:0;z-index:3;opacity:0;transition:opacity 700ms ease;}
+  .stage[data-mode="story"] .story-layer{opacity:1;}
+
+  .spotlight{position:absolute;left:50%;top:43%;width:min(86vw,1320px);height:min(76vh,900px);z-index:1;
+    pointer-events:none;transform:translate(-50%,-50%);opacity:.85;
+    background:radial-gradient(ellipse at 50% 46%,rgba(246,173,94,.15) 0%,rgba(246,173,94,.06) 30%,rgba(246,173,94,0) 64%);
+    transition:left 900ms ease,top 900ms ease,background 900ms ease;}
+  .stage[data-scene="3"] .spotlight{
+    background:radial-gradient(ellipse at 50% 46%,rgba(169,204,255,.15) 0%,rgba(169,204,255,.05) 30%,rgba(169,204,255,0) 64%);}
+
+  /* narrative tucked bottom-left */
+  .narrative{position:absolute;left:clamp(48px,5vw,96px);bottom:clamp(48px,9vh,112px);z-index:6;max-width:min(30vw,420px);}
+  .scene-count{margin:0 0 .9rem;color:var(--faint);font-size:.86rem;letter-spacing:.22em;}
+  .eyebrow{margin:0;color:var(--warm-hot);font-size:1rem;letter-spacing:.04em;opacity:.85;}
+  .narrative h2{margin:.8rem 0 0;max-width:14ch;color:var(--text);font-size:clamp(1.9rem,2.8vw,3.4rem);
+    font-weight:500;line-height:1.18;text-wrap:balance;}
+  .narrative h2:empty{display:none;}
+  #sceneBody{margin:.95rem 0 0;color:var(--muted);font-size:clamp(.92rem,1.05vw,1.14rem);line-height:1.82;}
+  #sceneBody:empty{display:none;}
+  .metric-row{position:absolute;right:clamp(48px,5vw,96px);bottom:clamp(56px,10vh,128px);z-index:6;
+    display:flex;flex-direction:column;align-items:flex-end;gap:1rem;margin:0;text-align:right;}
+  .metric-label{color:var(--faint);font-size:.84rem;letter-spacing:.12em;}
+  .metric strong{display:block;margin-top:.3rem;color:rgba(244,236,224,.95);font-size:clamp(2.1rem,3vw,3.4rem);font-weight:400;line-height:1;}
+  .metric.metric-text strong{font-size:clamp(1.3rem,1.8vw,2rem);font-style:italic;letter-spacing:.01em;line-height:1.25;}
+
+  /* light field — sits in the centre, behind the film */
+  .light-field{position:absolute;left:50%;top:43%;z-index:2;width:min(74vw,1240px);height:min(70vh,820px);
+    transform:translate(-50%,-50%);pointer-events:none;}
+  #lightChart{display:block;width:100%;height:100%;overflow:visible;}
+  .group-haze{transform-box:fill-box;transform-origin:center;filter:blur(34px);mix-blend-mode:screen;transition:opacity 600ms ease;}
+  .group-haze.warm{fill:rgba(217,138,82,.3);} .group-haze.cool{fill:rgba(111,147,184,.28);}
+  .group-haze.consensus{fill:rgba(234,215,168,.22);} .group-haze.quiet{fill:rgba(165,154,143,.08);}
+  .light-point{mix-blend-mode:screen;transition:opacity 600ms ease,r 600ms ease;}
+  .light-point.neutral{fill:rgba(238,230,218,.22);}
+  .light-point.warm{fill:var(--warm);filter:drop-shadow(0 0 6px rgba(217,138,82,.4));}
+  .light-point.hot-warm{fill:var(--warm-hot);filter:drop-shadow(0 0 16px rgba(246,173,94,.9));}
+  .light-point.cool{fill:var(--cool);filter:drop-shadow(0 0 6px rgba(111,147,184,.42));}
+  .light-point.hot-cool{fill:var(--cool-hot);filter:drop-shadow(0 0 16px rgba(169,204,255,.85));}
+  .light-point.consensus{fill:var(--consensus);filter:drop-shadow(0 0 10px rgba(234,215,168,.7));}
+  .light-point.quiet{fill:rgba(205,196,184,.16);}
+
+  /* focus film — centred, ABOVE the light field; this is the hero and it is always visible */
+  .focus-film{position:absolute;left:50%;top:43%;z-index:6;width:min(46vw,720px);
+    transform:translate(-50%,-50%) translateY(8px);opacity:0;transition:opacity 600ms ease,transform 600ms ease;}
+  .stage[data-mode="story"] .focus-film{opacity:1;transform:translate(-50%,-50%);}
+  .stage[data-scene="4"] .focus-film{top:auto;bottom:clamp(40px,8vh,92px);transform:translate(-50%,0);width:min(64vw,900px);}
+  .still-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:3px;
+    background:linear-gradient(135deg,#1a1410 0%,#0c0a08 100%);
+    box-shadow:0 0 60px 6px rgba(217,138,82,.22),0 30px 110px rgba(0,0,0,.8);}
+  .stage[data-scene="3"] .still-wrap{box-shadow:0 0 60px 6px rgba(169,204,255,.18),0 30px 110px rgba(0,0,0,.8);}
+  .still-wrap img{display:block;width:100%;height:100%;object-fit:cover;filter:brightness(.82) contrast(1.06) saturate(.76);}
+  /* placeholder shown when no image: a framed card with the title */
+  .still-wrap.is-empty{display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(246,173,94,.2);}
+  .still-wrap.is-empty img{display:none;}
+  .still-ph{display:none;padding:1rem;text-align:center;color:rgba(246,196,142,.7);
+    font-size:clamp(1.1rem,1.8vw,1.9rem);font-style:italic;letter-spacing:.02em;}
+  .still-wrap.is-empty .still-ph{display:block;}
+  .still-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 44%,rgba(8,8,11,0) 42%,rgba(8,8,11,.28) 78%,rgba(8,8,11,.72) 100%),
+      linear-gradient(180deg,rgba(8,8,11,0) 58%,rgba(8,8,11,.46) 100%);}
+  .film-caption{margin-top:1.15rem;text-align:center;color:var(--muted);font-size:clamp(.95rem,1.12vw,1.18rem);
+    line-height:1.66;text-shadow:0 0 16px rgba(0,0,0,.9);}
+  .film-title{color:rgba(244,236,224,.95);font-weight:500;}
+  .film-meta{margin-left:.5rem;color:var(--quiet);}
+  .film-line{display:block;margin-top:.4rem;color:var(--muted);}
+
+  /* quotes — placed so they NEVER overlap the centred film:
+     warm at far-bottom band, cool at far-top band, both clear of the film box */
+  .quote-layer{position:absolute;inset:0;z-index:9;pointer-events:none;}
+  .cinema-quote{position:absolute;width:min(80vw,820px);margin:0;text-align:center;text-shadow:0 0 24px rgba(0,0,0,.95);
+    opacity:0;transition:opacity 700ms ease;}
+  .cinema-quote.show{opacity:1;}
+  .cinema-quote blockquote{margin:0;color:rgba(244,236,224,.9);font-size:clamp(1.7rem,3.2vw,4rem);
+    font-weight:400;font-style:italic;line-height:1.06;}
+  .cinema-quote figcaption{margin-top:.7rem;color:var(--muted);font-size:clamp(.84rem,1vw,1.1rem);font-style:normal;}
+  .quote-cn,.quote-source{display:block;}
+  .quote-cn{font-size:.92em;letter-spacing:.08em;}
+  .quote-source{margin-top:.3rem;color:var(--faint);font-size:.66em;letter-spacing:.06em;}
+  /* second-act / scale: warm quote pinned to the very top, clear of the film */
+  .quote-warm{left:50%;top:13%;transform:translate(-50%,-50%);}
+  .quote-cool{left:50%;top:13%;transform:translate(-50%,-50%);}
+  .quote-whisper.show{opacity:.5;}
+  .quote-whisper blockquote{font-size:clamp(1.3rem,2.1vw,2.6rem);}
+  .quote-loud.quote-warm blockquote{color:rgba(246,196,142,.96);text-shadow:0 0 26px rgba(217,138,82,.55),0 0 56px rgba(217,138,82,.3);}
+  .quote-loud.quote-cool blockquote{color:rgba(196,220,255,.97);text-shadow:0 0 26px rgba(111,147,184,.55),0 0 58px rgba(111,147,184,.32);}
+  /* final scene: warm left, cool right, judgement centre — all on one high band, film is hidden this scene */
+  .quote-final{width:min(26vw,400px);top:30%;}
+  .quote-final.quote-warm{left:20%;transform:translate(-50%,-50%);}
+  .quote-final.quote-cool{left:80%;transform:translate(-50%,-50%);}
+  .quote-final blockquote{font-size:clamp(1.4rem,2.4vw,3rem);}
+  .final-judgement{position:absolute;left:50%;top:30%;width:min(26vw,400px);margin:0;color:rgba(244,236,224,.92);
+    font-size:clamp(1.3rem,2vw,2.5rem);font-weight:400;line-height:1.32;text-align:center;text-wrap:balance;
+    transform:translate(-50%,-50%);text-shadow:0 0 28px rgba(0,0,0,.96);opacity:0;transition:opacity 700ms ease;}
+  .final-judgement.show{opacity:1;}
+  /* on the credits scene, hide the centred film so the credit list owns the lower half */
+  .stage[data-scene="4"] .light-field{opacity:.5;}
+  .stage[data-scene="4"] .metric-row{display:none;}
+
+  .credit-list{display:grid;gap:1.3rem;width:100%;margin:0;color:var(--muted);font-size:clamp(1.05rem,1.3vw,1.45rem);line-height:1.8;text-align:center;}
+  .credit-list p{margin:0;}
+  .credit-label{display:block;margin-bottom:.26rem;color:var(--faint);font-size:.84rem;letter-spacing:.2em;}
+
+  .progress-dots{position:fixed;left:50%;bottom:clamp(18px,3vw,32px);z-index:35;display:flex;gap:.5rem;opacity:.3;transform:translateX(-50%);}
+  .progress-dots span{width:.3rem;height:.3rem;border-radius:50%;background:rgba(244,236,224,.26);transition:.24s;}
+  .progress-dots span.is-active{background:rgba(246,196,142,.85);box-shadow:0 0 12px rgba(246,173,94,.6);transform:scale(1.3);}
+  .hint{position:fixed;right:clamp(16px,3vw,30px);bottom:clamp(16px,3vw,28px);z-index:35;color:var(--faint);font-size:.7rem;letter-spacing:.1em;opacity:.45;}
+
+  @media (max-width:1180px){.focus-film{width:min(46vw,460px);}.light-field{width:78vw;}.narrative{max-width:34vw;}}
+  @media (max-width:760px){
+    .stage{cursor:default;}
+    .narrative{left:18px;right:18px;bottom:24px;max-width:none;}
+    .light-field{width:114vw;height:46vh;}
+    .focus-film{width:min(82vw,440px);}
+    .cinema-quote{width:90vw;}
+    .quote-final.quote-warm{left:50%;top:20%;width:84vw;}
+    .quote-final.quote-cool{left:50%;top:80%;width:84vw;}
+    .final-judgement{left:50%;top:50%;width:84vw;}
+    .hint{display:none;}
+  }
+</style>
+</head>
+<body>
+<main class="stage" data-mode="intro" data-step="0" data-scene="0" aria-live="polite">
+  <div class="poster-wall" id="posterWall" aria-hidden="true"></div>
+  <div class="intro-layer" id="introLayer" aria-label="开场黑场"><p class="intro-text" id="introText"></p></div>
+  <div class="story-layer" id="storyLayer">
+    <div class="spotlight" aria-hidden="true"></div>
+    <header class="narrative">
+      <p class="scene-count" id="sceneCount"></p>
+      <p class="eyebrow" id="sceneEyebrow"></p>
+      <h2 id="sceneTitle"></h2>
+      <p id="sceneBody"></p>
+    </header>
+    <div class="metric-row" id="metricRow"></div>
+    <section class="light-field" aria-label="四团抽象光点">
+      <svg id="lightChart" viewBox="0 0 900 560" role="img" aria-label="影迷与学院的四团光，无坐标轴"><g id="plotRoot"></g></svg>
+    </section>
+    <aside class="focus-film" id="focusFilm"></aside>
+    <div class="quote-layer" id="quoteLayer"></div>
+  </div>
+  <div class="progress-dots" id="progressDots" aria-hidden="true"></div>
+  <div class="hint" aria-hidden="true">点击或方向键推进</div>
+</main>
+
+<script>
+(function(){
+  // LOCAL images first (your assets/stills/raw/*.jpg), TMDB as fallback only.
+  var TMDB="https://image.tmdb.org/t/p/original";
+  var M=[
+    ["The Godfather",1972,"consensus","the-godfather","/tSPT36ZKlP2WVHJLM4cQPLSzv3b.jpg"],
+    ["Schindler's List",1993,"consensus","schindler-s-list","/zb6fM1CX41D9rF9hdgclu0peUmy.jpg"],
+    ["Pulp Fiction",1994,"consensus","pulp-fiction","/suaEOtk1N1sgg2MTM7oZd2cfVp3.jpg"],
+    ["Casablanca",1943,"consensus","casablanca","/87wqeMeUeMRLjsE1IWNKJcPlpuC.jpg"],
+    ["The Shining",1980,"audience","the-shining","/mmd1HnuvAzFc4iuVJcnBrhDNEKr.jpg"],
+    ["Reservoir Dogs",1992,"audience","reservoir-dogs","/jwt159hXWA9Q5xpBo8hWb3zwLi7.jpg"],
+    ["The Big Lebowski",1998,"audience","the-big-lebowski","/hXsy4XCCHrUk81XoRhcooyWejao.jpg"],
+    ["Snatch",2000,"audience","snatch","/gTghF8ardwJ48XLHkiapWk3ZmSo.jpg"],
+    ["Hot Fuzz",2007,"audience","hot-fuzz","/9rMSCFH9zhv1vILpEZQlUJs9iUm.jpg"],
+    ["Donnie Darko",2001,"audience","donnie-darko","/msCHK5Kh1YbdZ0zPJ2nzPUhhSN9.jpg"],
+    ["The Good, the Bad and the Ugly",1966,"audience","the-good-the-bad-and-the-ugly","/Adrip2Jqzw56KeuV2nAxucKMNXA.jpg"],
+    ["Office Space",1999,"audience","office-space","/g7o5O6xRWkMiwHXiYMPC690YEL4.jpg"],
+    ["This Is Spinal Tap",1984,"audience","this-is-spinal-tap","/a3FaHEGActk76BeCBingyOvEqnm.jpg"],
+    ["Scarface",1983,"audience","scarface","/1qM2BYNE11Viby8ImC9LC00DgDr.jpg"],
+    ["Kill Bill: Vol. 1",2003,"audience","kill-bill-vol-1","/iffzIhuLAO38Po6sh1s6ZEVwlNL.jpg"],
+    ["Army of Darkness",1992,"audience","army-of-darkness","/5RPXs9g0sZ9Woo4pNLxdXdge7tc.jpg"],
+    ["Titanic",1997,"academy","titanic","/xnHVX37XZEp33hhCbYlQFq7ux1J.jpg"],
+    ["Top Gun",1986,"academy","top-gun","/dBgxEkWe17R0AJDAvAhpeVELQx2.jpg"],
+    ["Batman",1989,"academy","batman","/zlsaQEE26TS34ziXAiNIAqa0MLX.jpg"],
+    ["Ghost",1990,"academy","ghost","/6nLdSON3ErniBZTXWG7WRqs5jGz.jpg"]
+  ].map(function(a){return {title:a[0],year:a[1],group:a[2],slug:a[3],img:a[4]};});
+
+  function byTitle(t){for(var i=0;i<M.length;i++)if(M[i].title===t)return M[i];return null;}
+  function group(g){return M.filter(function(m){return m.group===g;});}
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+  function localSrc(m){return "./assets/stills/raw/"+m.slug+".jpg";}
+  function tmdbSrc(m){return TMDB+m.img;}
+
+  var consensus=group("consensus"),audience=group("audience"),academy=group("academy");
+  var quotes={
+    fan:{side:"warm",en:"I'll be back",cn:"我会回来",src:"The Terminator, 1984"},
+    academy:{side:"cool",en:"I'm the king of the world",cn:"我是世界之王",src:"Titanic, 1997"}
+  };
+  var introSteps=[
+    {kind:"black"},
+    {kind:"cue",html:'观看过程，放下手机'},
+    {kind:"quote",html:'I&rsquo;ll be back<span class="cue-cn">总有一天，会被重新看见。</span>'}
+  ];
+  var scenes=[
+    {key:"consensus",count:"第一拍 / 共识区",eyebrow:"先看大家都鼓掌的那几部",title:"",body:"",
+      feature:byTitle("The Godfather"),featureLine:"共识经典先从黑里出现：影迷给高分，学院也给奖。",
+      metrics:[["The Godfather 影迷评分","4.29"],["奥斯卡","获奖"]],highlight:consensus},
+    {key:"crack",count:"第二拍 / 裂缝",eyebrow:"暖光，往一个角落挪",title:"裂缝从两部电影开始。",
+      body:"The Shining 与 Reservoir Dogs 留在影迷的高分处。逐部核实过，奥斯卡主要奖项从没看见它们。",
+      feature:byTitle("The Shining"),featureLine:"影迷反复点亮，奖项名单里没有它的名字。",
+      metrics:[["The Shining 影迷评分","4.08"],["Reservoir Dogs 影迷评分","4.20"],["奥斯卡主要奖项","0 提名"]],highlight:[byTitle("The Shining"),byTitle("Reservoir Dogs")]},
+    {key:"scale",count:"第三拍 / 规模",eyebrow:"影迷的评分，把这一角点亮",title:"一整片角落，亮了起来。",
+      body:"几十部影迷高分的电影在暖光里成片浮现。上墙的这些，逐部核实过，奥斯卡从没看见它们。",
+      feature:byTitle("The Big Lebowski"),featureLine:"它不是孤例，暖光背后是一整片影迷的暗号。",
+      metrics:[["影迷高分","49 部"],["其中上墙","12 部"],["影迷均分约","4.0"],["奥斯卡主要奖项","0 提名"]],highlight:audience},
+    {key:"counter",count:"第四拍 / 反打",eyebrow:"冷光，打到另一个角落",title:"奖杯，也有自己的冷场。",
+      body:"Titanic 与 Ghost 是奥斯卡加冕、影迷冷淡；Top Gun 与 Batman 是大众宠儿，奥斯卡只给技术边角，影迷也冷淡。",
+      feature:byTitle("Titanic"),featureLine:"奖杯很亮，影迷的评分没有同等升温。",
+      metrics:[["Titanic 奥斯卡","11 项"],["Titanic 影迷评分","3.41"],["Top Gun 影迷评分","3.30"],["Batman 影迷评分","3.43"]],highlight:academy},
+    {key:"credits",count:"第五拍 / Credits",eyebrow:"两束光，同时留在场内",title:"",body:"",feature:null,featureLine:"",metrics:[],
+      highlight:consensus.concat(audience.slice(0,8)).concat(academy),
+      conclusion:"两边都点头时，奖杯像答案。",
+      credits:[["作品","影迷与奥斯卡的对峙"],["数据","MovieLens small 影迷评分 · TMDB 剧照与元数据 · 奥斯卡官方记录对照"],
+        ["边界","这里的影迷，是 MovieLens small 的 610 位用户"],["致谢","所有把旧电影重新点亮的人"]]}
+  ];
+
+  var firstStory=introSteps.length,total=introSteps.length+scenes.length,active=0;
+  var clusters={consensus:{x:600,y:172,rx:120,ry:58},fan:{x:636,y:392,rx:158,ry:78},
+    academy:{x:292,y:170,rx:120,ry:64},quiet:{x:300,y:392,rx:120,ry:62},middle:{x:460,y:286,rx:150,ry:90}};
+  function hash(t){var h=2166136261,s=String(t);for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;}
+  function pos(seed,cl,sc){sc=sc||1;var a=hash(seed+"a")*Math.PI*2,d=Math.sqrt(hash(seed+"d")),w=(hash(seed+"w")-.5)*12;
+    return {x:cl.x+Math.cos(a)*cl.rx*sc*d+w,y:cl.y+Math.sin(a)*cl.ry*sc*d-w*.25};}
+  function pt(seed,cl,o){var p=pos(seed,cl,o.scale);
+    return '<circle class="light-point '+o.cls+'" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+o.r+'" opacity="'+o.op+'"></circle>';}
+  var ambient=[];(function(){[["consensus",26],["fan",46],["academy",26],["quiet",30],["middle",40]].forEach(function(d){
+    for(var i=0;i<d[1];i++)ambient.push({seed:d[0]+i,name:d[0]});});})();
+
+  function renderField(scene){
+    var root=document.getElementById("plotRoot");
+    var hz={consensus:{consensus:.55,fan:.06,academy:.05,quiet:.03},crack:{consensus:.16,fan:.34,academy:.05,quiet:.05},
+      scale:{consensus:.1,fan:.7,academy:.04,quiet:.05},counter:{consensus:.08,fan:.1,academy:.55,quiet:.06},
+      credits:{consensus:.24,fan:.46,academy:.42,quiet:.08}}[scene.key]||{};
+    var haze=["consensus","fan","academy","quiet"].map(function(n){
+      var cl=clusters[n],sc=(scene.key==="scale"&&n==="fan")?1.24:1,op=hz[n]||.03,tone=n==="fan"?"warm":n==="academy"?"cool":n;
+      return '<ellipse class="group-haze '+tone+'" cx="'+cl.x+'" cy="'+cl.y+'" rx="'+(cl.rx*sc)+'" ry="'+(cl.ry*sc)+'" opacity="'+op+'"></ellipse>';
+    }).join("");
+    var ao={consensus:{consensus:.2,fan:.07,academy:.06,quiet:.05,middle:.05},crack:{consensus:.08,fan:.2,academy:.05,quiet:.05,middle:.045},
+      scale:{consensus:.05,fan:.28,academy:.035,quiet:.04,middle:.035},counter:{consensus:.05,fan:.07,academy:.24,quiet:.05,middle:.04},
+      credits:{consensus:.12,fan:.26,academy:.22,quiet:.06,middle:.05}}[scene.key]||{};
+    var amb=ambient.map(function(a){var cl=clusters[a.name],hot=(scene.key==="scale"&&a.name==="fan"),tone=a.name==="quiet"?"quiet":"neutral";
+      return pt(a.seed,cl,{cls:tone,r:hot?3.1:2.4,op:(ao[a.name]||.05),scale:hot?1.18:1});}).join("");
+    var hc=scene.key==="counter"?"hot-cool":(scene.key==="crack"||scene.key==="scale")?"hot-warm":"consensus";
+    var hcl=scene.key==="counter"?clusters.academy:(scene.key==="crack"||scene.key==="scale")?clusters.fan:clusters.consensus;
+    var hi=(scene.highlight||[]).filter(Boolean).map(function(m){
+      return pt(m.title+m.year,hcl,{cls:hc,r:scene.key==="scale"?6.6:6,op:.95,scale:scene.key==="scale"?1.12:.8});}).join("");
+    root.innerHTML='<g>'+haze+'</g><g>'+amb+'</g><g>'+hi+'</g>';
+  }
+
+  function renderFocus(scene){
+    var el=document.getElementById("focusFilm");
+    if(scene.credits){
+      el.innerHTML='<div class="credit-list">'+scene.credits.map(function(c){
+        return '<p><span class="credit-label">'+esc(c[0])+'</span>'+esc(c[1])+'</p>';}).join("")+'</div>';
+      return;
+    }
+    var m=scene.feature;if(!m){el.innerHTML="";return;}
+    // local first; on error try TMDB; on second error show placeholder card
+    var onerr="if(this.dataset.s!=='1'){this.dataset.s='1';this.src='"+tmdbSrc(m)+"';}else{this.closest('.still-wrap').classList.add('is-empty');}";
+    el.innerHTML='<figure style="margin:0"><div class="still-wrap">'+
+      '<img src="'+localSrc(m)+'" onerror="'+onerr+'" alt="'+esc(m.title)+'" decoding="async">'+
+      '<span class="still-ph">'+esc(m.title)+'</span></div>'+
+      '<figcaption class="film-caption"><span class="film-title">'+esc(m.title)+'</span>'+
+      '<span class="film-meta">'+m.year+'</span><span class="film-line">'+esc(scene.featureLine||"")+'</span></figcaption></figure>';
+  }
+
+  function qBlock(v,emph){return '<figure class="cinema-quote quote-'+v.side+' quote-'+emph+' show">'+
+    '<blockquote>'+v.en+'</blockquote><figcaption>'+
+    '<span class="quote-source">'+esc(v.src)+'</span></figcaption></figure>';}
+  function renderQuotes(scene){
+    var q=document.getElementById("quoteLayer");
+    if(scene.key==="crack"){q.innerHTML=qBlock(quotes.fan,"whisper");return;}
+    if(scene.key==="scale"){q.innerHTML=qBlock(quotes.fan,"loud");return;}
+    if(scene.key==="counter"){q.innerHTML=qBlock(quotes.academy,"loud");return;}
+    if(scene.key==="credits"){q.innerHTML=qBlock(quotes.fan,"final")+'<p class="final-judgement show">'+esc(scene.conclusion)+'</p>'+qBlock(quotes.academy,"final");return;}
+    q.innerHTML="";
+  }
+  function renderWall(){
+    var wall=document.getElementById("posterWall"),c=[];
+    for(var i=0;i<84;i++){var m=M[i%M.length];
+      var oe="if(this.dataset.s!=='1'){this.dataset.s='1';this.src='"+tmdbSrc(m)+"';}else{this.style.visibility='hidden';}";
+      c.push('<div class="wall-cell"><img src="'+localSrc(m)+'" onerror="'+oe+'" alt=""></div>');}
+    wall.innerHTML=c.join("");
+  }
+  function dots(){var d=document.getElementById("progressDots"),h="";for(var i=0;i<total;i++)h+='<span class="'+(i===0?"is-active":"")+'"></span>';d.innerHTML=h;}
+  function updateDots(){document.querySelectorAll("#progressDots span").forEach(function(s,i){s.classList.toggle("is-active",i===active);});}
+
+  var stage=document.querySelector(".stage"),introText=document.getElementById("introText");
+  function setIntro(i){var s=introSteps[i]||introSteps[0];stage.dataset.mode="intro";stage.dataset.step=String(i);
+    if(s.kind==="black"){introText.className="intro-text";introText.innerHTML="";}
+    else if(s.kind==="cue"){introText.className="intro-text is-cue show";introText.innerHTML=s.html;}
+    else{introText.className="intro-text is-quote show";introText.innerHTML=s.html;}}
+  function setScene(i){var idx=Math.max(0,Math.min(scenes.length-1,i)),s=scenes[idx];
+    stage.dataset.mode="story";stage.dataset.scene=String(idx);
+    document.getElementById("sceneCount").textContent=s.count;
+    document.getElementById("sceneEyebrow").textContent=s.eyebrow;
+    document.getElementById("sceneTitle").textContent=s.title;
+    document.getElementById("sceneBody").textContent=s.body;
+    document.getElementById("metricRow").innerHTML=(s.metrics||[]).map(function(m){
+      var isNum=/[0-9]/.test(m[1]);
+      var lab=m[0]?'<span class="metric-label">'+esc(m[0])+'</span>':'';
+      return '<div class="metric'+(isNum?'':' metric-text')+'">'+lab+'<strong>'+esc(m[1])+'</strong></div>';}).join("");
+    renderField(s);renderFocus(s);renderQuotes(s);}
+  function setStep(i){active=Math.max(0,Math.min(total-1,i));
+    if(active<firstStory)setIntro(active);else setScene(active-firstStory);updateDots();}
+  function move(d){setStep(active+d);}
+
+  stage.addEventListener("click",function(){move(1);});
+  document.addEventListener("keydown",function(e){
+    if(["ArrowRight","ArrowDown","PageDown"," ","Enter"].indexOf(e.key)>=0){e.preventDefault();move(1);}
+    if(["ArrowLeft","ArrowUp","PageUp","Backspace"].indexOf(e.key)>=0){e.preventDefault();move(-1);}
+    if(e.key==="Home"){e.preventDefault();setStep(0);}
+    if(e.key==="End"){e.preventDefault();setStep(total-1);}});
+
+  renderWall();dots();setStep(0);
+}());
+</script>
+</body>
+</html>

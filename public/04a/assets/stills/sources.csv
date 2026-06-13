@@ -1,0 +1,21 @@
+title_tmdb,tmdbId_num,story_group,source_page,image_url,raw_file,width,height
+Army of Darkness,766,audience,https://www.themoviedb.org/movie/766/images/backdrops,https://image.tmdb.org/t/p/original/5RPXs9g0sZ9Woo4pNLxdXdge7tc.jpg,assets/stills/raw/army-of-darkness.jpg,1920,1080
+Batman,268,academy,https://www.themoviedb.org/movie/268/images/backdrops,https://image.tmdb.org/t/p/original/zlsaQEE26TS34ziXAiNIAqa0MLX.jpg,assets/stills/raw/batman.jpg,3840,2160
+Casablanca,289,consensus,https://www.themoviedb.org/movie/289/images/backdrops,https://image.tmdb.org/t/p/original/87wqeMeUeMRLjsE1IWNKJcPlpuC.jpg,assets/stills/raw/casablanca.jpg,3840,2160
+Donnie Darko,141,audience,https://www.themoviedb.org/movie/141/images/backdrops,https://image.tmdb.org/t/p/original/msCHK5Kh1YbdZ0zPJ2nzPUhhSN9.jpg,assets/stills/raw/donnie-darko.jpg,1500,844
+Ghost,251,academy,https://www.themoviedb.org/movie/251/images/backdrops,https://image.tmdb.org/t/p/original/6nLdSON3ErniBZTXWG7WRqs5jGz.jpg,assets/stills/raw/ghost.jpg,1920,1080
+Hot Fuzz,4638,audience,https://www.themoviedb.org/movie/4638/images/backdrops,https://image.tmdb.org/t/p/original/9rMSCFH9zhv1vILpEZQlUJs9iUm.jpg,assets/stills/raw/hot-fuzz.jpg,3840,2160
+Kill Bill: Vol. 1,24,audience,https://www.themoviedb.org/movie/24/images/backdrops,https://image.tmdb.org/t/p/original/iffzIhuLAO38Po6sh1s6ZEVwlNL.jpg,assets/stills/raw/kill-bill-vol-1.jpg,1920,1080
+Office Space,1542,audience,https://www.themoviedb.org/movie/1542/images/backdrops,https://image.tmdb.org/t/p/original/g7o5O6xRWkMiwHXiYMPC690YEL4.jpg,assets/stills/raw/office-space.jpg,3840,2160
+Pulp Fiction,680,consensus,https://www.themoviedb.org/movie/680/images/backdrops,https://image.tmdb.org/t/p/original/suaEOtk1N1sgg2MTM7oZd2cfVp3.jpg,assets/stills/raw/pulp-fiction.jpg,2631,1480
+Reservoir Dogs,500,audience,https://www.themoviedb.org/movie/500/images/backdrops,https://image.tmdb.org/t/p/original/jwt159hXWA9Q5xpBo8hWb3zwLi7.jpg,assets/stills/raw/reservoir-dogs.jpg,1920,1080
+Scarface,111,audience,https://www.themoviedb.org/movie/111/images/backdrops,https://image.tmdb.org/t/p/original/1qM2BYNE11Viby8ImC9LC00DgDr.jpg,assets/stills/raw/scarface.jpg,2400,1350
+Schindler's List,424,consensus,https://www.themoviedb.org/movie/424/images/backdrops,https://image.tmdb.org/t/p/original/zb6fM1CX41D9rF9hdgclu0peUmy.jpg,assets/stills/raw/schindler-s-list.jpg,3840,2160
+Snatch,107,audience,https://www.themoviedb.org/movie/107/images/backdrops,https://image.tmdb.org/t/p/original/gTghF8ardwJ48XLHkiapWk3ZmSo.jpg,assets/stills/raw/snatch.jpg,1920,1080
+The Big Lebowski,115,audience,https://www.themoviedb.org/movie/115/images/backdrops,https://image.tmdb.org/t/p/original/hXsy4XCCHrUk81XoRhcooyWejao.jpg,assets/stills/raw/the-big-lebowski.jpg,3840,2160
+The Godfather,238,consensus,https://www.themoviedb.org/movie/238/images/backdrops,https://image.tmdb.org/t/p/original/tSPT36ZKlP2WVHJLM4cQPLSzv3b.jpg,assets/stills/raw/the-godfather.jpg,3840,2160
+"The Good, the Bad and the Ugly",429,audience,https://www.themoviedb.org/movie/429/images/backdrops,https://image.tmdb.org/t/p/original/Adrip2Jqzw56KeuV2nAxucKMNXA.jpg,assets/stills/raw/the-good-the-bad-and-the-ugly.jpg,3840,2160
+The Shining,694,audience,https://www.themoviedb.org/movie/694/images/backdrops,https://image.tmdb.org/t/p/original/mmd1HnuvAzFc4iuVJcnBrhDNEKr.jpg,assets/stills/raw/the-shining.jpg,3840,2160
+This Is Spinal Tap,11031,audience,https://www.themoviedb.org/movie/11031/images/backdrops,https://image.tmdb.org/t/p/original/a3FaHEGActk76BeCBingyOvEqnm.jpg,assets/stills/raw/this-is-spinal-tap.jpg,1920,1080
+Titanic,597,academy,https://www.themoviedb.org/movie/597/images/backdrops,https://image.tmdb.org/t/p/original/xnHVX37XZEp33hhCbYlQFq7ux1J.jpg,assets/stills/raw/titanic.jpg,3840,2160
+Top Gun,744,academy,https://www.themoviedb.org/movie/744/images/backdrops,https://image.tmdb.org/t/p/original/dBgxEkWe17R0AJDAvAhpeVELQx2.jpg,assets/stills/raw/top-gun.jpg,3840,2160
