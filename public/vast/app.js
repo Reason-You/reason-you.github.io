@@ -996,6 +996,26 @@ function updateStoryDock() {
   action.setAttribute("aria-busy",String(state.storyBusy));
 }
 
+function hideStoryCoach() {
+  const coach=document.getElementById("storyCoach");
+  const dock=document.getElementById("storyDock");
+  const action=document.getElementById("storyAction");
+  if(coach) coach.hidden=true;
+  if(dock) dock.classList.remove("is-coached");
+  if(action) action.removeAttribute("aria-describedby");
+}
+
+function showStoryCoach() {
+  const coach=document.getElementById("storyCoach");
+  const dock=document.getElementById("storyDock");
+  const action=document.getElementById("storyAction");
+  if(!coach||!dock||!action) return;
+  dock.classList.add("is-coached");
+  coach.hidden=false;
+  action.setAttribute("aria-describedby","storyCoachText");
+  action.focus({preventScroll:true});
+}
+
 function mountSelectionSummary() {
   const card=document.getElementById("selectionSummary");
   const slot=document.querySelector(`[data-selection-slot="${state.activeSection}"]`);
@@ -1032,6 +1052,7 @@ function endGuidedNavigation(section) {
 
 async function runStoryAction() {
   if(state.storyBusy) return;
+  hideStoryCoach();
   if(state.storyComplete){
     state.storyResetPending=false;
     await resetExploration({target:"top"});
@@ -1774,7 +1795,12 @@ function bindAnchorNavigation() {
       setActiveSection(id);
       if(link.matches("[data-nav]")) applyChapterDefault(id);
     }
-    scrollToSection(id);
+    scrollToSection(id).then(async()=>{
+      if(link.id==="heroEvidenceCta"){
+        await scrollToSection(id,{updateHash:false,behavior:"auto"});
+        showStoryCoach();
+      }
+    });
   }));
 }
 
@@ -1844,12 +1870,23 @@ async function resetExploration({target="trace",closeEvidence=true}={}) {
   } finally {
     state.storyBusy=false;
     updateStoryDock();
+    showStoryCoach();
   }
 }
 
 function bindControls() {
   bindAnchorNavigation();
   document.getElementById("storyAction").addEventListener("click",runStoryAction);
+  document.getElementById("closeStoryCoach").addEventListener("click",()=>{
+    hideStoryCoach();
+    document.getElementById("storyAction").focus({preventScroll:true});
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!document.getElementById("storyCoach").hidden){
+      hideStoryCoach();
+      document.getElementById("storyAction").focus({preventScroll:true});
+    }
+  });
   document.querySelectorAll(".lens-scale [data-event]").forEach(button=>{
     button.addEventListener("click",()=>navigateToNamedEvent(button.dataset.event));
     ["pointerenter","pointerleave","focus","blur"].forEach(type=>button.addEventListener(type,()=>window.requestAnimationFrame(syncTimelineLabelVisibility)));
