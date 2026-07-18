@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A linked visual analytics investigation of the VAST 2026 MC1 embargo breach.">
+  <link rel="icon" href="data:,">
+  <title>Braided Time Lens — VAST 2026 MC1</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#trace">Skip to investigation</a>
+
+  <header class="workspace-header">
+  <nav class="topbar" aria-label="Primary navigation">
+    <a class="brand" href="#top" aria-label="Braided Time Lens home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>Braided Time Lens</span>
+    </a>
+    <div class="view-accordion" aria-label="Analysis chapters">
+      <a href="#trace" data-nav="trace"><span>Trace</span><small>how control moved</small></a>
+      <a href="#compare" data-nav="compare"><span>Compare</span><small>how behavior changed</small></a>
+      <a href="#anticipate" data-nav="anticipate"><span>Anticipate</span><small>why warnings failed</small></a>
+    </div>
+    <button class="evidence-button" id="openEvidence" type="button" aria-controls="evidencePanel" aria-expanded="false">Evidence</button>
+  </nav>
+
+  <section class="time-lens" id="timeLens" aria-label="Shared nonlinear temporal navigation">
+    <div class="lens-primary">
+      <div class="lens-status">
+        <span>Selected time</span>
+        <strong id="cursorLabel">May 17 · 09:00</strong>
+        <button class="lens-toggle" id="toggleTimeDetail" type="button" aria-controls="timeDetail" aria-expanded="false">Scale</button>
+      </div>
+      <div class="lens-track-wrap" id="lensTrackWrap">
+        <div class="lens-scale density-time-grid" id="lensScale" aria-label="Event-weighted investigation timeline">
+          <div class="scale-band band-daily" aria-hidden="true"></div>
+          <div class="scale-band band-hourly" aria-hidden="true"></div>
+          <div class="scale-band band-minute" aria-hidden="true"></div>
+          <div class="global-cursor" id="globalCursor" aria-hidden="true"></div>
+          <button class="anchor anchor-warning" data-event="warning" data-agent="Judge-Agent" type="button" aria-label="15:08 · Judge restriction"><span>15:08</span></button>
+          <button class="anchor anchor-go" data-event="go" data-agent="Legal-Agent" type="button" aria-label="17:19 · Legal GO based on claimed verbal consent"><span>17:19</span></button>
+          <button class="anchor anchor-breach" data-event="breach" data-agent="Legal-Agent" type="button" aria-label="17:25 · Pre-18:00 personal disclosure"><span>17:25</span></button>
+          <span class="anchor anchor-lift" id="liftMarker" aria-hidden="true"><span>18:00</span></span>
+        </div>
+        <label class="range-label" for="timeRange">Scrub the nonlinear investigation timeline</label>
+        <input id="timeRange" class="time-range" type="range" min="0" max="1000" value="0" aria-describedby="cursorLabel timeScaleNote">
+      </div>
+      <div class="story-dock" id="storyDock" data-section="trace" aria-live="polite">
+        <span id="storyProgress">1 / 8</span>
+        <button id="storyAction" type="button"><strong id="storyActionLabel">15:08 · Restriction</strong><i aria-hidden="true">→</i></button>
+      </div>
+    </div>
+    <div class="lens-detail" id="timeDetail" aria-hidden="true">
+      <div class="lens-detail-inner">
+        <p id="timeScaleNote"><strong>Time key.</strong> Bright line = selected time · amber = restriction · coral = GO · red = disclosure · outer ring = Agent · zigzag = folded interval without recorded evidence.</p>
+      </div>
+    </div>
+  </section>
+  </header>
+
+  <main id="top">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="case-name">VAST Challenge 2026 · Mini-Challenge 1</p>
+        <h1>When compliance stopped controlling the clock.</h1>
+        <p class="hero-finding"><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent" data-event-link="breach" data-section-link="trace">Legal</button> disclosed the merger 35 minutes early.</p>
+        <p class="hero-verdict"><span>Overall verdict</span><strong>Agents intentionally released the merger early. Advisory-only control made the breach possible; no hard publish gate is evidenced.</strong></p>
+        <section class="hero-answers" aria-label="Direct answers to the three MC1 questions">
+          <p>Direct answers to MC1</p>
+          <ol>
+            <li><span>Q1 · What led to the release?</span><strong><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent" data-event-link="warning" data-section-link="trace">Judge</button> restricted disclosure. Execution moved to Side Huddle. <button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent" data-event-link="go" data-section-link="trace">Legal</button> claimed consent, issued GO, and posted at 17:25.</strong></li>
+            <li><span>Q2 · What behavior changed?</span><strong><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent" data-section-link="compare">Legal</button> changed from advising on risk to authorizing and personally publishing the release.</strong></li>
+            <li><span>Q3 · Could it be anticipated?</span><strong>Yes. Earlier deviations repeated, and in the 17:00 round <button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent" data-section-link="anticipate">Judge</button> messages appeared in 0 of 5 active channels.</strong></li>
+          </ol>
+        </section>
+      </div>
+      <div class="hero-time density-time-grid" aria-label="Event-weighted investigation timeline">
+        <div class="time-slab daily-slab">
+          <span>May 17 — June 4</span>
+          <strong>Days</strong>
+          <div class="ticks" aria-hidden="true"></div>
+        </div>
+        <div class="time-slab hourly-slab">
+          <span>June 5</span>
+          <strong>Hours</strong>
+          <div class="ticks" aria-hidden="true"></div>
+        </div>
+        <div class="time-slab minute-slab">
+          <span>17:00 — 18:00</span>
+          <strong>Minutes</strong>
+          <div class="ticks" aria-hidden="true"></div>
+        </div>
+        <svg class="inline-time-graphic" viewBox="0 0 600 180" role="img" aria-label="Nominal control stays level while operational control departs from it">
+          <path d="M12 50 C170 50 288 50 588 50" class="nominal-path"></path>
+          <path d="M12 50 C238 50 320 50 372 57 C432 65 490 92 588 132" class="operational-path"></path>
+          <line x1="512" y1="26" x2="512" y2="150" class="breach-line"></line>
+          <text x="16" y="38">NOMINAL CONTROL</text>
+          <text x="16" y="148">OPERATIONAL CONTROL</text>
+          <text x="520" y="166">17:25</text>
+        </svg>
+        <div class="hero-chart-key" aria-label="Hero chart legend">
+          <span><i class="key-line is-teal"></i><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> control</span>
+          <span><i class="key-line is-coral"></i><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent">Legal</button> execution</span>
+          <span><i class="key-line is-red-dash"></i>Disclosure</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a class="primary-action" href="#trace">See how the evidence proves each answer</a>
+      </div>
+    </header>
+
+    <section class="analysis-view" id="trace" data-section="trace">
+      <aside class="view-copy">
+        <p class="view-index">Question 1 · Release path</p>
+        <h2><button class="agent-chip is-heading" type="button" data-agent-chip="Legal-Agent" data-event-link="breach">Legal</button> issued GO and published before 18:00.</h2>
+        <dl class="direct-answer">
+          <div><dt>Who decided?</dt><dd><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent" data-event-link="warning">Judge</button> restricted disclosure. <button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent" data-event-link="go">Legal</button> later issued GO on claimed consent.</dd></div>
+          <div><dt>Why did it pass?</dt><dd>Execution continued after no recorded <button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent" data-event-link="warning">Judge</button> reply. Nothing in the supplied record shows a hard publish gate stopping the post.</dd></div>
+        </dl>
+        <ol class="answer-sequence" id="traceAnswerSequence" aria-label="Restriction to disclosure sequence">
+          <li data-rail-event="warning" data-agent="Judge-Agent"><time datetime="2046-06-05T15:08:00">15:08</time><span><strong>Restriction</strong><button class="agent-chip" type="button" data-agent-chip="Judge-Agent" data-event-link="warning">Judge</button></span></li>
+          <li data-rail-event="bypass" data-agent="Legal-Agent"><time datetime="2046-06-05T16:06:00">16:06</time><span><strong>Staging</strong><small>Side Huddle</small></span></li>
+          <li data-rail-event="go" data-agent="Legal-Agent"><time datetime="2046-06-05T17:19:00">17:19</time><span><strong>GO</strong><button class="agent-chip" type="button" data-agent-chip="Legal-Agent" data-event-link="go">Legal</button></span></li>
+          <li data-rail-event="breach" data-agent="Legal-Agent"><time datetime="2046-06-05T17:25:00">17:25</time><span><strong>Disclosure</strong><button class="agent-chip" type="button" data-agent-chip="Legal-Agent" data-event-link="breach">Legal</button></span></li>
+        </ol>
+        <details class="challenge-question">
+          <summary>Read the original MC1 question</summary>
+          <p>What were the key events and relationships that led up to the inappropriate release? Visualize the sequence of events. Include elements such as:</p>
+          <ul>
+            <li>Key actions</li>
+            <li>Causal relationships</li>
+            <li>Decision points and actors involved in those decisions</li>
+          </ul>
+          <p>Highlight decisions and system elements that were important to the post making it past the embargo enforcement.</p>
+        </details>
+      </aside>
+      <div class="view-stage">
+        <div class="selection-card-slot" data-selection-slot="trace">
+          <section class="selection-summary" id="selectionSummary" aria-live="polite">
+            <div class="selection-line">
+              <div class="selection-heading"><button class="agent-chip" id="selectionAgentChip" type="button" data-agent-chip="Legal-Agent" hidden>Legal</button><strong id="selectionTitle">Next · 15:08 Restriction</strong></div>
+              <span id="selectionImpact">Use the fixed story action to highlight the next key node and reveal its causal role.</span>
+            </div>
+            <button type="button" id="inspectSelection" hidden>Inspect source</button>
+          </section>
+        </div>
+        <div class="stage-toolbar">
+          <div class="filter-group choice-bar" id="chainFilters" aria-label="Causal chain filters">
+            <span class="choice-label" id="pathSummary">Explore paths</span>
+            <div class="path-menu" role="group" aria-labelledby="pathSummary">
+              <button class="is-active" type="button" data-chain="core" aria-pressed="true">Core chain</button>
+              <button type="button" data-chain="information" aria-pressed="false">Information</button>
+              <button type="button" data-chain="pressure" aria-pressed="false">Pressure</button>
+              <button type="button" data-chain="supervision" aria-pressed="false">Supervision</button>
+              <button type="button" data-chain="all" aria-pressed="false">All evidence</button>
+            </div>
+          </div>
+          <div class="encoding-key trace-key" aria-label="Trace mark encoding">
+            <div class="encoding-key-group"><b>Lines</b><span><i class="key-line is-teal"></i>nominal</span><span><i class="key-line is-coral"></i>operational</span><span><i class="key-line is-analysis"></i>analytical relation</span></div>
+            <div class="encoding-key-group"><b>Events</b><span><i class="key-shape is-diamond"></i>decision</span><span><i class="key-shape is-square"></i>staging</span><span><i class="key-shape is-circle"></i>event</span></div>
+            <details class="agent-key-disclosure">
+              <summary><i class="encoding-agent"></i>Agent ring · 7 identities</summary>
+              <div class="agent-key-list">
+                <button class="agent-key-item" type="button" data-agent="Judge-Agent" data-agent-chip="Judge-Agent"><i></i>Judge</button>
+                <button class="agent-key-item" type="button" data-agent="Legal-Agent" data-agent-chip="Legal-Agent"><i></i>Legal</button>
+                <button class="agent-key-item" type="button" data-agent="Social-Manager-Agent" data-agent-chip="Social-Manager-Agent"><i></i>Social</button>
+                <button class="agent-key-item" type="button" data-agent="PR-Agent" data-agent-chip="PR-Agent"><i></i>PR</button>
+                <button class="agent-key-item" type="button" data-agent="PR-Intern-Agent" data-agent-chip="PR-Intern-Agent"><i></i>PR Intern</button>
+                <button class="agent-key-item" type="button" data-agent="Intern-Agent" data-agent-chip="Intern-Agent"><i></i>Intern</button>
+                <button class="agent-key-item" type="button" data-agent="Platform-Trust-Agent" data-agent-chip="Platform-Trust-Agent"><i></i>Trust</button>
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="chart-shell control-shell">
+          <svg id="controlChart" role="group" aria-label="Interactive causal paths and nominal versus operational control on a variable-resolution timeline"></svg>
+          <div class="chart-tooltip" id="controlTooltip" role="status"></div>
+        </div>
+      </div>
+      <div class="evidence-slot" data-evidence-slot="trace">
+        <section class="evidence-panel" id="evidencePanel" aria-labelledby="evidenceId" tabindex="-1" hidden>
+          <header class="evidence-head">
+            <div><span>Evidence in context</span><strong id="evidenceId">Select an event</strong></div>
+            <button type="button" id="closeEvidence" aria-label="Close inline evidence">Close</button>
+          </header>
+          <div class="evidence-body" id="evidenceBody">
+            <p class="empty-evidence">Select a node, warning, or timeline anchor to inspect its evidence trail.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="analysis-view" id="compare" data-section="compare">
+      <aside class="view-copy">
+        <p class="view-index">Question 2 · Behavior shift</p>
+        <h2><button class="agent-chip is-heading" type="button" data-agent-chip="Legal-Agent">Legal</button> shifted from risk advice to GO and publishing.</h2>
+        <dl class="direct-answer">
+          <div><dt>Before crisis</dt><dd><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent">Legal</button> mainly interpreted legal risk and protected the embargo boundary.</dd></div>
+          <div><dt>During release</dt><dd><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent" data-event-link="go">Legal</button> claimed consent, issued GO, then published through personal and anonymous channels.</dd></div>
+          <div><dt>Main difference</dt><dd><button class="agent-chip is-compact" type="button" data-agent-chip="Legal-Agent">Legal</button> moved from advice to execution and used channels with no observed <button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> messages.</dd></div>
+        </dl>
+        <details class="challenge-question">
+          <summary>Read the original MC1 question</summary>
+          <p>The evasion of the embargo was a new behavior. Provide visual analytics that discover and illustrate the typical behavior of systems/agents/people involved. How does the behavior that led to the release compare to the prior behaviors?</p>
+        </details>
+        <div class="role-shift-slot role-shift-rail-slot" id="roleShiftRailSlot">
+          <div class="role-shift" id="roleShift"></div>
+        </div>
+      </aside>
+      <div class="view-stage">
+        <div class="selection-card-slot" data-selection-slot="compare"></div>
+        <div class="stage-toolbar behavior-toolbar">
+          <div class="metric-disclosure" id="metricDisclosure">
+            <div class="metric-toggle" id="behaviorMode" aria-label="Behavior comparison measure">
+              <button class="is-active" type="button" data-mode="rate" aria-pressed="true">Per decision round</button>
+              <button type="button" data-mode="count" aria-pressed="false">Total messages</button>
+            </div>
+          </div>
+          <div class="encoding-key" aria-label="Behavior chart color legend">
+            <span><i class="key-bar is-teal"></i>baseline</span>
+            <span><i class="key-dot is-teal"></i><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> present</span>
+            <span><i class="key-dot is-amber"></i>participant-dependent</span>
+            <span><i class="key-dot is-coral"></i>no observed <button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> message</span>
+          </div>
+        </div>
+        <div class="agent-selector-row">
+          <div class="agent-rail" id="agentRail" aria-label="Agent selection"></div>
+          <button class="secondary-control" id="toggleAgents" type="button" aria-controls="agentRail" aria-expanded="false">Other agents · 5</button>
+          <button class="secondary-control" id="toggleChannels" type="button" aria-pressed="false">All channels</button>
+        </div>
+        <div class="behavior-layout">
+          <div class="role-shift-slot role-shift-inline-slot" id="roleShiftInlineSlot"></div>
+          <div class="chart-shell behavior-shell">
+            <svg id="behaviorChart" role="group" aria-label="Interactive baseline and crisis messages per decision round by selected agent and channel"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="evidence-slot" data-evidence-slot="compare"></div>
+    </section>
+
+    <section class="analysis-view" id="anticipate" data-section="anticipate">
+      <aside class="view-copy">
+        <p class="view-index">Question 3 · Leading indicators</p>
+        <h2>Yes. Warning signs appeared before the release.</h2>
+        <dl class="direct-answer">
+          <div><dt>What warned us?</dt><dd>May 22: off-record coordination. May 29: a personal merger hint. June 5: restricted knowledge repeated.</dd></div>
+          <div><dt>Why no block?</dt><dd>Earlier deviations were treated as contained people problems. At 17:00, <button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> messages appeared in 0 of 5 active channels while execution continued.</dd></div>
+          <div><dt>System limit</dt><dd>Nothing in the supplied record shows a hard publish gate stopping the post.</dd></div>
+        </dl>
+        <details class="challenge-question">
+          <summary>Read the original MC1 question</summary>
+          <p>Were there leading indicators that such a release was possible?</p>
+          <p>Are there prior occasions where agent's actual behaviors differ from their expected behavior? When? Which behaviors were observed?</p>
+          <p>Were there other occasions where the agent system exhibited behaviors like those that led to the release? When? Which behaviors were observed?</p>
+          <p>Why didn't the prior occasions result in noticeable action?</p>
+        </details>
+      </aside>
+      <div class="view-stage">
+        <div class="selection-card-slot" data-selection-slot="anticipate"></div>
+        <div class="encoding-key risk-key" aria-label="Risk chart color and shape legend">
+          <span><i class="key-line is-teal"></i>restriction held</span>
+          <span><i class="key-line is-amber-dash"></i>unenforced</span>
+          <span><i class="key-line is-coral"></i>execution</span>
+          <span><i class="key-shape is-diamond"></i>decision</span>
+          <span><i class="key-shape is-square"></i>staging</span>
+          <span><i class="key-shape is-circle"></i>disclosure</span>
+          <span><i class="encoding-agent"></i>Agent ring</span>
+        </div>
+        <div class="chart-shell risk-shell">
+          <svg id="riskChart" role="group" aria-label="Interactive view from the 15:08 restriction through Side Huddle staging, Legal's GO based on claimed verbal consent, and pre-18:00 disclosure"></svg>
+          <div class="chart-tooltip" id="riskTooltip" role="status"></div>
+        </div>
+        <div class="proof-strip" aria-label="Key evidence supporting the anticipation finding">
+          <span><b><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> coverage</b><strong>0 / 5 active channels</strong></span>
+          <span><b>Earlier deviations</b><strong>3 selected precursors</strong></span>
+          <span><b>Public-term burst</b><strong>17:00 · 34 / 18:00 · 68</strong></span>
+        </div>
+        <section class="q3-supporting" id="q3Supporting" aria-labelledby="q3SupportTitle">
+          <div class="q3-support-head">
+            <div><strong id="q3SupportTitle">Supporting evidence</strong><span>Open one focused view at a time.</span></div>
+            <div class="q3-support-choices" role="group" aria-label="Supporting evidence views">
+              <button type="button" aria-pressed="false" aria-controls="controlFailurePanel" data-q3-panel="controlFailurePanel"><span>Control failure</span><strong>Precursors · 0/5 coverage</strong></button>
+              <button type="button" aria-pressed="false" aria-controls="outcomePanel" data-q3-panel="outcomePanel"><span>Term burst</span><strong>34 + 68 = 102</strong></button>
+            </div>
+          </div>
+          <div class="q3-support-panel" id="controlFailurePanel" hidden>
+            <div class="precursor-flow" id="precursorFlow"></div>
+            <div class="visibility-matrix" id="visibilityMatrix" aria-label="Channel review-state matrix"></div>
+          </div>
+          <div class="q3-support-panel outcome-panel" id="outcomePanel" hidden>
+            <div class="encoding-key outcome-key" aria-label="Outcome chart color legend">
+              <span><i class="key-line is-coral"></i>sensitive terms</span>
+              <span><i class="key-line is-amber"></i><button class="agent-chip is-compact" type="button" data-agent-chip="Judge-Agent">Judge</button> activity</span>
+              <span><i class="key-line is-red-dash"></i>disclosure</span>
+            </div>
+            <div class="chart-shell outcome-shell">
+              <svg id="outcomeChart" role="group" aria-label="Interactive round aggregates: 34 sensitive terms during the 17:00 round and 68 during the 18:00 round, totaling 102; Judge messages appeared in zero of five active channels in each round"></svg>
+              <div class="chart-tooltip" id="outcomeTooltip" role="status"></div>
+            </div>
+          </div>
+        </section>
+        <details class="methods-inline">
+          <summary>Methods &amp; provenance</summary>
+          <dl class="method-grid" id="metricDefinitions"></dl>
+          <div class="method-utilities">
+            <div>
+              <strong>Data &amp; provenance</strong>
+              <p>Sources: Q1 causal chain, behavior-shift analysis, Q3 channel-visibility analysis, and MC1 message records.</p>
+              <p>Authors: You Li · Tongyu Wu · Xinhang Xie</p>
+            </div>
+            <div class="method-actions">
+              <button class="secondary-control" id="resetExploration" type="button">Reset investigation</button>
+              <a href="https://github.com/Reason-You/vast26_mc1_fduvis_you_hang_yu/tree/main/original_team_work" class="archive-link">Archived team work</a>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="evidence-slot" data-evidence-slot="anticipate"></div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
