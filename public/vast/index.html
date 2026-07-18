@@ -157,10 +157,12 @@
             </div>
           </div>
           <div class="encoding-key trace-key" aria-label="Trace mark encoding">
-            <div class="encoding-key-group"><b>Lines</b><span><i class="key-line is-teal"></i>nominal</span><span><i class="key-line is-coral"></i>operational</span><span><i class="key-line is-analysis"></i>analytical relation</span></div>
-            <div class="encoding-key-group"><b>Events</b><span><i class="key-shape is-diamond"></i>decision</span><span><i class="key-shape is-square"></i>staging</span><span><i class="key-shape is-circle"></i>event</span></div>
-            <details class="agent-key-disclosure">
-              <summary><i class="encoding-agent"></i>Agent ring · 7 identities</summary>
+            <div class="trace-key-row trace-key-grammar">
+              <div class="encoding-key-group"><b>Lines</b><span><i class="key-line is-teal"></i>nominal</span><span><i class="key-line is-coral"></i>operational</span><span><i class="key-line is-analysis"></i>analytical relation</span></div>
+              <div class="encoding-key-group"><b>Events</b><span><i class="key-shape is-diamond"></i>decision</span><span><i class="key-shape is-square"></i>staging</span><span><i class="key-shape is-circle"></i>event</span></div>
+            </div>
+            <div class="trace-key-row agent-key-row" role="group" aria-label="Agent identities; chart node ring colors match these agents">
+              <b class="agent-key-heading"><i class="encoding-agent"></i>Agents</b>
               <div class="agent-key-list">
                 <button class="agent-key-item" type="button" data-agent="Judge-Agent" data-agent-chip="Judge-Agent"><i></i>Judge</button>
                 <button class="agent-key-item" type="button" data-agent="Legal-Agent" data-agent-chip="Legal-Agent"><i></i>Legal</button>
@@ -170,7 +172,7 @@
                 <button class="agent-key-item" type="button" data-agent="Intern-Agent" data-agent-chip="Intern-Agent"><i></i>Intern</button>
                 <button class="agent-key-item" type="button" data-agent="Platform-Trust-Agent" data-agent-chip="Platform-Trust-Agent"><i></i>Trust</button>
               </div>
-            </details>
+            </div>
           </div>
         </div>
         <div class="chart-shell control-shell">
@@ -311,7 +313,7 @@
             </div>
             <div class="method-actions">
               <button class="secondary-control" id="resetExploration" type="button">Reset investigation</button>
-              <a href="https://github.com/Reason-You/vast26_mc1_fduvis_you_hang_yu/tree/main/original_team_work" class="archive-link">Archived team work</a>
+              <a href="../original_team_work/" class="archive-link">Archived team work</a>
             </div>
           </div>
         </details>
