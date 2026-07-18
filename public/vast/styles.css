@@ -332,6 +332,58 @@ h1 { max-inline-size: 15ch; margin: 0; font-size: 4.75rem; line-height: 0.96; le
 .story-dock button:hover { background: color-mix(in srgb, var(--dock-accent) 17%, transparent); }
 .story-dock button:disabled { cursor: progress; opacity: 0.68; }
 .story-dock button:focus-visible { outline-color: var(--dock-accent); outline-offset: -0.1875rem; }
+.story-dock.is-coached {
+  background: color-mix(in srgb, var(--focus) 9%, transparent);
+  box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--focus) 72%, transparent);
+  animation: story-coach-pulse 1.35s ease-out 3;
+}
+.story-coach {
+  position: fixed;
+  z-index: var(--z-overlay);
+  inset-block-start: calc(var(--sticky-offset) + var(--space-sm));
+  inset-inline-end: max(var(--space-lg), calc((100% - 96rem) / 2));
+  inline-size: min(22rem, calc(100% - 1.5rem));
+  padding: var(--space-sm) 3.5rem var(--space-sm) var(--space-md);
+  color: var(--muted);
+  background: #16212b;
+  border: 0.0625rem solid color-mix(in srgb, var(--focus) 58%, var(--line));
+  border-radius: var(--radius-sm);
+}
+.story-coach::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -0.4rem;
+  inset-inline-end: 3.25rem;
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  background: #16212b;
+  border-block-start: 0.0625rem solid color-mix(in srgb, var(--focus) 58%, var(--line));
+  border-inline-start: 0.0625rem solid color-mix(in srgb, var(--focus) 58%, var(--line));
+  transform: rotate(45deg);
+}
+.story-coach strong { display: block; color: var(--text); font-size: 0.82rem; }
+.story-coach p { margin: var(--space-2xs) 0 0; font-size: 0.75rem; line-height: 1.45; }
+.story-coach p b { color: var(--focus); font-weight: 700; }
+.story-coach > button {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-xs);
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0;
+  color: var(--muted);
+  font-size: 1.2rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.story-coach > button:hover { color: var(--text); background: color-mix(in srgb, var(--focus) 10%, transparent); }
+@keyframes story-coach-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0.125rem color-mix(in srgb, var(--focus) 58%, transparent); }
+  45% { box-shadow: inset 0 0 0 0.125rem var(--focus), 0 0 0 0.3rem color-mix(in srgb, var(--focus) 16%, transparent); }
+}
 .lens-detail {
   position: static;
   max-block-size: 0;
@@ -838,6 +890,8 @@ h1 { max-inline-size: 15ch; margin: 0; font-size: 4.75rem; line-height: 0.96; le
   .story-dock { grid-template-columns: 1fr; padding-inline-start: 0; }
   .story-dock > span { display: none; }
   .story-dock button { border-inline-start: 0; }
+  .story-coach { inset-block-start: calc(var(--sticky-offset) + var(--space-xs)); inset-inline: auto var(--space-sm); }
+  .story-coach::before { inset-inline-end: 2.25rem; }
   .lens-detail-inner { padding-inline: var(--space-sm); }
   .lens-detail-grid { grid-template-columns: 1fr; }
   .lens-detail-grid span { border-inline-end: 0; border-block-end: 0.0625rem solid var(--line); }
