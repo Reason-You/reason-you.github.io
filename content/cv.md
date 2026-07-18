@@ -1,7 +1,6 @@
 ## Contact
 
-- Email: youli@alu.fudan.edu.cn
-- Email: youli26@m.fudan.edu.cn
+- Email: [youli@alu.fudan.edu.cn](mailto:youli@alu.fudan.edu.cn), [youli26@m.fudan.edu.cn](mailto:youli26@m.fudan.edu.cn)
 
 ## Education
 
