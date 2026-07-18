@@ -588,21 +588,26 @@ function chainOpacity(event) {
 
 function drawControl(revealSelection=false) {
   const svg=document.getElementById("controlChart");
-  const isCore=true;
-  svg.parentElement.classList.add("is-core");
+  const isCore=state.activeChain==="core";
+  svg.parentElement.classList.remove("is-core");
   const {width,height}=chartSize(svg);
-  const compactLabels=width<780;
-  const margin={left:clamp(width*.16,118,158),right:width*.035,top:height*.06,bottom:height*.10};
+  const mobileChart=window.matchMedia("(max-width: 40rem)").matches;
+  const compactLabels=mobileChart||width<780;
+  const margin=mobileChart
+    ? {left:clamp(width*.14,96,108),right:24,top:height*.06,bottom:height*.10}
+    : {left:clamp(width*.16,118,158),right:width*.035,top:height*.06,bottom:height*.10};
   const plotW=width-margin.left-margin.right;
-  const laneY={nominal:height*.18,operational:height*.48,information:height*.78,pressure:height*.78,supervision:height*.78};
+  const laneY={nominal:height*.10,operational:height*.27,information:height*.50,pressure:height*.67,supervision:height*.83};
+  const laneOrder=["nominal","operational","information","pressure","supervision"];
+  const labelRequests=[];
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.innerHTML="";
 
   drawTimeStructure(svg,margin.left,plotW,margin.top,height-margin.bottom,height-height*.028);
 
-  const laneLabels=[["nominal","NOMINAL AUTHORITY"],["operational","OPERATIONAL AUTHORITY"],["information","SUPPORTING SIGNALS"]];
+  const laneLabels=[["nominal","NOMINAL"],["operational","OPERATIONAL"],["information","INFORMATION"],["pressure","PRESSURE"],["supervision","SUPERVISION"]];
   laneLabels.forEach(([id,label])=>{
-    svg.appendChild(svgEl("text",{x:width*.025,y:laneY[id]+4,fill:id==="nominal"?"var(--teal)":id==="operational"?"var(--coral)":"var(--muted)","font-size":id==="nominal"||id==="operational"?"10":"12","font-weight":"650","letter-spacing":id==="nominal"||id==="operational"?"1.1":"0"},label));
+    svg.appendChild(svgEl("text",{x:margin.left-12,y:laneY[id]+4,"text-anchor":"end",fill:id==="nominal"?"var(--teal)":id==="operational"?"var(--coral)":"var(--muted)","font-size":compactLabels?"9":id==="nominal"||id==="operational"?"10":"10.5","font-weight":"650","letter-spacing":id==="nominal"||id==="operational"?"1.1":".35"},label));
     svg.appendChild(svgEl("line",{x1:margin.left,y1:laneY[id],x2:width-margin.right,y2:laneY[id],stroke:"var(--line)"}));
   });
 
@@ -632,6 +637,7 @@ function drawControl(revealSelection=false) {
       const group=svgEl("g",{tabindex:"-1",role:"button","data-event":event.id,"aria-label":`${formatTime(event.timestamp)} ${event.label}; evidence precision: ${precision.certainty}`,opacity:String(focusOpacity(event)*chainOpacity(event)),class:`control-node ${critical?"is-critical-source":""} ${state.selectedEvent===event.id?"is-selected":""}`});
       const decision=["warning","go"].includes(event.id);
       const system=["bypass","staged"].includes(event.id);
+      if(mobileChart) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"22",fill:"transparent",stroke:"transparent","pointer-events":"all"}));
       const mark=decision
         ? svgEl("rect",{x:x-5.5,y:y-5.5,width:11,height:11,transform:`rotate(45 ${x} ${y})`,fill:color,stroke:"var(--bg)","stroke-width":"2"})
         : system
@@ -642,13 +648,13 @@ function drawControl(revealSelection=false) {
       if(!precision.isExact) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"9",fill:"none",stroke:"var(--line-strong)","stroke-width":"1","stroke-dasharray":"2 3"}));
       if(critical) {
         const label={
-          warning:{text:"15:08 · JUDGE CEILING",dx:12,dy:-14,anchor:"start"},
-          bypass:{text:"16:06 · SIDE HUDDLE",dx:9,dy:24,anchor:"start"},
-          invoke:{text:compactLabels?"17:01 · ACCELERATE":"17:01 · LEGAL ACCELERATES",dx:-10,dy:compactLabels?-30:-16,anchor:"end"},
-          go:{text:"17:19 · LEGAL GO",dx:-10,dy:43,anchor:"end"},
-          breach:{text:"17:25 · PERSONAL POST",dx:-10,dy:compactLabels?-56:-36,anchor:"end"}
+          warning:{text:"15:08 · JUDGE CEILING",preferredDy:-16,direction:"start"},
+          bypass:{text:"16:06 · SIDE HUDDLE",preferredDy:24,direction:"start"},
+          invoke:{text:compactLabels?"17:01 · ACCELERATE":"17:01 · LEGAL ACCELERATES",preferredDy:-16,direction:"end"},
+          go:{text:"17:19 · LEGAL GO",preferredDy:24,direction:"end"},
+          breach:{text:"17:25 · PERSONAL POST",preferredDy:-34,direction:"end"}
         }[event.id];
-        group.appendChild(svgEl("text",{x:x+label.dx,y:y+label.dy,"text-anchor":label.anchor,fill:"var(--text)","font-size":"11","font-weight":"700"},label.text));
+        labelRequests.push({event,x,lane:event.id==="warning"?"nominal":"operational",...label,priority:state.selectedEvent===event.id?130:110,fill:"var(--text)",fontSize:compactLabels?10:11,fontWeight:700,opacity:focusOpacity(event)*chainOpacity(event)});
       }
       if(state.selectedEvent===event.id) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"14",fill:"none",stroke:"var(--focus)","stroke-width":"2.25",class:"selection-halo"}));
       svg.appendChild(group);
@@ -678,22 +684,89 @@ function drawControl(revealSelection=false) {
     group.appendChild(shape);
     appendAgentIdentity(group,x,y,event.agent,event.type==="breach"?11:9);
     if(!precision.isExact) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"10",fill:"none",stroke:"var(--line-strong)","stroke-width":"1","stroke-dasharray":"2 3"}));
-    group.appendChild(svgEl("circle",{cx:x,cy:y,r:state.selectedEvent===event.id?14:12,fill:"transparent",stroke:state.selectedEvent===event.id?"var(--focus)":"transparent","stroke-width":state.selectedEvent===event.id?"2.25":"1.5",class:state.selectedEvent===event.id?"selection-halo":""}));
+    const hitCircleAttrs={cx:x,cy:y,r:mobileChart?22:state.selectedEvent===event.id?14:12,fill:"transparent",stroke:state.selectedEvent===event.id?"var(--focus)":"transparent","stroke-width":state.selectedEvent===event.id?"2.25":"1.5",class:state.selectedEvent===event.id?"selection-halo":""};
+    if(mobileChart) hitCircleAttrs["pointer-events"]="all";
+    group.appendChild(svgEl("circle",hitCircleAttrs));
     const important=CORE_EVENT_SET.has(event.id)||state.selectedEvent===event.id||(state.activeChain!=="core"&&eventMatchesChain(event)&&["elena","stock","absent"].includes(event.id));
     if(important){
       const coreLabels={
-        staged:{text:"16:26 · NAMED DRAFT READY",anchor:"start",dx:9,dy:-15},
-        saltwind:{text:"17:00 · MERGER EXCLUSIVE",anchor:"start",dx:9,dy:22}
+        staged:{text:"16:26 · NAMED DRAFT READY",preferredDy:-16,direction:"start"},
+        saltwind:{text:"17:00 · MERGER EXCLUSIVE",preferredDy:24,direction:"start"}
       };
       const coreLabel=isCore?coreLabels[event.id]:null;
-      const anchor=coreLabel?.anchor||(timeX(event.timestamp)>.9?"end":"start");
-      const text=coreLabel?.text||(event.label.length>34?`${event.label.slice(0,33)}…`:event.label);
-      group.appendChild(svgEl("text",{x:x+(coreLabel?.dx??(anchor==="end"?-10:10)),y:y+(coreLabel?.dy??-(index%2?16:12)),"text-anchor":anchor,fill:"var(--muted)","font-size":"10"},text));
+      labelRequests.push({
+        event,x,lane:event.lane,
+        text:coreLabel?.text||event.label,
+        preferredDy:coreLabel?.preferredDy??(index%2?24:-16),
+        direction:coreLabel?.direction||(timeX(event.timestamp)>.82?"end":"start"),
+        priority:state.selectedEvent===event.id?130:CORE_EVENT_SET.has(event.id)?90:60,
+        fill:state.selectedEvent===event.id?"var(--text)":"var(--muted)",fontSize:10,fontWeight:state.selectedEvent===event.id?650:500,
+        opacity:focusOpacity(event)*chainOpacity(event)
+      });
     }
     svg.appendChild(group);
   });
 
   drawSharedCursor(svg,margin.left+(state.cursor/100)*plotW,margin.top,height-margin.bottom);
+  const labelLayer=svgEl("g",{class:"control-label-layer","pointer-events":"none"});
+  svg.appendChild(labelLayer);
+  const measureLabel=(text,fontSize,fontWeight)=>{
+    const probe=svgEl("text",{x:"-9999",y:"-9999",visibility:"hidden","font-size":fontSize,"font-weight":fontWeight},text);
+    labelLayer.appendChild(probe);
+    const measured=probe.getComputedTextLength();
+    probe.remove();
+    return measured;
+  };
+  const fitLabel=(text,maxWidth,fontSize,fontWeight)=>{
+    if(measureLabel(text,fontSize,fontWeight)<=maxWidth) return text;
+    let low=1,high=text.length;
+    while(low<high){
+      const middle=Math.ceil((low+high)/2);
+      if(measureLabel(`${text.slice(0,middle)}…`,fontSize,fontWeight)<=maxWidth) low=middle;
+      else high=middle-1;
+    }
+    return `${text.slice(0,Math.max(1,low)).trimEnd()}…`;
+  };
+  const occupied=new Map();
+  const laneBand=(lane)=>{
+    const index=laneOrder.indexOf(lane);
+    const center=laneY[lane];
+    const top=index===0?margin.top:(laneY[laneOrder[index-1]]+center)/2;
+    const bottom=index===laneOrder.length-1?height-margin.bottom-8:(center+laneY[laneOrder[index+1]])/2;
+    return {top:top+4,bottom:bottom-4};
+  };
+  labelRequests.sort((a,b)=>b.priority-a.priority).forEach(request=>{
+    const fontSize=request.fontSize||10;
+    const fontWeight=request.fontWeight||500;
+    const maxWidth=clamp(plotW*.25,compactLabels?112:136,compactLabels?156:210);
+    const text=fitLabel(request.text,maxWidth,fontSize,fontWeight);
+    const textWidth=measureLabel(text,fontSize,fontWeight);
+    const safeLeft=margin.left+7,safeRight=width-margin.right-7;
+    const desiredLeft=request.direction==="end"?request.x-10-textWidth:request.x+10;
+    const left=clamp(desiredLeft,safeLeft,safeRight-textWidth);
+    const band=laneBand(request.lane);
+    const fallbackSlots=[-16,24,-34,42,-52,60];
+    const slotOffsets=[request.preferredDy,...fallbackSlots.filter(offset=>offset!==request.preferredDy)];
+    let selectedSlot=null;
+    for(const offset of slotOffsets){
+      const baseline=laneY[request.lane]+offset;
+      const textTop=baseline-fontSize*.9,textBottom=baseline+fontSize*.25;
+      if(textTop<band.top||textBottom>band.bottom) continue;
+      const slotKey=`${request.lane}:${Math.round(baseline)}`;
+      const intervals=occupied.get(slotKey)||[];
+      const interval={left:left-5,right:left+textWidth+5};
+      if(intervals.some(item=>item.right>interval.left&&interval.right>item.left)) continue;
+      intervals.push(interval);
+      occupied.set(slotKey,intervals);
+      selectedSlot=baseline;
+      break;
+    }
+    if(selectedSlot===null) return;
+    labelLayer.appendChild(svgEl("text",{
+      x:left,y:selectedSlot,fill:request.fill,"font-size":fontSize,"font-weight":fontWeight,opacity:String(request.opacity),"data-label-event":request.event.id,
+      stroke:"var(--bg-raised)","stroke-width":"4.5","stroke-linejoin":"round","paint-order":"stroke fill"
+    },text));
+  });
   bindEventNodes(svg,document.getElementById("controlTooltip"));
   applyRoving(svg,"[data-event]",state.selectedEvent);
   if(revealSelection) revealChartPosition(svg,margin.left+timeX(state.selectedTime)*plotW);
@@ -915,9 +988,11 @@ function updateStoryDock() {
   const step=STORY_STEPS[Math.min(state.storyStep,STORY_STEPS.length-1)];
   dock.dataset.section=state.storyComplete?"anticipate":step.section;
   document.getElementById("storyProgress").textContent=state.storyComplete?"8 / 8":`${state.storyStep+1} / ${STORY_STEPS.length}`;
-  document.getElementById("storyActionLabel").textContent=state.storyComplete?"Final source open":step.label;
+  document.getElementById("storyActionLabel").textContent=state.storyComplete?"Restart investigation":step.label;
   const action=document.getElementById("storyAction");
-  action.disabled=state.storyBusy||state.storyComplete;
+  action.disabled=state.storyBusy;
+  action.setAttribute("aria-label",state.storyComplete?"Restart investigation from the beginning":`Next step: ${step.label}`);
+  action.querySelector("i").textContent=state.storyComplete?"↺":"→";
   action.setAttribute("aria-busy",String(state.storyBusy));
 }
 
@@ -957,7 +1032,11 @@ function endGuidedNavigation(section) {
 
 async function runStoryAction() {
   if(state.storyBusy) return;
-  if(state.storyComplete) return;
+  if(state.storyComplete){
+    state.storyResetPending=false;
+    await resetExploration({target:"top"});
+    return;
+  }
   state.storyBusy=true;
   updateStoryDock();
   const stepIndex=state.storyStep;
@@ -1044,7 +1123,7 @@ function closeQ3Panels() {
 }
 
 function closeLargeDetails(section) {
-  section?.querySelectorAll(".challenge-question[open], .agent-key-disclosure[open], .methods-inline[open]").forEach(detail=>{detail.open=false;});
+  section?.querySelectorAll(".challenge-question[open], .methods-inline[open]").forEach(detail=>{detail.open=false;});
   if(section?.id==="anticipate") closeQ3Panels();
 }
 
@@ -1170,6 +1249,7 @@ function updateSummary() {
     inspect.hidden=true;
   }
   document.querySelectorAll("[data-event]").forEach(node=>node.classList.toggle("is-selected",node.dataset.event===state.selectedEvent));
+  syncTimelineLabelVisibility();
   document.querySelectorAll("[data-precursor-event]").forEach(node=>{
     const selected=node.dataset.precursorEvent===state.selectedEvent;
     node.classList.toggle("is-selected",selected);
@@ -1358,6 +1438,25 @@ function syncTimelineAnchors() {
   });
   const lift=eventById("lift");
   document.getElementById("liftMarker").style.setProperty("--x",`${(timeX(lift.timestamp)*100).toFixed(3)}%`);
+  window.requestAnimationFrame(syncTimelineLabelVisibility);
+}
+
+function syncTimelineLabelVisibility() {
+  const lens=document.getElementById("lensScale");
+  if(!lens) return;
+  const anchors=[...lens.querySelectorAll(".anchor[data-event]")];
+  const focused=anchors.find(anchor=>anchor===document.activeElement&&anchor.matches(":focus-visible"));
+  const hovered=anchors.find(anchor=>anchor.matches(":hover"));
+  const selected=anchors.find(anchor=>anchor.classList.contains("is-selected"));
+  const visibleAnchor=focused||hovered||selected||null;
+  anchors.forEach(anchor=>anchor.classList.toggle("is-label-visible",anchor===visibleAnchor));
+
+  const labelRect=visibleAnchor?.querySelector("span")?.getBoundingClientRect();
+  lens.querySelectorAll(".scale-tick").forEach(tick=>{
+    const tickRect=tick.getBoundingClientRect();
+    const overlaps=Boolean(labelRect&&tickRect.width&&labelRect.right+4>=tickRect.left&&tickRect.right+4>=labelRect.left);
+    tick.classList.toggle("is-label-obscured",overlaps);
+  });
 }
 
 function syncTimeFurniture() {
@@ -1374,7 +1473,8 @@ function syncTimeFurniture() {
   lens.querySelectorAll(".scale-tick, .scale-break").forEach(element=>element.remove());
   TIME_AXIS_TICKS.forEach(([timestamp,label],index)=>{
     const tick=document.createElement("span");
-    tick.className=`scale-tick${index===0?" is-first":index===TIME_AXIS_TICKS.length-1?" is-last":""}`;
+    const mobileSecondary=index===1||index===3;
+    tick.className=`scale-tick${index===0?" is-first":index===TIME_AXIS_TICKS.length-1?" is-last":""}${mobileSecondary?" is-mobile-secondary":""}`;
     tick.style.setProperty("--x",`${(timeX(timestamp)*100).toFixed(3)}%`);
     tick.textContent=label;
     tick.setAttribute("aria-hidden","true");
@@ -1388,6 +1488,7 @@ function syncTimeFurniture() {
     fold.appendChild(svgEl("path",{d:"M 0 6 L 5 6 L 9 2 L 13 10 L 17 6 L 24 6"}));
     lens.appendChild(fold);
   });
+  window.requestAnimationFrame(syncTimelineLabelVisibility);
 }
 
 function syncTimeDetail() {
@@ -1405,7 +1506,7 @@ function syncTimeDetail() {
 function syncExpansionState() {
   let expanded=timeDetailPinned;
   document.querySelectorAll(".analysis-view").forEach(section=>{
-    const disclosureOpen=Boolean(section.querySelector(".challenge-question[open], .agent-key-disclosure[open], .methods-inline[open], .q3-support-panel:not([hidden])"));
+    const disclosureOpen=Boolean(section.querySelector(".challenge-question[open], .methods-inline[open], .q3-support-panel:not([hidden])"));
     const evidenceOpen=state.evidenceOpen&&state.evidenceSection===section.id;
     const sectionExpanded=disclosureOpen||evidenceOpen;
     section.classList.toggle("has-open-detail",sectionExpanded);
@@ -1713,27 +1814,46 @@ async function navigateToAnswerSelection(trigger) {
 
 async function resetExploration({target="trace",closeEvidence=true}={}) {
   const initialCursor=timeX(events[0].timestamp)*100;
+  state.storyBusy=true;
+  updateStoryDock();
   window.clearTimeout(guidedNavigationTimer);
   state.storyResetPending=false;
   if(closeEvidence) closeInlineEvidence({restoreFocus:false,restoreSection:false});
-  Object.assign(state,{selectedEvent:null,selectedAgent:"Legal-Agent",selectedChannel:null,activeChain:"core",behaviorMode:"rate",cursor:initialCursor,selectedTime:events[0].timestamp,selectionType:"none",agentFocus:false,storyStep:0,storyComplete:false,storyResetPending:false,activeSection:"trace",showAllChannels:false,agentsExpanded:false,pendingChartReveal:false,guidedNavigation:false,guidedSection:null,storyBusy:false,evidenceOpen:false,evidenceSection:null});
-  buildAgentRail();buildRoleShift();buildMatrix();updateCompareGuide();setCursor(initialCursor);updateSummary();updateStoryDock();scheduleDraw();closeTimeDetail();
-  document.querySelectorAll("#chainFilters button").forEach(button=>{const active=button.dataset.chain==="core";button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));});
-  document.getElementById("pathSummary").textContent="Explore paths";
-  document.querySelectorAll("#behaviorMode button").forEach(button=>{const active=button.dataset.mode==="rate";button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));});
-  document.getElementById("toggleChannels").textContent="All channels";
-  document.getElementById("toggleChannels").setAttribute("aria-pressed","false");
-  document.querySelectorAll(".analysis-view details[open]").forEach(detail=>{detail.open=false;});
-  closeQ3Panels();
-  syncExpansionState();
-  setActiveSection("trace");
-  await scrollToSection(target);
+  try {
+    Object.assign(state,{selectedEvent:null,selectedAgent:"Legal-Agent",selectedChannel:null,activeChain:"core",behaviorMode:"rate",cursor:initialCursor,selectedTime:events[0].timestamp,selectionType:"none",agentFocus:false,storyStep:0,storyComplete:false,storyResetPending:false,activeSection:"trace",showAllChannels:false,agentsExpanded:false,pendingChartReveal:false,guidedNavigation:false,guidedSection:null,storyBusy:true,evidenceOpen:false,evidenceSection:null});
+    buildAgentRail();buildRoleShift();buildMatrix();updateCompareGuide();setCursor(initialCursor);updateSummary();updateStoryDock();scheduleDraw();closeTimeDetail();
+    document.querySelectorAll("#chainFilters button").forEach(button=>{const active=button.dataset.chain==="core";button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));});
+    document.getElementById("pathSummary").textContent="Explore paths";
+    document.querySelectorAll("#behaviorMode button").forEach(button=>{const active=button.dataset.mode==="rate";button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));});
+    document.getElementById("toggleChannels").textContent="All channels";
+    document.getElementById("toggleChannels").setAttribute("aria-pressed","false");
+    document.querySelectorAll(".analysis-view details[open]").forEach(detail=>{detail.open=false;});
+    closeQ3Panels();
+    syncExpansionState();
+    setActiveSection("trace");
+    if(target==="top"){
+      document.documentElement.classList.add("is-adjusting-layout");
+      history.pushState(null,"","#top");
+      window.scrollTo({top:0,behavior:"auto"});
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      document.documentElement.classList.remove("is-adjusting-layout");
+      await waitForScrollPosition(0,500);
+    } else {
+      await scrollToSection(target);
+    }
+  } finally {
+    state.storyBusy=false;
+    updateStoryDock();
+  }
 }
 
 function bindControls() {
   bindAnchorNavigation();
   document.getElementById("storyAction").addEventListener("click",runStoryAction);
-  document.querySelectorAll(".lens-scale [data-event]").forEach(button=>button.addEventListener("click",()=>navigateToNamedEvent(button.dataset.event)));
+  document.querySelectorAll(".lens-scale [data-event]").forEach(button=>{
+    button.addEventListener("click",()=>navigateToNamedEvent(button.dataset.event));
+    ["pointerenter","pointerleave","focus","blur"].forEach(type=>button.addEventListener(type,()=>window.requestAnimationFrame(syncTimelineLabelVisibility)));
+  });
   document.addEventListener("click",event=>{
     const sectionLink=event.target.closest("[data-section-link]");
     if(sectionLink){event.preventDefault();navigateToAnswerSelection(sectionLink);return;}
@@ -1816,8 +1936,9 @@ function initMotion() {
 }
 
 function initObservers() {
-  const stickyObserver=new ResizeObserver(measureSticky);
+  const stickyObserver=new ResizeObserver(()=>{measureSticky();syncTimelineLabelVisibility();});
   stickyObserver.observe(document.querySelector(".workspace-header"));
+  stickyObserver.observe(document.getElementById("lensTrackWrap"));
   const chartObserver=new ResizeObserver(()=>scheduleDraw());
   document.querySelectorAll(".chart-shell").forEach(shell=>chartObserver.observe(shell));
 }
