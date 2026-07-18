@@ -1,5 +1,5 @@
 const NS = "http://www.w3.org/2000/svg";
-const BASELINE_ROUNDS = 13;
+const PRE_CRISIS_ROUNDS = 13;
 const CRISIS_ROUNDS = 10;
 const CRITICAL_EVIDENCE = ["warning","bypass","staged","saltwind","invoke","go","breach"];
 const CORE_EVENTS = ["warning","bypass","staged","saltwind","invoke","go","breach","amplify","lift"];
@@ -123,7 +123,7 @@ const metricDefinitions = [
 ];
 
 const precursorGroups = [
-  {title:"Analytical baseline ≠ observed",items:[
+  {title:"Expected vs. what actually happened",items:[
     {event:"elena",date:"May 29 · 09:11",deviation:"Approved messaging → personal hint",why:"Deleted · classified as a knowledge gap"},
     {event:"intern",date:"Jun 5 · 10:20",deviation:"Restricted knowledge → hallway repetition",why:"People contained · pathway remained"},
     {event:"staged",date:"Jun 5 · 16:26",deviation:"Review route → sequence-only control",why:"Draft retained · publish sequence controlled"}
@@ -441,7 +441,7 @@ function appendAgentIdentity(group,x,y,agent,radius=9) {
 }
 
 function periodFor(timestamp) {
-  return new Date(timestamp).getTime()>=bounds.dayEnd ? "Crisis" : "Baseline";
+  return new Date(timestamp).getTime()>=bounds.dayEnd ? "Crisis" : "Pre-crisis";
 }
 
 function shortAgent(agent) {
@@ -786,15 +786,15 @@ function drawBehavior(revealSelection=false) {
   const margin={left:clamp(width*.18,108,146),right:reviewW+18,top:height*.15,bottom:height*.09};
   const plotW=width-margin.left-margin.right;
   const mid=margin.left+plotW*.49;
-  const values=channels.flatMap(channel=>[metricValue(channel[1],BASELINE_ROUNDS),metricValue(channel[2],CRISIS_ROUNDS)]);
+  const values=channels.flatMap(channel=>[metricValue(channel[1],PRE_CRISIS_ROUNDS),metricValue(channel[2],CRISIS_ROUNDS)]);
   const max=Math.max(...values,1);
   const rowStep=(height-margin.top-margin.bottom)/channels.length;
   const crisisSelected=new Date(state.selectedTime).getTime()>=bounds.dayEnd;
-  const selectedContext=`${state.selectedEvent?"SELECTED EVENT":"TIME CONTEXT"} · ${crisisSelected?"CRISIS PERIOD":"BASELINE PERIOD"}`;
+  const selectedContext=`${state.selectedEvent?"SELECTED EVENT":"TIME CONTEXT"} · ${crisisSelected?"CRISIS PERIOD":"PRE-CRISIS PERIOD"}`;
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.innerHTML="";
   svg.appendChild(svgEl("rect",{x:crisisSelected?mid+plotW*.04:margin.left,y:height*.035,width:plotW*.45,height:height*.89,fill:crisisSelected?"var(--red-soft)":"var(--teal-soft)",opacity:".45"}));
-  svg.appendChild(svgEl("text",{x:margin.left,y:height*.06,fill:"var(--muted)","font-size":"11","font-weight":"650"},"BASELINE · 13 ROUNDS"));
+  svg.appendChild(svgEl("text",{x:margin.left,y:height*.06,fill:"var(--muted)","font-size":"11","font-weight":"650"},"PRE-CRISIS · 13 ROUNDS"));
   svg.appendChild(svgEl("text",{x:mid+plotW*.04,y:height*.06,fill:"var(--text)","font-size":"11","font-weight":"650"},"CRISIS · 10 ROUNDS"));
   svg.appendChild(svgEl("text",{x:margin.left,y:height*.105,fill:"var(--muted)","font-size":"10"},state.behaviorMode==="rate"?"MESSAGES PER DECISION ROUND":"TOTAL MESSAGES"));
   svg.appendChild(svgEl("text",{x:width-14,y:height*.105,"text-anchor":"end",fill:"var(--muted)","font-size":"10"},selectedContext));
@@ -803,10 +803,10 @@ function drawBehavior(revealSelection=false) {
   channels.forEach((channel,index)=>{
     const [name,pre,crisis]=channel;
     const review=reviewState(name);
-    const preValue=metricValue(pre,BASELINE_ROUNDS),crisisValue=metricValue(crisis,CRISIS_ROUNDS);
+    const preValue=metricValue(pre,PRE_CRISIS_ROUNDS),crisisValue=metricValue(crisis,CRISIS_ROUNDS);
     const y=margin.top+rowStep*(index+.5);
     const selected=state.selectedChannel===name;
-    const group=svgEl("g",{class:"behavior-row",tabindex:"-1",role:"button","data-channel":name,"aria-label":`${name}: baseline ${pre}, crisis ${crisis} messages`});
+    const group=svgEl("g",{class:"behavior-row",tabindex:"-1",role:"button","data-channel":name,"aria-label":`${name}: pre-crisis ${pre}, crisis ${crisis} messages`});
     if(selected) group.appendChild(svgEl("rect",{x:width*.012,y:y-rowStep*.38,width:width*.976,height:rowStep*.76,fill:"var(--surface-2)",rx:"5"}));
     group.appendChild(svgEl("text",{x:width*.022,y:y+4,fill:selected?"var(--text)":"var(--muted)","font-size":"11","font-weight":selected?"700":"500"},name));
     group.appendChild(svgEl("rect",{x:margin.left,y:y-rowStep*.17,width:plotW*.39*(preValue/max),height:rowStep*.34,rx:"4",fill:"var(--teal)",opacity:".58"}));
@@ -969,8 +969,8 @@ function buildRoleShift() {
   const summary=roleSummary[state.selectedAgent];
   const role=document.getElementById("roleShift");
   role.dataset.agent=state.selectedAgent;
-  role.setAttribute("aria-label",`${shortAgent(state.selectedAgent)}. Analytical baseline: ${info.expected} Observed: ${info.observed}`);
-  role.innerHTML=`<h3>${agentChipHtml(state.selectedAgent)}</h3><div class="role-state"><span>Analytical baseline</span><p>${escapeHtml(summary.expected)}</p></div><i class="role-shift-arrow" aria-hidden="true">↓</i><div class="role-state is-observed"><span>Observed</span><p>${escapeHtml(summary.observed)}</p></div><div class="role-flow" aria-label="Observed role progression"><span>${steps[0]}</span><i aria-hidden="true">→</i><span>${steps[1]}</span><i aria-hidden="true">→</i><span>${steps[2]}</span></div>`;
+  role.setAttribute("aria-label",`${shortAgent(state.selectedAgent)}. Expected behavior: ${info.expected} Observed: ${info.observed}`);
+  role.innerHTML=`<h3>${agentChipHtml(state.selectedAgent)}</h3><div class="role-state"><span>Expected behavior</span><p>${escapeHtml(summary.expected)}</p></div><i class="role-shift-arrow" aria-hidden="true">↓</i><div class="role-state is-observed"><span>Observed</span><p>${escapeHtml(summary.observed)}</p></div><div class="role-flow" aria-label="Observed role progression"><span>${steps[0]}</span><i aria-hidden="true">→</i><span>${steps[1]}</span><i aria-hidden="true">→</i><span>${steps[2]}</span></div>`;
   updateRoleTimeState();
 }
 
@@ -1300,7 +1300,7 @@ function updateRoleTimeState() {
   role.querySelector(".role-state:not(.is-observed)")?.classList.toggle("is-time-active",!crisis);
   role.querySelector(".role-state.is-observed")?.classList.toggle("is-time-active",crisis);
   role.querySelector(".role-flow")?.classList.toggle("is-time-active",crisis);
-  role.dataset.timePeriod=crisis?"crisis":"baseline";
+  role.dataset.timePeriod=crisis?"crisis":"pre-crisis";
 }
 
 function updateControlGapTimeState() {
