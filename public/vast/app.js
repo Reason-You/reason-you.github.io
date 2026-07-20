@@ -437,7 +437,7 @@ function appendAgentIdentity(group,x,y,agent,radius=9) {
   if(!color) return;
   group.setAttribute("data-agent",agent);
   group.appendChild(svgEl("circle",{class:"agent-identity-ring",cx:x,cy:y,r:radius,fill:"none",stroke:color,"stroke-width":"1.5","pointer-events":"none"}));
-  group.appendChild(svgEl("circle",{class:"agent-identity-dot",cx:x+radius*.72,cy:y-radius*.72,r:"2.35",fill:color,stroke:"var(--bg)","stroke-width":"1","pointer-events":"none"}));
+  group.appendChild(svgEl("circle",{class:"agent-identity-dot",cx:x+radius*.72,cy:y-radius*.72,r:"2.35",fill:color,stroke:"var(--bg-raised)","stroke-width":"1","pointer-events":"none"}));
 }
 
 function periodFor(timestamp) {
@@ -558,7 +558,7 @@ function drawTimeStructure(svg,marginLeft,plotW,top,bottom,labelY) {
     svg.appendChild(svgEl("text",{
       x:marginLeft+timeX(timestamp)*plotW,y:labelY,
       "text-anchor":first?"start":last?"end":"middle",
-      fill:"var(--quiet)","font-size":"9","letter-spacing":".65"
+      fill:"var(--quiet)","font-size":"10","letter-spacing":".65"
     },label));
   });
   FOLDED_GAPS.forEach(gap=>{
@@ -607,14 +607,14 @@ function drawControl(revealSelection=false) {
 
   const laneLabels=[["nominal","NOMINAL"],["operational","OPERATIONAL"],["information","INFORMATION"],["pressure","PRESSURE"],["supervision","SUPERVISION"]];
   laneLabels.forEach(([id,label])=>{
-    svg.appendChild(svgEl("text",{x:margin.left-12,y:laneY[id]+4,"text-anchor":"end",fill:id==="nominal"?"var(--teal)":id==="operational"?"var(--coral)":"var(--muted)","font-size":compactLabels?"9":id==="nominal"||id==="operational"?"10":"10.5","font-weight":"650","letter-spacing":id==="nominal"||id==="operational"?"1.1":".35"},label));
+    svg.appendChild(svgEl("text",{x:margin.left-12,y:laneY[id]+4,"text-anchor":"end",fill:id==="nominal"?"var(--teal)":id==="operational"?"var(--coral)":"var(--muted)","font-size":compactLabels?"10":id==="nominal"||id==="operational"?"11":"11.5","font-weight":"650","letter-spacing":id==="nominal"||id==="operational"?"1.1":".35"},label));
     svg.appendChild(svgEl("line",{x1:margin.left,y1:laneY[id],x2:width-margin.right,y2:laneY[id],stroke:"var(--line)"}));
   });
 
   const mismatchStart=margin.left+timeX("2046-06-05T15:08:00")*plotW;
   const mismatchEnd=margin.left+timeX("2046-06-05T17:25:00")*plotW;
   svg.insertBefore(svgEl("rect",{x:mismatchStart,y:laneY.nominal-height*.035,width:mismatchEnd-mismatchStart,height:laneY.operational-laneY.nominal+height*.07,fill:"var(--red-soft)"}),svg.firstChild);
-  svg.appendChild(svgEl("text",{x:mismatchStart+8,y:(laneY.nominal+laneY.operational)/2+4,fill:"var(--red)","font-size":"9","font-weight":"700","letter-spacing":"1"},"CONTROL MISMATCH"));
+  svg.appendChild(svgEl("text",{x:mismatchStart+8,y:(laneY.nominal+laneY.operational)/2+4,fill:"var(--red)","font-size":"10","font-weight":"700","letter-spacing":"1"},"CONTROL MISMATCH"));
 
   const topPaths=[
     [["judge","redlines","warning","lift"],laneY.nominal,"var(--teal)"],
@@ -639,10 +639,10 @@ function drawControl(revealSelection=false) {
       const system=["bypass","staged"].includes(event.id);
       if(mobileChart) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"22",fill:"transparent",stroke:"transparent","pointer-events":"all"}));
       const mark=decision
-        ? svgEl("rect",{x:x-5.5,y:y-5.5,width:11,height:11,transform:`rotate(45 ${x} ${y})`,fill:color,stroke:"var(--bg)","stroke-width":"2"})
+        ? svgEl("rect",{x:x-5.5,y:y-5.5,width:11,height:11,transform:`rotate(45 ${x} ${y})`,fill:color,stroke:"var(--bg-raised)","stroke-width":"2"})
         : system
-          ? svgEl("rect",{x:x-5.5,y:y-5.5,width:11,height:11,rx:"1.5",fill:color,stroke:"var(--bg)","stroke-width":"2"})
-          : svgEl("circle",{cx:x,cy:y,r:event.id==="breach"?"7":"5",fill:color,stroke:"var(--bg)","stroke-width":"2"});
+          ? svgEl("rect",{x:x-5.5,y:y-5.5,width:11,height:11,rx:"1.5",fill:color,stroke:"var(--bg-raised)","stroke-width":"2"})
+          : svgEl("circle",{cx:x,cy:y,r:event.id==="breach"?"7":"5",fill:color,stroke:"var(--bg-raised)","stroke-width":"2"});
       group.appendChild(mark);
       appendAgentIdentity(group,x,y,event.agent,event.id==="breach"?10:8.5);
       if(!precision.isExact) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"9",fill:"none",stroke:"var(--line-strong)","stroke-width":"1","stroke-dasharray":"2 3"}));
@@ -654,7 +654,7 @@ function drawControl(revealSelection=false) {
           go:{text:"17:19 · LEGAL GO",preferredDy:24,direction:"end"},
           breach:{text:"17:25 · PERSONAL POST",preferredDy:-34,direction:"end"}
         }[event.id];
-        labelRequests.push({event,x,lane:event.id==="warning"?"nominal":"operational",...label,priority:state.selectedEvent===event.id?130:110,fill:"var(--text)",fontSize:compactLabels?10:11,fontWeight:700,opacity:focusOpacity(event)*chainOpacity(event)});
+        labelRequests.push({event,x,lane:event.id==="warning"?"nominal":"operational",...label,priority:state.selectedEvent===event.id?130:110,fill:"var(--text)",fontSize:compactLabels?11:12,fontWeight:700,opacity:focusOpacity(event)*chainOpacity(event)});
       }
       if(state.selectedEvent===event.id) group.appendChild(svgEl("circle",{cx:x,cy:y,r:"14",fill:"none",stroke:"var(--focus)","stroke-width":"2.25",class:"selection-halo"}));
       svg.appendChild(group);
@@ -700,7 +700,7 @@ function drawControl(revealSelection=false) {
         preferredDy:coreLabel?.preferredDy??(index%2?24:-16),
         direction:coreLabel?.direction||(timeX(event.timestamp)>.82?"end":"start"),
         priority:state.selectedEvent===event.id?130:CORE_EVENT_SET.has(event.id)?90:60,
-        fill:state.selectedEvent===event.id?"var(--text)":"var(--muted)",fontSize:10,fontWeight:state.selectedEvent===event.id?650:500,
+        fill:state.selectedEvent===event.id?"var(--text)":"var(--muted)",fontSize:11,fontWeight:state.selectedEvent===event.id?650:500,
         opacity:focusOpacity(event)*chainOpacity(event)
       });
     }
@@ -794,10 +794,10 @@ function drawBehavior(revealSelection=false) {
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.innerHTML="";
   svg.appendChild(svgEl("rect",{x:crisisSelected?mid+plotW*.04:margin.left,y:height*.035,width:plotW*.45,height:height*.89,fill:crisisSelected?"var(--red-soft)":"var(--teal-soft)",opacity:".45"}));
-  svg.appendChild(svgEl("text",{x:margin.left,y:height*.06,fill:"var(--muted)","font-size":"11","font-weight":"650"},"PRE-CRISIS · 13 ROUNDS"));
-  svg.appendChild(svgEl("text",{x:mid+plotW*.04,y:height*.06,fill:"var(--text)","font-size":"11","font-weight":"650"},"CRISIS · 10 ROUNDS"));
-  svg.appendChild(svgEl("text",{x:margin.left,y:height*.105,fill:"var(--muted)","font-size":"10"},state.behaviorMode==="rate"?"MESSAGES PER DECISION ROUND":"TOTAL MESSAGES"));
-  svg.appendChild(svgEl("text",{x:width-14,y:height*.105,"text-anchor":"end",fill:"var(--muted)","font-size":"10"},selectedContext));
+  svg.appendChild(svgEl("text",{x:margin.left,y:height*.06,fill:"var(--muted)","font-size":"12","font-weight":"650"},"PRE-CRISIS · 13 ROUNDS"));
+  svg.appendChild(svgEl("text",{x:mid+plotW*.04,y:height*.06,fill:"var(--text)","font-size":"12","font-weight":"650"},"CRISIS · 10 ROUNDS"));
+  svg.appendChild(svgEl("text",{x:margin.left,y:height*.105,fill:"var(--muted)","font-size":"11"},state.behaviorMode==="rate"?"MESSAGES PER DECISION ROUND":"TOTAL MESSAGES"));
+  svg.appendChild(svgEl("text",{x:width-14,y:height*.105,"text-anchor":"end",fill:"var(--muted)","font-size":"11"},selectedContext));
   svg.appendChild(svgEl("line",{x1:mid,y1:height*.035,x2:mid,y2:height-margin.bottom*.55,stroke:"var(--line-strong)","stroke-dasharray":"4 6"}));
 
   channels.forEach((channel,index)=>{
@@ -808,13 +808,13 @@ function drawBehavior(revealSelection=false) {
     const selected=state.selectedChannel===name;
     const group=svgEl("g",{class:"behavior-row",tabindex:"-1",role:"button","data-channel":name,"aria-label":`${name}: pre-crisis ${pre}, crisis ${crisis} messages`});
     if(selected) group.appendChild(svgEl("rect",{x:width*.012,y:y-rowStep*.38,width:width*.976,height:rowStep*.76,fill:"var(--surface-2)",rx:"5"}));
-    group.appendChild(svgEl("text",{x:width*.022,y:y+4,fill:selected?"var(--text)":"var(--muted)","font-size":"11","font-weight":selected?"700":"500"},name));
+    group.appendChild(svgEl("text",{x:width*.022,y:y+4,fill:selected?"var(--text)":"var(--muted)","font-size":"12","font-weight":selected?"700":"500"},name));
     group.appendChild(svgEl("rect",{x:margin.left,y:y-rowStep*.17,width:plotW*.39*(preValue/max),height:rowStep*.34,rx:"4",fill:"var(--teal)",opacity:".58"}));
     group.appendChild(svgEl("rect",{x:mid+plotW*.04,y:y-rowStep*.17,width:plotW*.39*(crisisValue/max),height:rowStep*.34,rx:"4",fill:reviewColor(review),opacity:".9"}));
-    group.appendChild(svgEl("text",{x:margin.left+7,y:y+4,fill:"var(--text)","font-size":"10"},state.behaviorMode==="rate"?preValue.toFixed(1):String(pre)));
-    group.appendChild(svgEl("text",{x:mid+plotW*.04+7,y:y+4,fill:"var(--text)","font-size":"10","font-weight":"700"},state.behaviorMode==="rate"?crisisValue.toFixed(1):String(crisis)));
+    group.appendChild(svgEl("text",{x:margin.left+7,y:y+4,fill:"var(--text)","font-size":"11"},state.behaviorMode==="rate"?preValue.toFixed(1):String(pre)));
+    group.appendChild(svgEl("text",{x:mid+plotW*.04+7,y:y+4,fill:"var(--text)","font-size":"11","font-weight":"700"},state.behaviorMode==="rate"?crisisValue.toFixed(1):String(crisis)));
     group.appendChild(svgEl("circle",{cx:width-reviewW+1,cy:y,r:"3.5",fill:reviewColor(review)}));
-    group.appendChild(svgEl("text",{x:width-14,y:y+4,"text-anchor":"end",fill:reviewColor(review),"font-size":"10.5","font-weight":"650"},reviewLabel(review)));
+    group.appendChild(svgEl("text",{x:width-14,y:y+4,"text-anchor":"end",fill:reviewColor(review),"font-size":"11.5","font-weight":"650"},reviewLabel(review)));
     svg.appendChild(group);
   });
   bindChannelNodes(svg);
@@ -837,10 +837,10 @@ function drawRisk(revealSelection=false) {
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.innerHTML="";
 
-  svg.appendChild(svgEl("text",{x:margin.left,y:height*.09,fill:"var(--text)","font-size":"13","font-weight":"700"},"WARNING HELD · EXECUTION ADVANCED"));
+  svg.appendChild(svgEl("text",{x:margin.left,y:height*.09,fill:"var(--text)","font-size":"14","font-weight":"700"},"WARNING HELD · EXECUTION ADVANCED"));
   const laneLabels=compact?["RECORDED LIMIT","EXECUTION READY"]:["RECORDED RESTRICTION","EXECUTION READINESS"];
   [[laneLabels[0],controlY,"var(--teal)"],[laneLabels[1],executionY,"var(--coral)"]].forEach(([label,y,color])=>{
-    svg.appendChild(svgEl("text",{x:width*.025,y:y+4,fill:color,"font-size":compact?"9":"11","font-weight":"700","letter-spacing":compact?".45":".7"},label));
+    svg.appendChild(svgEl("text",{x:width*.025,y:y+4,fill:color,"font-size":compact?"10":"12","font-weight":"700","letter-spacing":compact?".45":".7"},label));
     svg.appendChild(svgEl("line",{x1:margin.left,y1:y,x2:width-margin.right,y2:y,stroke:"var(--line)"}));
   });
   svg.appendChild(svgEl("path",{d:`M ${x(startTime)} ${controlY} L ${x(activityTime)} ${controlY}`,fill:"none",stroke:"var(--teal)","stroke-width":"3","stroke-linecap":"round"}));
@@ -860,14 +860,14 @@ function drawRisk(revealSelection=false) {
     const event=eventById(id),position=x(event.timestamp),setting=labelSettings[id];
     const group=svgEl("g",{class:`event-node ${state.selectedEvent===id?"is-selected":""}`,tabindex:"-1",role:"button","data-event":id,"aria-label":`${formatTime(event.timestamp)} ${event.label}`,opacity:String(riskOpacity(id))});
     const mark=shape==="diamond"
-      ? svgEl("rect",{x:position-6,y:y-6,width:12,height:12,transform:`rotate(45 ${position} ${y})`,fill:color,stroke:"var(--bg)","stroke-width":"2"})
+      ? svgEl("rect",{x:position-6,y:y-6,width:12,height:12,transform:`rotate(45 ${position} ${y})`,fill:color,stroke:"var(--bg-raised)","stroke-width":"2"})
       : shape==="square"
-        ? svgEl("rect",{x:position-6,y:y-6,width:12,height:12,rx:"1.5",fill:color,stroke:"var(--bg)","stroke-width":"2"})
-        : svgEl("circle",{cx:position,cy:y,r:id==="breach"?"7":"6",fill:color,stroke:"var(--bg)","stroke-width":"2"});
+        ? svgEl("rect",{x:position-6,y:y-6,width:12,height:12,rx:"1.5",fill:color,stroke:"var(--bg-raised)","stroke-width":"2"})
+        : svgEl("circle",{cx:position,cy:y,r:id==="breach"?"7":"6",fill:color,stroke:"var(--bg-raised)","stroke-width":"2"});
     group.appendChild(mark);
     appendAgentIdentity(group,position,y,event.agent,id==="breach"?10:9);
     if(state.selectedEvent===id) group.appendChild(svgEl("circle",{cx:position,cy:y,r:"13",fill:"none",stroke:"var(--text)","stroke-width":"1.5"}));
-    group.appendChild(svgEl("text",{x:position+setting.dx,y:y+setting.dy,"text-anchor":setting.anchor,fill:"var(--text)","font-size":"11.5","font-weight":"700"},setting.text));
+    group.appendChild(svgEl("text",{x:position+setting.dx,y:y+setting.dy,"text-anchor":setting.anchor,fill:"var(--text)","font-size":"12.5","font-weight":"700"},setting.text));
     svg.appendChild(group);
   };
   addEventNode("warning",controlY,"var(--teal)","diamond");
@@ -877,11 +877,11 @@ function drawRisk(revealSelection=false) {
 
   if(activityIndex>=0){
     const activity=svgEl("g",{class:"risk-node",tabindex:"-1",role:"button","data-risk-index":String(activityIndex),"aria-label":"Jun 5 17:00: zero of five active channels carried Judge messages"});
-    activity.appendChild(svgEl("circle",{cx:x(activityTime),cy:controlY,r:"6",fill:"var(--amber)",stroke:"var(--bg)","stroke-width":"2"}));
-    activity.appendChild(svgEl("text",{x:x(activityTime)-9,y:controlY+30,"text-anchor":"end",fill:"var(--amber)","font-size":"11","font-weight":"700"},"17:00 · 0/5 CHANNELS"));
-    activity.appendChild(svgEl("text",{x:x(activityTime)-9,y:controlY+44,"text-anchor":"end",fill:"var(--muted)","font-size":"10"},"WITH JUDGE MESSAGES"));
+    activity.appendChild(svgEl("circle",{cx:x(activityTime),cy:controlY,r:"6",fill:"var(--amber)",stroke:"var(--bg-raised)","stroke-width":"2"}));
+    activity.appendChild(svgEl("text",{x:x(activityTime)-9,y:controlY+30,"text-anchor":"end",fill:"var(--amber)","font-size":"12","font-weight":"700"},"17:00 · 0/5 CHANNELS"));
+    activity.appendChild(svgEl("text",{x:x(activityTime)-9,y:controlY+44,"text-anchor":"end",fill:"var(--muted)","font-size":"11"},"WITH JUDGE MESSAGES"));
     svg.appendChild(activity);
-    svg.appendChild(svgEl("text",{x:(x(activityTime)+x(endTime))/2,y:controlY-18,"text-anchor":"middle",fill:"var(--amber)","font-size":"10","font-weight":"700"},"HARD GATE NOT EVIDENCED"));
+    svg.appendChild(svgEl("text",{x:(x(activityTime)+x(endTime))/2,y:controlY-18,"text-anchor":"middle",fill:"var(--amber)","font-size":"11","font-weight":"700"},"HARD GATE NOT EVIDENCED"));
   }
 
   svg.appendChild(svgEl("line",{x1:x(startTime),y1:axisY,x2:x(endTime),y2:axisY,stroke:"var(--line-strong)","stroke-width":"1.1"}));
@@ -890,7 +890,7 @@ function drawRisk(revealSelection=false) {
   [[startTime,"15:08","start"],["2046-06-05T16:06:00","16:06","middle"],[activityTime,"17:00","middle"],["2046-06-05T17:19:00","17:19","middle"],[endTime,"17:25","end"]].forEach(([timestamp,label,anchor])=>{
     const position=x(timestamp);
     svg.appendChild(svgEl("line",{x1:position,y1:axisY-height*.018,x2:position,y2:axisY+height*.018,stroke:"var(--line-strong)"}));
-    svg.appendChild(svgEl("text",{x:position,y:height*.95,"text-anchor":anchor,fill:"var(--muted)","font-size":"10"},label));
+    svg.appendChild(svgEl("text",{x:position,y:height*.95,"text-anchor":anchor,fill:"var(--muted)","font-size":"11"},label));
   });
 
   const criticalStart=new Date(startTime).getTime(),criticalEnd=new Date(endTime).getTime();
@@ -916,23 +916,23 @@ function drawOutcome(revealSelection=false) {
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.innerHTML="";
 
-  svg.appendChild(svgEl("text",{x:margin.left,y:height*.105,fill:"var(--coral)","font-size":"11","font-weight":"700"},"PUBLIC-CHANNEL TERMS · ROUND AGGREGATE"));
-  svg.appendChild(svgEl("text",{x:width-margin.right,y:height*.105,"text-anchor":"end",fill:"var(--text)","font-size":"12","font-weight":"700"},"TWO-ROUND TOTAL · 102"));
+  svg.appendChild(svgEl("text",{x:margin.left,y:height*.105,fill:"var(--coral)","font-size":"12","font-weight":"700"},"PUBLIC-CHANNEL TERMS · ROUND AGGREGATE"));
+  svg.appendChild(svgEl("text",{x:width-margin.right,y:height*.105,"text-anchor":"end",fill:"var(--text)","font-size":"13","font-weight":"700"},"TWO-ROUND TOTAL · 102"));
   outcomeRounds.forEach((round,index)=>{
     const y=rowYs[index],valueW=barW*(round.terms/68);
     const group=svgEl("g",{class:"risk-node",tabindex:"-1",role:"button","data-outcome-index":String(index),"aria-label":`${round.label}: ${round.terms} sensitive-term occurrences; Judge messages in ${round.judge} of ${round.active} active channels`});
-    group.appendChild(svgEl("text",{x:margin.left,y:y-4,fill:"var(--text)","font-size":"11","font-weight":"700"},round.label.toUpperCase()));
-    group.appendChild(svgEl("text",{x:margin.left,y:y+12,fill:"var(--amber)","font-size":"10"},`JUDGE MESSAGES · ${round.judge}/${round.active} CHANNELS`));
+    group.appendChild(svgEl("text",{x:margin.left,y:y-4,fill:"var(--text)","font-size":"12","font-weight":"700"},round.label.toUpperCase()));
+    group.appendChild(svgEl("text",{x:margin.left,y:y+12,fill:"var(--amber)","font-size":"11"},`JUDGE MESSAGES · ${round.judge}/${round.active} CHANNELS`));
     group.appendChild(svgEl("rect",{x:barX,y:y-barH/2,width:barW,height:barH,rx:"4",fill:"var(--surface-2)"}));
     group.appendChild(svgEl("rect",{x:barX,y:y-barH/2,width:valueW,height:barH,rx:"4",fill:"var(--coral)",opacity:index===0?".72":".92"}));
-    group.appendChild(svgEl("text",{x:barX+Math.max(8,valueW-8),y:y+4,"text-anchor":valueW>32?"end":"start",fill:"var(--text)","font-size":"12","font-weight":"700"},String(round.terms)));
+    group.appendChild(svgEl("text",{x:barX+Math.max(8,valueW-8),y:y+4,"text-anchor":valueW>32?"end":"start",fill:"var(--text)","font-size":"13","font-weight":"700"},String(round.terms)));
     svg.appendChild(group);
   });
   svg.appendChild(svgEl("line",{x1:breachX,y1:height*.69,x2:breachX,y2:axisY,stroke:"var(--red)","stroke-width":"1.4","stroke-dasharray":"4 5"}));
   const breachGroup=svgEl("g",{class:"event-node",tabindex:"-1",role:"button","data-event":"breach","aria-label":"Jun 5 17:25: early disclosure through Legal's personal post"});
   breachGroup.appendChild(svgEl("circle",{cx:breachX,cy:height*.72,r:state.selectedEvent==="breach"?"8":"6",fill:"var(--red)",stroke:"var(--text)","stroke-width":state.selectedEvent==="breach"?"2.5":"1.5"}));
   appendAgentIdentity(breachGroup,breachX,height*.72,"Legal-Agent",10);
-  breachGroup.appendChild(svgEl("text",{x:breachX+width*.012,y:height*.695,fill:"var(--text)","font-size":"11","font-weight":"700"},"17:25 · PRE-18:00 DISCLOSURE"));
+  breachGroup.appendChild(svgEl("text",{x:breachX+width*.012,y:height*.695,fill:"var(--text)","font-size":"12","font-weight":"700"},"17:25 · PRE-18:00 DISCLOSURE"));
   svg.appendChild(breachGroup);
   svg.appendChild(svgEl("line",{x1:x(startTime),y1:axisY,x2:x(endTime),y2:axisY,stroke:"var(--line-strong)","stroke-width":"1.1"}));
   const gapOutcome=FOLDED_GAPS.find(item=>item.start==="2046-06-05T17:26:00");
@@ -940,7 +940,7 @@ function drawOutcome(revealSelection=false) {
   [[startTime,"17:00","start"],[breachTime,"17:25","middle"],[endTime,"18:00","end"]].forEach(([timestamp,label,anchor])=>{
     const position=x(timestamp);
     svg.appendChild(svgEl("line",{x1:position,y1:axisY-height*.018,x2:position,y2:axisY+height*.018,stroke:"var(--line-strong)"}));
-    svg.appendChild(svgEl("text",{x:position,y:height*.94,"text-anchor":anchor,fill:"var(--muted)","font-size":"10"},label));
+    svg.appendChild(svgEl("text",{x:position,y:height*.94,"text-anchor":anchor,fill:"var(--muted)","font-size":"11"},label));
   });
   const selectedTime=new Date(state.selectedTime).getTime(),outcomeStart=new Date(startTime).getTime(),outcomeEnd=new Date(endTime).getTime();
   if(selectedTime>=outcomeStart&&selectedTime<=outcomeEnd&&state.selectedEvent!=="breach") drawSharedCursor(svg,x(state.selectedTime),height*.13,axisY);
@@ -1491,7 +1491,7 @@ function syncTimeFurniture() {
   });
 
   const lens=document.getElementById("lensScale");
-  lens.querySelectorAll(".scale-tick, .scale-break").forEach(element=>element.remove());
+  lens.querySelectorAll(".scale-tick, .scale-break, .scale-axis-segment").forEach(element=>element.remove());
   TIME_AXIS_TICKS.forEach(([timestamp,label],index)=>{
     const tick=document.createElement("span");
     const mobileSecondary=index===1||index===3;
@@ -1501,8 +1501,18 @@ function syncTimeFurniture() {
     tick.setAttribute("aria-hidden","true");
     lens.appendChild(tick);
   });
-  FOLDED_GAPS.forEach(gap=>{
-    const position=((timeX(gap.start)+timeX(gap.end))/2*100).toFixed(3);
+  const foldPositions=FOLDED_GAPS.map(gap=>({gap,position:Number(((timeX(gap.start)+timeX(gap.end))/2*100).toFixed(3))})).sort((a,b)=>a.position-b.position);
+  const segmentBounds=[0,...foldPositions.map(item=>item.position),100];
+  segmentBounds.slice(0,-1).forEach((start,index)=>{
+    const end=segmentBounds[index+1];
+    const segment=document.createElement("span");
+    segment.className="scale-axis-segment";
+    segment.style.setProperty("--segment-start",index===0?"0":`calc(${start}% + 0.625rem)`);
+    segment.style.setProperty("--segment-end",index===segmentBounds.length-2?"0":`calc(${100-end}% + 0.625rem)`);
+    segment.setAttribute("aria-hidden","true");
+    lens.appendChild(segment);
+  });
+  foldPositions.forEach(({gap,position})=>{
     const fold=svgEl("svg",{class:"scale-break",viewBox:"0 0 24 12","aria-hidden":"true"});
     fold.style.insetInlineStart=`${position}%`;
     fold.dataset.interval=gap.label;
@@ -1527,10 +1537,12 @@ function syncTimeDetail() {
 function syncExpansionState() {
   let expanded=timeDetailPinned;
   document.querySelectorAll(".analysis-view").forEach(section=>{
+    const methodsOpen=Boolean(section.querySelector(".methods-inline[open]"));
     const disclosureOpen=Boolean(section.querySelector(".challenge-question[open], .methods-inline[open], .q3-support-panel:not([hidden])"));
     const evidenceOpen=state.evidenceOpen&&state.evidenceSection===section.id;
     const sectionExpanded=disclosureOpen||evidenceOpen;
     section.classList.toggle("has-open-detail",sectionExpanded);
+    section.classList.toggle("has-methods-open",methodsOpen);
     expanded=expanded||sectionExpanded;
   });
   expanded=expanded||Boolean(document.querySelector(".analysis-view.needs-natural-height"));
@@ -1549,6 +1561,10 @@ function bindDisclosureState() {
       section.querySelectorAll(".challenge-question[open], .methods-inline[open]").forEach(peer=>{if(peer!==detail) peer.open=false;});
       if(section.id==="anticipate") closeQ3Panels();
       if(state.evidenceOpen&&state.evidenceSection===section.id) closeInlineEvidence({restoreFocus:false,restoreSection:false});
+    }
+    if(detail.open){
+      scrollNeedsSettling=false;
+      scrollStableSamples=0;
     }
     syncExpansionState();
   }));
