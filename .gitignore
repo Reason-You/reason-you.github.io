@@ -42,3 +42,15 @@ next-env.d.ts
 
 # wrangler
 .wrangler
+
+# latex
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.xdv
+cv/cv.pdf
+cv/cv_cn.pdf

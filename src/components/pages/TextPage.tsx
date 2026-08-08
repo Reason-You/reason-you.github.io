@@ -18,7 +18,17 @@ export default function TextPage({ config, content, embedded = false }: TextPage
             transition={{ duration: 0.6, delay: 0.4 }}
             className={embedded ? "" : ""}
         >
-            <h1 className={`${embedded ? "text-2xl" : "text-4xl"} font-serif font-bold text-primary mb-4`}>{config.title}</h1>
+            <div className="flex items-baseline justify-between mb-4">
+                <h1 className={`${embedded ? "text-2xl" : "text-4xl"} font-serif font-bold text-primary`}>
+                    {config.title}
+                </h1>
+                {config.download_pdf && (
+                    <span className="text-lg text-neutral-600 dark:text-neutral-500">
+                        (<a href={config.download_pdf} target="_blank" rel="noopener noreferrer" className="text-accent font-medium hover:underline transition-colors">Download</a>
+                        {config.download_pdf_cn && <> | <a href={config.download_pdf_cn} target="_blank" rel="noopener noreferrer" className="text-accent font-medium hover:underline transition-colors">下载</a></>})
+                    </span>
+                )}
+            </div>
             {config.description && (
                 <p className={`${embedded ? "text-base" : "text-lg"} text-neutral-600 dark:text-neutral-500 mb-8 max-w-2xl`}>
                     {config.description}

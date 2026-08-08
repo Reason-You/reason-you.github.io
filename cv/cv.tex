@@ -1,0 +1,228 @@
+\documentclass[10pt,a4paper]{article}
+
+% =============================================================================
+% NOTE FOR AI ASSISTANTS:
+% This .tex file and content/cv.md (website HTML CV) are NOT synchronized.
+% When asked to update CV content, prompt the user to choose which version(s)
+% to update. Do not assume changes to one apply to the other.
+% =============================================================================
+
+\usepackage[a4paper,left=18.5mm,right=18.5mm,top=13.0mm,bottom=8.5mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{libertinus}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{ragged2e}
+
+\setCJKmainfont{FandolSong-Regular.otf}[BoldFont=FandolSong-Bold.otf]
+
+\definecolor{CVGray}{gray}{0.32}
+\definecolor{CVRule}{gray}{0.78}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\raggedbottom
+\emergencystretch=1.2em
+\hyphenpenalty=7000
+\exhyphenpenalty=7000
+\tolerance=1700
+
+% Body: approx. 10.4 pt with 12.2 pt baseline.
+\newcommand{\bodyfont}{\fontsize{10.4pt}{13.35pt}\selectfont}
+\newcommand{\smallfont}{\fontsize{9.7pt}{12.15pt}\selectfont}
+\newcommand{\datefont}{\fontsize{9.6pt}{12.05pt}\selectfont\color{CVGray}}
+
+\newcommand{\cvsection}[1]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{9pt}%
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries\scshape #1}\par
+  \vspace{\dimexpr-\baselineskip+2.8pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+\newcommand{\cvsectionfirst}[1]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{5.8pt}%
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries\scshape #1}\par
+  \vspace{\dimexpr-\baselineskip+2.8pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+\newcommand{\cvsectionnote}[2]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{9pt}%
+  \noindent
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries\scshape #1}%
+  \hfill
+  {\fontsize{8.8pt}{10.5pt}\selectfont\color{CVGray}#2}\par
+  \vspace{\dimexpr-\baselineskip+2.8pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+% Paired lines are built from two top-aligned parboxes.  The font is selected
+% *before* each parbox is constructed so TeX computes the same first-line baseline
+% on both sides.  This avoids the vertical drop that occurs when a smaller date font
+% is switched only inside an already-created parbox.
+\newcommand{\pairedline}[4]{%
+  \noindent
+  {\bodyfont\parbox[t]{\dimexpr\textwidth-44mm\relax}{\raggedright #1}}%
+  \hfill
+  {\datefont\parbox[t]{42mm}{\raggedleft #2}}%
+  \par
+  \ifx\\#3\\\else
+    \vspace{0.15pt}%
+    \noindent
+    {\bodyfont\parbox[t]{\dimexpr\textwidth-44mm\relax}{\raggedright #3}}%
+    \hfill
+    {\datefont\parbox[t]{42mm}{\raggedleft #4}}%
+    \par
+  \fi
+}
+
+\newcommand{\eduentry}[4]{%
+  \pairedline{{\bfseries #1}}{#2}{{\itshape #3}}{#4}%
+}
+
+\newcommand{\entryline}[2]{%
+  \pairedline{{\bfseries #1}}{#2}{}{}%
+}
+
+\newcommand{\projectentry}[2]{%
+  \entryline{#1}{#2}%
+}
+
+\newcommand{\expentry}[3]{%
+  \Needspace{5.2\baselineskip}%
+  \entryline{#1}{#2}%
+  {\smallfont\color{CVGray}#3}\par
+}
+
+\newenvironment{cvitems}{%
+  \begin{itemize}[leftmargin=1.22em,labelsep=0.42em,itemsep=2.35pt,topsep=0.15pt,parsep=0pt,partopsep=0pt]
+  \bodyfont
+}{\end{itemize}}
+
+\newenvironment{cvitemsaftertwo}{%
+  \begin{itemize}[leftmargin=1.22em,labelsep=0.42em,itemsep=2.35pt,topsep=0.65pt,parsep=0pt,partopsep=0pt]
+  \bodyfont
+}{\end{itemize}}
+
+% Breakable publication entry with hanging indentation.
+% Keeping each entry as an ordinary paragraph lets the Publications section,
+% and an individual long entry when necessary, flow naturally across pages.
+\newlength{\pubindent}
+\setlength{\pubindent}{9.2mm}
+\newcommand{\publication}[2]{%
+  \par\vspace{1.15pt}%
+  {\fontsize{10.0pt}{12.6pt}\selectfont
+   \hangindent=\pubindent
+   \hangafter=1
+   \noindent
+   \makebox[\pubindent][l]{\makebox[6.5mm][r]{{\smallfont\color{CVGray}[#1]}}\hspace{2.7mm}}#2\par}%
+}
+
+\newcommand{\skillline}[2]{%
+  \textbf{#1}\hspace{0.5em}#2\par\vspace{2.35pt}%
+}
+
+% -----------------------------------------------------------------------------
+% Maintenance guide
+% 1. Edit personal/contact text in the Header block below.
+% 2. Edit Education / Projects / Publications / Experience directly in the
+%    corresponding section blocks. Most entries are one macro call plus bullets.
+% 3. Layout constants (fonts, spacing, paired-column width) live above this line.
+% 4. Publication entries are ordinary breakable paragraphs. Let LaTeX paginate
+%    them naturally; do not insert manual page breaks inside the publication list.
+% -----------------------------------------------------------------------------
+\begin{document}
+\bodyfont
+
+% Header
+\noindent
+{\fontsize{21.0pt}{21.8pt}\selectfont\bfseries You Li}\hspace{0.34em}{\fontsize{16.5pt}{21.8pt}\selectfont\bfseries\raisebox{0.15ex}[0pt][0pt]{李由}}\par
+\vspace{6pt}
+{\fontsize{10.15pt}{11.7pt}\selectfont Ph.D. Student, FDU-VIS Lab, School of Data Science, Fudan University}\par
+\vspace{3pt}
+{\fontsize{9.25pt}{10.9pt}\selectfont \href{mailto:youli@alu.fudan.edu.cn}{youli@alu.fudan.edu.cn} \textperiodcentered\ \href{mailto:youli26@m.fudan.edu.cn}{youli26@m.fudan.edu.cn} \textperiodcentered\ \href{https://reason-you.github.io}{reason-you.github.io}}\par
+\vspace{-0.8pt}
+
+\cvsectionfirst{Education}
+\eduentry{Fudan University}{Shanghai, China}{Ph.D. in Electronic Information Engineering, AI Track}{2026.09\,--\,2030.06 (Expected)}
+{\smallfont \textbullet\ Advisor: Siming Chen, Associate Professor.}\par
+{\smallfont \textbullet\ Research: LLM-based Multi-Agent Systems, Social Simulation, Visual Analytics.}\par
+\vspace{2.7pt}
+\eduentry{Fudan University}{Shanghai, China}{M.Eng. in Computer Technology}{2022.09\,--\,2025.06}
+\vspace{2.7pt}
+\eduentry{Beijing Jiaotong University}{Beijing, China}{B.Eng. in Computer Science and Technology}{2018.09\,--\,2022.06}
+
+\cvsection{Selected Research Projects}
+\projectentry{ChoiceVerse: Visual Analytics of Competitive College Choice Behavior via Multi-Agent What-If Simulation}{2025.09\,--\,Present}
+\begin{cvitems}
+  \item Built a multi-agent what-if visual analytics system for exploring how public signals reshape collective competition in centralized college admissions (Gaokao).
+  \item Conducted empirical analysis of survey data from 300+ recent college entrants to characterize heterogeneous college-choice behavior and decision factors.
+  \item Designed a two-tier agent framework combining rule-based agents with LLM-driven agents to simulate heterogeneous decision-making under finite-capacity constraints.
+  \item Developed three coordinated visual analytics views spanning competitive positioning, group-level reallocation, and stage-aligned individual reasoning comparison.
+\end{cvitems}
+\vspace{3.4pt}
+\projectentry{Large-Scale Social Simulation with LLM Agents}{2025.09\,--\,Present}
+\begin{cvitems}
+  \item Conducted research on large-scale social media simulation with approximately 5,000 LLM agents mapped one-to-one to real users, modeling information diffusion and collective behavior over social interaction networks.
+  \item Designed simulation mechanisms for event-driven agent activation and network-based information propagation, supporting asynchronous responses to evolving real-world information.
+  \item Contributed to role-conditioned cognitive modeling and event-aware memory mechanisms for heterogeneous and temporally coherent agent behavior, with ongoing extension to additional social media platforms.
+  \item Led the design of experimental protocols for systematic evaluation under controlled simulation scenarios.
+\end{cvitems}
+
+\cvsectionnote{Publications \& Research Outputs}{\textsuperscript{\dag} Equal contribution.}
+\publication{1}{\textbf{Y. Li}, Y. Guo, Y. Qin, Y. Yang, P. Zhang, and S. Chen. ChoiceVerse: Visual Analytics of Competitive College Choice Behavior via Multi-Agent What-If Simulation. \textit{IEEE Transactions on Visualization and Computer Graphics}, 2026. Under review.}
+\publication{2}{Y. Qin\textsuperscript{\dag}, \textbf{Y. Li}\textsuperscript{\dag}, Y. Guo, and S. Chen. Visual Analytics of Educational Matching Market Behavior via LLM-Based Multi-Agent System Simulation: Evidence from Gaokao Admissions Decision Surveys. Non-archival oral presentation, \textit{HERA 2026 Young Scholars and Doctoral Students Forum}, 2026.}
+\publication{3}{J. Yu, J. Ren, Y. Chang, Q. Yu, X. Tong, B. Wang, Y. Song, \textbf{Y. Li}, X. Mai, and W. Zhang. Noise Fusion-based Distillation Learning for Anomaly Detection in Complex Industrial Environments. In \textit{Proc. IEEE/RSJ IROS}, 2025.}
+\publication{4}{Q. Wang, S. Gao, J. Hu, J. Yu, X. Tong, \textbf{Y. Li}, and W. Zhang. HSS-IAD: A Heterogeneous Same-Sort Industrial Anomaly Detection Dataset. In \textit{Proc. IEEE ICME}, 2025.}
+\publication{5}{\textbf{Y. Li} et al. ClickAirway: Select-and-Zoom Interactive Segmentation for Small Airway CT Imaging. \textit{Technical Report}, 2025. First author; non-public.}
+\publication{6}{A Two-Stage Active Learning Method for Fine-Grained Bronchial Airway Segmentation. \textit{Patent}, 2025. Fifth author.}
+\publication{7}{M. Ye, Y. Huangfu, \textbf{Y. Li}, and Z. Yu. SSP-RACL: Classification of Noisy Fundus Images with Self-Supervised Pretraining and Robust Adaptive Credal Loss. In \textit{Proc. IEEE BioCAS}, 2024.}
+
+% Keep the section heading with the first experience entry.
+\Needspace{10.5\baselineskip}
+\cvsection{Research \& Professional Experience}
+\expentry{Research Assistant}{2025.09\,--\,2026.08}{FDU-VIS Lab, Fudan University}
+\begin{cvitemsaftertwo}
+  \item Led the ChoiceVerse project and conducted research on large-scale LLM-based social simulation in an industry collaboration project.
+  \item Facilitated interdisciplinary collaboration between the School of Data Science and the Institute of Higher Education at Fudan University.
+\end{cvitemsaftertwo}
+\vspace{3.0pt}
+\expentry{Algorithm Intern}{2023.09\,--\,2024.05}{Shanghai MicroPort MedBot (Group) Co., Ltd.}
+\begin{cvitemsaftertwo}
+  \item Fine-tuned ZoeDepth for real-time monocular depth estimation in bronchoscopic surgical navigation.
+  \item Built coronary artery segmentation with nnUNet for surgical map construction (Dice: 86\%).
+\end{cvitemsaftertwo}
+
+\cvsection{Academic Service}
+\begin{cvitems}
+  \item Reviewer, IEEE International Conference on Multimedia and Expo (ICME), 2025.
+  \item Organizing Team Member, UbiComp/ISWC 2026 Workshop: \textit{Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures}, 2026.
+\end{cvitems}
+
+\cvsection{Academic \& Interdisciplinary Engagement}
+\begin{cvitems}
+  \item Moderator, Data Science Distinguished Doctoral Student Forum, Fudan University 121st Anniversary, 2026.05.29.
+  \item Moderator, Lecture: Humanities and Social Sciences Meet Artificial Intelligence: An Introduction to Computational Social Science, Fudan General Education Center / Fudan Liberal Arts Society, 2025.04.15.
+  \item Moderator, Lecture: ChatGPT Technology and Development, Fudan General Education Center / Fudan Liberal Arts Society, 2023.03.02.
+\end{cvitems}
+
+\cvsection{Technical Skills}
+\skillline{Languages:}{English (CET-6: 584, Reading: 243/249).}
+\skillline{LLM Technologies:}{Transformers, LangChain, LLM deployment and optimization.}
+\skillline{Programming:}{Python, C++.}
+\skillline{Tools:}{Git, Shell, Linux, \LaTeX, Figma.}
+
+\end{document}

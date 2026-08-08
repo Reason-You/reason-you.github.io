@@ -1,3 +1,5 @@
 type = "text"
 title = "CV"
 source = "cv.md"
+download_pdf = "/files/You_Li_CV.pdf"
+download_pdf_cn = "/files/You_Li_CV_CN.pdf"

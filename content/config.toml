@@ -1,9 +1,9 @@
 [site]
 title = "You Li"
-seo_title = "You Li 李由 | Fudan"
+seo_title = "You Li 李由"
 description = "You Li (李由) is a Ph.D. student at the FDU-VIS Lab, School of Data Science, Fudan University, supervised by Prof. Siming Chen. His research focuses on visual analytics, LLM-based multi-agent systems, and social simulation."
 favicon = "/favicon-32.png"
-last_updated = "August 8, 2026"
+last_updated = "August 9, 2026"
 
 [author]
 name = "You Li 李由"
@@ -28,7 +28,7 @@ enable_likes = true
 enable_one_page_mode = false
 
 [[navigation]]
-title = "About"
+title = "Home"
 type = "page"
 target = "about"
 href = "/"

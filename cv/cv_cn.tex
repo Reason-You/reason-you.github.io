@@ -1,0 +1,223 @@
+\documentclass[10pt,a4paper]{article}
+
+% =============================================================================
+% 注意（AI 助手）：
+% 本 .tex 文件与 content/cv.md（网站 HTML 版 CV）并非自动同步。
+% 更新 CV 内容时，请提示用户选择需要更新哪个版本。
+% 请勿默认修改其中一份就会同步到另一份。
+% =============================================================================
+
+\usepackage[a4paper,left=18.5mm,right=18.5mm,top=13.0mm,bottom=8.5mm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{libertinus}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{ragged2e}
+
+\setCJKmainfont{FandolSong-Regular.otf}[BoldFont=FandolSong-Bold.otf]
+
+\definecolor{CVGray}{gray}{0.32}
+\definecolor{CVRule}{gray}{0.78}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\raggedbottom
+\emergencystretch=1.2em
+\hyphenpenalty=7000
+\exhyphenpenalty=7000
+\tolerance=1700
+\clubpenalty=10000
+\widowpenalty=10000
+
+% 正文字号与英文版保持一致。
+\newcommand{\bodyfont}{\fontsize{10.65pt}{14.1pt}\selectfont}
+\newcommand{\smallfont}{\fontsize{9.8pt}{12.55pt}\selectfont}
+\newcommand{\datefont}{\fontsize{9.65pt}{12.45pt}\selectfont\color{CVGray}}
+
+\newcommand{\cvsection}[1]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{9pt}%
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries #1}\par
+  \vspace{\dimexpr-\baselineskip+3.5pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+\newcommand{\cvsectionfirst}[1]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{5.8pt}%
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries #1}\par
+  \vspace{\dimexpr-\baselineskip+3.5pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+\newcommand{\cvsectionnote}[2]{%
+  \Needspace{2.6\baselineskip}%
+  \vspace{9pt}%
+  \noindent
+  {\fontsize{11.6pt}{13.8pt}\selectfont\bfseries #1}%
+  \hfill
+  {\fontsize{8.8pt}{10.5pt}\selectfont\color{CVGray}#2}\par
+  \vspace{\dimexpr-\baselineskip+3.5pt\relax}%
+  \noindent{\color{CVRule}\rule{\textwidth}{0.32pt}}\par
+  \vspace{5pt}%
+}
+
+% 左右信息共基线。字体在 parbox 创建前确定，避免右侧日期下沉。
+\newcommand{\pairedline}[4]{%
+  \noindent
+  {\bodyfont\parbox[t]{\dimexpr\textwidth-44mm\relax}{\raggedright #1}}%
+  \hfill
+  {\datefont\parbox[t]{42mm}{\raggedleft #2}}%
+  \par
+  \ifx\\#3\\\else
+    \vspace{0.15pt}%
+    \noindent
+    {\bodyfont\parbox[t]{\dimexpr\textwidth-44mm\relax}{\raggedright #3}}%
+    \hfill
+    {\datefont\parbox[t]{42mm}{\raggedleft #4}}%
+    \par
+  \fi
+}
+
+\newcommand{\eduentry}[4]{%
+  \pairedline{{\bfseries #1}}{#2}{{#3}}{#4}%
+}
+
+\newcommand{\entryline}[2]{%
+  \pairedline{{\bfseries #1}}{#2}{}{}%
+}
+
+\newcommand{\projectentry}[2]{%
+  \entryline{#1}{#2}%
+}
+
+\newcommand{\expentry}[3]{%
+  \Needspace{5.2\baselineskip}%
+  \entryline{#1}{#2}%
+  {\smallfont\color{CVGray}#3}\par
+}
+
+\newenvironment{cvitems}{%
+  \begin{itemize}[leftmargin=1.22em,labelsep=0.42em,itemsep=3.0pt,topsep=0.45pt,parsep=0pt,partopsep=0pt]
+  \bodyfont
+}{\end{itemize}}
+
+\newenvironment{cvitemsaftertwo}{%
+  \begin{itemize}[leftmargin=1.22em,labelsep=0.42em,itemsep=3.0pt,topsep=0.95pt,parsep=0pt,partopsep=0pt]
+  \bodyfont
+}{\end{itemize}}
+
+% 可跨页的研究成果条目。后续新增成果时直接复制 \publication 即可。
+\newlength{\pubindent}
+\setlength{\pubindent}{9.2mm}
+\newcommand{\publication}[2]{%
+  \par\vspace{1.6pt}%
+  {\fontsize{10.35pt}{13.55pt}\selectfont
+   \hangindent=\pubindent
+   \hangafter=1
+   \noindent
+   \makebox[\pubindent][l]{\makebox[6.5mm][r]{{\smallfont\color{CVGray}[#1]}}\hspace{2.7mm}}#2\par}%
+}
+
+\newcommand{\skillline}[2]{%
+  \textbf{#1}\hspace{0.5em}#2\par\vspace{3.0pt}%
+}
+
+% -----------------------------------------------------------------------------
+% 维护说明
+% 1. 页首个人信息直接修改 Header 区。
+% 2. 教育、项目、成果、经历都在对应 section 中直接维护。
+% 3. 字号、间距和左右栏宽度集中定义在上方，日常更新通常无需修改。
+% 4. 研究成果条目允许自然跨页，不在成果列表中插入人工分页。
+% -----------------------------------------------------------------------------
+\begin{document}
+\bodyfont
+
+% Header
+\noindent
+{\fontsize{20.4pt}{21.8pt}\selectfont\bfseries\raisebox{0.15ex}[0pt][0pt]{李由}}\hspace{0.30em}{\fontsize{16.0pt}{21.8pt}\selectfont\bfseries You Li}\par
+\vspace{6pt}
+{\fontsize{9.95pt}{11.45pt}\selectfont 博士生，FDU-VIS实验室，复旦大学大数据学院}\par
+\vspace{3pt}
+{\fontsize{9.25pt}{10.9pt}\selectfont \href{mailto:youli@alu.fudan.edu.cn}{youli@alu.fudan.edu.cn} \textperiodcentered\ \href{mailto:youli26@m.fudan.edu.cn}{youli26@m.fudan.edu.cn} \textperiodcentered\ \href{https://reason-you.github.io}{reason-you.github.io}}\par
+\vspace{-0.8pt}
+
+\cvsectionfirst{教育经历}
+\eduentry{复旦大学}{上海}{博士，电子信息（大数据智能）}{2026.09\,--\,2030.06（预计）}
+{\smallfont \textbullet\ 导师：陈思明，青年研究员。}\par
+{\smallfont \textbullet\ 研究方向：多智能体、社会仿真、可视分析。}\par
+\vspace{2.7pt}
+\eduentry{复旦大学}{上海}{硕士，计算机技术}{2022.09\,--\,2025.06}
+\vspace{2.7pt}
+\eduentry{北京交通大学}{北京}{本科，计算机科学与技术（医学信息技术）}{2018.09\,--\,2022.06}
+
+\cvsection{代表性科研项目}
+\projectentry{ChoiceVerse：基于多智能体反事实推演的高考志愿选择行为可视分析}{2025.09\,--\,至今}
+\begin{cvitems}
+  \item 构建多智能体反事实推演可视分析系统，研究公共信号对高考集中录取中群体竞争与志愿决策的影响。
+  \item 基于300余名大学新生问卷开展实证分析，刻画高考志愿选择中的异质行为与关键决策因素。
+  \item 设计由规则智能体与大语言模型智能体组成的双层架构，在有限招生容量约束下模拟异质性志愿决策。
+  \item 开发三个协同可视分析视图，支持竞争态势、群体再分配与阶段对齐的个体推理比较。
+\end{cvitems}
+\vspace{3.4pt}
+\projectentry{基于大语言模型智能体的大规模社交媒体仿真}{2025.09\,--\,至今}
+\begin{cvitems}
+  \item 开展约5,000个与真实用户一一映射的大语言模型智能体仿真，基于社交关系网络研究信息传播与群体行为。
+  \item 设计事件驱动的智能体激活与网络传播机制，使主体能够随现实信息演化产生异步响应。
+  \item 参与角色条件化认知与事件感知记忆机制设计，增强异质主体的行为连续性，并推进框架向其他社交媒体平台扩展。
+  \item 主导受控仿真场景下的系统评估实验方案设计。
+\end{cvitems}
+
+\cvsectionnote{论文与研究成果}{\textsuperscript{\dag} 共同第一作者}
+\publication{1}{\textbf{Y. Li}, Y. Guo, Y. Qin, Y. Yang, P. Zhang, and S. Chen. ChoiceVerse: Visual Analytics of Competitive College Choice Behavior via Multi-Agent What-If Simulation. \textit{IEEE Transactions on Visualization and Computer Graphics}, 2026. 审稿中。}
+\publication{2}{Y. Qin\textsuperscript{\dag}, \textbf{Y. Li}\textsuperscript{\dag}, Y. Guo, and S. Chen. Visual Analytics of Educational Matching Market Behavior via LLM-Based Multi-Agent System Simulation: Evidence from Gaokao Admissions Decision Surveys. 非归档口头报告，HERA 2026青年学者与博士生论坛，2026。}
+\publication{3}{J. Yu, J. Ren, Y. Chang, Q. Yu, X. Tong, B. Wang, Y. Song, \textbf{Y. Li}, X. Mai, and W. Zhang. Noise Fusion-based Distillation Learning for Anomaly Detection in Complex Industrial Environments. In \textit{Proc. IEEE/RSJ IROS}, 2025.}
+\publication{4}{Q. Wang, S. Gao, J. Hu, J. Yu, X. Tong, \textbf{Y. Li}, and W. Zhang. HSS-IAD: A Heterogeneous Same-Sort Industrial Anomaly Detection Dataset. In \textit{Proc. IEEE ICME}, 2025.}
+\publication{5}{\textbf{Y. Li} et al. ClickAirway: Select-and-Zoom Interactive Segmentation for Small Airway CT Imaging. 技术报告，2025。第一作者；未公开。}
+\publication{6}{A Two-Stage Active Learning Method for Fine-Grained Bronchial Airway Segmentation. 专利，2025。第五发明人。}
+\publication{7}{M. Ye, Y. Huangfu, \textbf{Y. Li}, and Z. Yu. SSP-RACL: Classification of Noisy Fundus Images with Self-Supervised Pretraining and Robust Adaptive Credal Loss. In \textit{Proc. IEEE BioCAS}, 2024.}
+
+% 保证章节标题与第一条经历不会分离。
+\Needspace{8\baselineskip}
+\cvsection{科研与工作经历}
+\expentry{科研助理}{2025.09\,--\,2026.08}{FDU-VIS实验室，复旦大学大数据学院}
+\begin{cvitemsaftertwo}
+  \item 主导 ChoiceVerse 项目，并参与企业合作横向项目中的大规模社交媒体仿真研究。
+  \item 推动复旦大学大数据学院与高等教育研究所的跨学科合作。
+\end{cvitemsaftertwo}
+\vspace{3.0pt}
+\expentry{算法实习生}{2023.09\,--\,2024.05}{上海微创医疗机器人（集团）股份有限公司}
+\begin{cvitemsaftertwo}
+  \item 微调 ZoeDepth，用于支气管镜手术导航中的实时单目深度估计。
+  \item 构建基于 nnUNet 的冠状动脉分割模型，用于手术地图构建（Dice：86\%）。
+\end{cvitemsaftertwo}
+
+\cvsection{学术服务}
+\begin{cvitems}
+  \item IEEE International Conference on Multimedia and Expo（ICME）审稿人，2025。
+  \item UbiComp/ISWC 2026 Workshop：\textit{Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures} 组织团队成员，2026。
+\end{cvitems}
+
+\cvsection{学术与跨学科活动}
+\begin{cvitems}
+  \item 2026年5月29日：复旦大学121周年校庆数据科学优秀博士生论坛，担任活动主持。
+  \item 2025年4月15日：复旦通识中心/复旦文理学社博雅讲堂“人文社科碰上人工智能：走进计算社会科学”，担任活动主持。
+  \item 2023年3月2日：复旦通识中心/复旦文理学社博雅讲堂“ChatGPT技术与发展”，担任活动主持。
+\end{cvitems}
+
+\cvsection{专业技能}
+\skillline{语言：}{英语（CET-6：584，阅读：243/249）。}
+\skillline{大语言模型技术：}{Transformers、LangChain、大语言模型部署与优化。}
+\skillline{编程：}{Python、C++。}
+\skillline{工具：}{Git、Shell、Linux、\LaTeX、Figma。}
+
+\end{document}

@@ -12,8 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const seoTitle = config.site.seo_title || config.site.title;
   return {
     title: {
-      default: seoTitle,
-      template: `${config.author.name} | %s`
+      default: `Home | ${config.author.name}`,
+      template: `%s | ${config.author.name}`
     },
     description: config.site.description,
     keywords: [config.author.name, "PhD", "Research", config.author.institution],
