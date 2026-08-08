@@ -1,4 +1,4 @@
-I am a Research Assistant in the [FDU-VIS Lab](https://fduvis.net), [School of Data Science](https://sds.fudan.edu.cn/) at Fudan University, under the supervision of [Prof. Siming Chen](http://simingchen.me). I will join the School of Data Science at Fudan University as a Ph.D. student in Fall 2026.
+I am a Ph.D. student in the [FDU-VIS Lab](https://fduvis.net), [School of Data Science](https://sds.fudan.edu.cn) at Fudan University, under the supervision of [Prof. Siming Chen](https://simingchen.me).
 
 I earned my Master’s degree at Fudan University and my Bachelor’s degree at Beijing Jiaotong University. Previously, I worked on computer vision and medical image segmentation.
 

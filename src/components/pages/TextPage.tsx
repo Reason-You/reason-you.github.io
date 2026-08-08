@@ -16,7 +16,7 @@ export default function TextPage({ config, content, embedded = false }: TextPage
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className={embedded ? "" : "max-w-3xl mx-auto"}
+            className={embedded ? "" : ""}
         >
             <h1 className={`${embedded ? "text-2xl" : "text-4xl"} font-serif font-bold text-primary mb-4`}>{config.title}</h1>
             {config.description && (
