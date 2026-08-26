@@ -54,3 +54,7 @@ next-env.d.ts
 *.xdv
 cv/cv.pdf
 cv/cv_cn.pdf
+
+# private CV with phone number — never commit anything matching this
+cv_cn_phone.*
+/不上传-私人简历/
