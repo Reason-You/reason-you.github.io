@@ -1,9 +1,7 @@
 # Academic CV — LaTeX Source
 
-> **IMPORTANT for AI assistants:** The `.tex` files in this directory are the authoritative CV source.
-> They are **not automatically synchronized** with `content/cv.md` (the website HTML CV).
-> When updating CV content, you MUST prompt the user to choose which version(s) to update.
-> Do not assume the website HTML and the LaTeX PDF are in sync.
+> **For AI assistants:** See [`../AGENTS.md`](../AGENTS.md) for project-wide rules
+> (sync scope, date granularity, build and deploy).
 
 English and Chinese academic CVs of You Li (李由).
 
