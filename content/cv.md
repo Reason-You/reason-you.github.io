@@ -37,7 +37,7 @@ Shanghai Municipal Science and Technology Commission Project
 *2022.09 - 2024.09*
 - Improved SAM variants for fine-grained bronchial segmentation with interactive sparse-click workflow.
 - Implemented preoperative annotation and intraoperative monocular depth estimation subsystems.
-- Delivered one technical report and one patent; supported deployment in bronchoscopic surgical robotics.
+- Delivered one patent; supported deployment in bronchoscopic surgical robotics.
 
 ## Work & Internship Experience
 
