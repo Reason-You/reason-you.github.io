@@ -4,7 +4,7 @@ My current research interests focus on visual analytics, LLM-based multi-agent s
 
 I earned my Master’s degree at Fudan University and my Bachelor’s degree at Beijing Jiaotong University. Previously, I worked on computer vision and medical image segmentation.
 
-I am also a senior member of the Fudan Astronomy Society（复旦天文协会）, the Fudan Yutu Geographic Association（复旦舆图社）, and the Fudan Liberal Arts Society（复旦文理学社）. I also lead the Fudan Liberal Arts Society this semester.
+I am a senior member of the Fudan Astronomy Society（复旦天文协会） and the Fudan Yutu Geographic Association（复旦舆图社）. I am also a senior member of the Fudan Liberal Arts Society（复旦文理学社）, which I lead this semester.
 
 If you are interested in me and my research, feel free to drop me an e-mail.
 
