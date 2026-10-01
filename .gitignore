@@ -61,3 +61,6 @@ cv_cn_phone.*
 
 # local-only agent instructions
 AGENTS.local.md
+
+# browser automation snapshots
+/.playwright-cli/

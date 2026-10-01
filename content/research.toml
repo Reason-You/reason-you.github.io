@@ -1,5 +1,5 @@
 type = "research"
 title = "Research"
-description = "Patents, peer-reviewed papers, and manuscripts under review."
+description = "Research papers, challenge reports, and patents."
 source = "research.bib"
 show_bibtex = false

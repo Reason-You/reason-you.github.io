@@ -107,10 +107,10 @@ export default function Profile({ author, social, features, researchInterests }:
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="sticky top-8"
+            className="lg:sticky lg:top-28"
         >
             {/* Profile Image */}
-            <div className="w-64 h-64 mx-auto mb-6 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+            <div className="w-40 h-40 sm:w-64 sm:h-64 mx-auto mb-4 sm:mb-6 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                 <Image
                     src={author.avatar}
                     alt={author.name}
@@ -122,8 +122,8 @@ export default function Profile({ author, social, features, researchInterests }:
             </div>
 
             {/* Name and Title */}
-            <div className="text-center mb-6">
-                <h1 className="text-3xl font-serif font-bold text-primary mb-2">
+            <div className="text-center mb-4 sm:mb-6">
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-primary mb-2">
                     {author.name}
                 </h1>
                 <p className="text-lg text-accent font-medium mb-1">
@@ -135,7 +135,7 @@ export default function Profile({ author, social, features, researchInterests }:
             </div>
 
             {/* Contact Links */}
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6 relative px-2">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-4 sm:mb-6 relative px-2">
                 {socialLinks.map((link) => {
                     const IconComponent = link.icon;
                     if (link.isLocation) {
@@ -184,7 +184,7 @@ export default function Profile({ author, social, features, researchInterests }:
                                                 <div className="flex items-center justify-center space-x-2 mb-1">
                                                     <p className="font-semibold">Work Address</p>
                                                     {!isAddressPinned && (
-                                                        <div className="flex items-center space-x-0.5 text-xs text-neutral-400 opacity-60">
+                                                        <div className="flex items-center space-x-0.5 text-xs text-neutral-400 dark:text-neutral-600 opacity-60">
                                                             <Pin className="h-2.5 w-2.5" />
                                                             <span className="hidden sm:inline">Click</span>
                                                         </div>
@@ -199,7 +199,7 @@ export default function Profile({ author, social, features, researchInterests }:
                                                             href={social.location_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="inline-flex items-center justify-center space-x-2 bg-accent hover:bg-accent-dark text-white px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 w-full sm:w-auto"
+                                                            className="inline-flex items-center justify-center space-x-2 bg-accent hover:bg-accent-dark text-background px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 w-full sm:w-auto"
                                                         >
                                                             <MapPinIcon className="h-4 w-4" />
                                                             <span>Google Map</span>
@@ -261,7 +261,7 @@ export default function Profile({ author, social, features, researchInterests }:
                                                 <div className="flex items-center justify-center space-x-2 mb-1">
                                                     <p className="font-semibold">Email</p>
                                                     {!isEmailPinned && (
-                                                        <div className="flex items-center space-x-0.5 text-xs text-neutral-400 opacity-60">
+                                                        <div className="flex items-center space-x-0.5 text-xs text-neutral-400 dark:text-neutral-600 opacity-60">
                                                             <Pin className="h-2.5 w-2.5" />
                                                             <span className="hidden sm:inline">Click</span>
                                                         </div>
@@ -271,7 +271,7 @@ export default function Profile({ author, social, features, researchInterests }:
                                                 <div className="mt-2">
                                                     <a
                                                         href={link.href}
-                                                        className="inline-flex items-center justify-center space-x-2 bg-accent hover:bg-accent-dark text-white px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 w-full sm:w-auto"
+                                                        className="inline-flex items-center justify-center space-x-2 bg-accent hover:bg-accent-dark text-background px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 w-full sm:w-auto"
                                                     >
                                                         <EnvelopeIcon className="h-4 w-4" />
                                                         <span className="sm:hidden">Send</span>
@@ -303,9 +303,9 @@ export default function Profile({ author, social, features, researchInterests }:
 
             {/* Research Interests */}
             {researchInterests && researchInterests.length > 0 && (
-                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 mb-6 hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
-                    <h3 className="font-semibold text-primary mb-3">Research Interests</h3>
-                    <div className="space-y-2 text-sm text-neutral-700 dark:text-neutral-500">
+                <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
+                    <h3 className="font-semibold text-primary mb-2 sm:mb-3">Research Interests</h3>
+                    <div className="space-y-1 sm:space-y-2 text-sm text-neutral-700 dark:text-neutral-500">
                         {researchInterests.map((interest, index) => (
                             <div key={index}>{interest}</div>
                         ))}
@@ -341,7 +341,7 @@ export default function Profile({ author, social, features, researchInterests }:
                                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                                     animate={{ opacity: 1, y: -10, scale: 1 }}
                                     exit={{ opacity: 0, y: -20, scale: 0.8 }}
-                                    className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg whitespace-nowrap"
+                                    className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full bg-accent text-background px-4 py-2 rounded-lg text-sm font-medium shadow-lg whitespace-nowrap"
                                 >
                                     Thanks! 😊
                                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-accent"></div>
