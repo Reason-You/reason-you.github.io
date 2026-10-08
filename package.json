@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:sky": "node --test scripts/test_sky.cjs",
     "update:light-pollution": "python3 scripts/update_light_pollution.py"
   },
   "dependencies": {

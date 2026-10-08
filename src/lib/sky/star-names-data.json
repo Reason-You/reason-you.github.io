@@ -1,0 +1,1452 @@
+[
+  {
+    "hygId": 32263,
+    "hip": 32349,
+    "hd": 48915,
+    "bayer": "Alp CMa",
+    "english": "Sirius",
+    "chinese": "天狼星",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大犬座α — 天狼星"
+  },
+  {
+    "hygId": 30365,
+    "hip": 30438,
+    "hd": 45348,
+    "bayer": "Alp Car",
+    "english": "Canopus",
+    "chinese": "老人星",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船底座α — 老人星"
+  },
+  {
+    "hygId": 69451,
+    "hip": 69673,
+    "hd": 124897,
+    "bayer": "Alp Boo",
+    "english": "Arcturus",
+    "chinese": "大角",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "牧夫座α — 大角星"
+  },
+  {
+    "hygId": 71456,
+    "hip": 71683,
+    "hd": 128620,
+    "bayer": "Alp-1 Cen",
+    "english": "Rigil Kentaurus",
+    "chinese": "南门二A",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/南門二",
+    "sourceEvidence": "南门二=Alpha Centauri; alpha Cen A: HD128620, HIP71683. A is the component qualifier."
+  },
+  {
+    "hygId": 90979,
+    "hip": 91262,
+    "hd": 172167,
+    "bayer": "Alp Lyr",
+    "english": "Vega",
+    "chinese": "织女一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天琴座α — 织女一"
+  },
+  {
+    "hygId": 24549,
+    "hip": 24608,
+    "hd": 34029,
+    "bayer": "Alp Aur",
+    "english": "Capella",
+    "chinese": "五车二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "御夫座α — 五车二"
+  },
+  {
+    "hygId": 24378,
+    "hip": 24436,
+    "hd": 34085,
+    "bayer": "Bet Ori",
+    "english": "Rigel",
+    "chinese": "参宿七",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座β — 参宿七"
+  },
+  {
+    "hygId": 37173,
+    "hip": 37279,
+    "hd": 61421,
+    "bayer": "Alp CMi",
+    "english": "Procyon",
+    "chinese": "南河三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "小犬座α — 南河三"
+  },
+  {
+    "hygId": 7574,
+    "hip": 7588,
+    "hd": 10144,
+    "bayer": "Alp Eri",
+    "english": "Achernar",
+    "chinese": "水委一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "波江座α — 水委一"
+  },
+  {
+    "hygId": 27919,
+    "hip": 27989,
+    "hd": 39801,
+    "bayer": "Alp Ori",
+    "english": "Betelgeuse",
+    "chinese": "参宿四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座α — 参宿四"
+  },
+  {
+    "hygId": 68483,
+    "hip": 68702,
+    "hd": 122451,
+    "bayer": "Bet Cen",
+    "english": "Hadar",
+    "chinese": "马腹一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "半人马座β — 马腹一"
+  },
+  {
+    "hygId": 97338,
+    "hip": 97649,
+    "hd": 187642,
+    "bayer": "Alp Aql",
+    "english": "Altair",
+    "chinese": "河鼓二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹰座α — 河鼓二（牛郎星）"
+  },
+  {
+    "hygId": 60530,
+    "hip": 60718,
+    "hd": 108248,
+    "bayer": "Alp-1 Cru",
+    "english": "Acrux",
+    "chinese": "十字架二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/十字架二",
+    "sourceEvidence": "十字架二=alpha Cru=Acrux; alpha1/alpha2: HD108248/108249, HIP60718. HYG HD identifies alpha1; traditional name covers system."
+  },
+  {
+    "hygId": 21368,
+    "hip": 21421,
+    "hd": 29139,
+    "bayer": "Alp Tau",
+    "english": "Aldebaran",
+    "chinese": "毕宿五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "金牛座α — 毕宿五"
+  },
+  {
+    "hygId": 65269,
+    "hip": 65474,
+    "hd": 116658,
+    "bayer": "Alp Vir",
+    "english": "Spica",
+    "chinese": "角宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "室女座α — 角宿一"
+  },
+  {
+    "hygId": 80519,
+    "hip": 80763,
+    "hd": 148478,
+    "bayer": "Alp Sco",
+    "english": "Antares",
+    "chinese": "心宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座α — 心宿二"
+  },
+  {
+    "hygId": 37718,
+    "hip": 37826,
+    "hd": 62509,
+    "bayer": "Bet Gem",
+    "english": "Pollux",
+    "chinese": "北河三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "双子座β — 北河三"
+  },
+  {
+    "hygId": 113008,
+    "hip": 113368,
+    "hd": 216956,
+    "bayer": "Alp PsA",
+    "english": "Fomalhaut",
+    "chinese": "北落师门",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "南鱼座α — 北落师门"
+  },
+  {
+    "hygId": 62239,
+    "hip": 62434,
+    "hd": 111123,
+    "bayer": "Bet Cru",
+    "english": "Mimosa",
+    "chinese": "十字架三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "南十字座β — 十字架三"
+  },
+  {
+    "hygId": 101767,
+    "hip": 102098,
+    "hd": 197345,
+    "bayer": "Alp Cyg",
+    "english": "Deneb",
+    "chinese": "天津四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹅座α — 天津四"
+  },
+  {
+    "hygId": 71453,
+    "hip": 71681,
+    "hd": 128621,
+    "bayer": "Alp-2 Cen",
+    "english": "Toliman",
+    "chinese": "南门二B",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/南門二",
+    "sourceEvidence": "南门二=Alpha Centauri; alpha Cen B: HD128621, HIP71681. B is the component qualifier."
+  },
+  {
+    "hygId": 49528,
+    "hip": 49669,
+    "hd": 87901,
+    "bayer": "Alp Leo",
+    "english": "Regulus",
+    "chinese": "轩辕十四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "狮子座α — 轩辕十四"
+  },
+  {
+    "hygId": 33492,
+    "hip": 33579,
+    "hd": 52089,
+    "bayer": "Eps CMa",
+    "english": "Adhara",
+    "chinese": "弧矢七",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大犬座ε — 弧矢七"
+  },
+  {
+    "hygId": 36744,
+    "hip": 36850,
+    "hd": 60179,
+    "bayer": "Alp Gem",
+    "english": "Castor",
+    "chinese": "北河二A",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/北河二",
+    "sourceEvidence": "北河二=alpha Gem=Castor; SIMBAD links explicitly label HD60179 Castor Aa and HD60178 Castor Ba. A qualifies the A subsystem; HYG mag1.58 is system-like."
+  },
+  {
+    "hygId": 60893,
+    "hip": 61084,
+    "hd": 108903,
+    "bayer": "Gam Cru",
+    "english": "Gacrux",
+    "chinese": "十字架一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "南十字座γ — 十字架一"
+  },
+  {
+    "hygId": 85665,
+    "hip": 85927,
+    "hd": 158926,
+    "bayer": "Lam Sco",
+    "english": "Shaula",
+    "chinese": "尾宿八",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座λ — 尾宿八"
+  },
+  {
+    "hygId": 25273,
+    "hip": 25336,
+    "hd": 35468,
+    "bayer": "Gam Ori",
+    "english": "Bellatrix",
+    "chinese": "参宿五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座γ — 参宿五"
+  },
+  {
+    "hygId": 25364,
+    "hip": 25428,
+    "hd": 35497,
+    "bayer": "Bet Tau",
+    "english": "Elnath",
+    "chinese": "五车五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "金牛座β/御夫座γ — 五车五"
+  },
+  {
+    "hygId": 45106,
+    "hip": 45238,
+    "hd": 80007,
+    "bayer": "Bet Car",
+    "english": "Miaplacidus",
+    "chinese": "南船五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船底座β — 南船五"
+  },
+  {
+    "hygId": 26246,
+    "hip": 26311,
+    "hd": 37128,
+    "bayer": "Eps Ori",
+    "english": "Alnilam",
+    "chinese": "参宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座ε — 参宿二"
+  },
+  {
+    "hygId": 108922,
+    "hip": 109268,
+    "hd": 209952,
+    "bayer": "Alp Gru",
+    "english": "Alnair",
+    "chinese": "鹤一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹤座α — 鹤一"
+  },
+  {
+    "hygId": 26662,
+    "hip": 26727,
+    "hd": 37742,
+    "bayer": "Zet Ori",
+    "english": "Alnitak",
+    "chinese": "参宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座ζ — 参宿一"
+  },
+  {
+    "hygId": 62757,
+    "hip": 62956,
+    "hd": 112185,
+    "bayer": "Eps UMa",
+    "english": "Alioth",
+    "chinese": "玉衡",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座ε — 玉衡/北斗五"
+  },
+  {
+    "hygId": 15824,
+    "hip": 15863,
+    "hd": 20902,
+    "bayer": "Alp Per",
+    "english": "Mirfak",
+    "chinese": "天船三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "英仙座α — 天船三"
+  },
+  {
+    "hygId": 89906,
+    "hip": 90185,
+    "hd": 169022,
+    "bayer": "Eps Sgr",
+    "english": "Kaus Australis",
+    "chinese": "箕宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座ε — 箕宿三"
+  },
+  {
+    "hygId": 53905,
+    "hip": 54061,
+    "hd": 95689,
+    "bayer": "Alp UMa",
+    "english": "Dubhe",
+    "chinese": "天枢",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座α — 天枢/北斗一"
+  },
+  {
+    "hygId": 34354,
+    "hip": 34444,
+    "hd": 54605,
+    "bayer": "Del CMa",
+    "english": "Wezen",
+    "chinese": "弧矢一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大犬座δ — 弧矢一"
+  },
+  {
+    "hygId": 67088,
+    "hip": 67301,
+    "hd": 120315,
+    "bayer": "Eta UMa",
+    "english": "Alkaid",
+    "chinese": "摇光",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座η — 摇光/北斗七"
+  },
+  {
+    "hygId": 40921,
+    "hip": 41037,
+    "hd": 71129,
+    "bayer": "Eps Car",
+    "english": "Avior",
+    "chinese": "海石一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船底座ε — 海石一"
+  },
+  {
+    "hygId": 85965,
+    "hip": 86228,
+    "hd": 159532,
+    "bayer": "The Sco",
+    "english": "Sargas",
+    "chinese": "尾宿五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座θ — 尾宿五"
+  },
+  {
+    "hygId": 28288,
+    "hip": 28360,
+    "hd": 40183,
+    "bayer": "Bet Aur",
+    "english": "Menkalinan",
+    "chinese": "五车三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "御夫座β — 五车三"
+  },
+  {
+    "hygId": 82022,
+    "hip": 82273,
+    "hd": 150798,
+    "bayer": "Alp TrA",
+    "english": "Atria",
+    "chinese": "三角形三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "南三角座α — 三角形三"
+  },
+  {
+    "hygId": 31601,
+    "hip": 31681,
+    "hd": 47105,
+    "bayer": "Gam Gem",
+    "english": "Alhena",
+    "chinese": "井宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "双子座γ — 井宿三"
+  },
+  {
+    "hygId": 42794,
+    "hip": 42913,
+    "hd": 74956,
+    "bayer": "Del Vel",
+    "english": "Alsephina",
+    "chinese": "天社三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船帆座δ — 天社三"
+  },
+  {
+    "hygId": 100425,
+    "hip": 100751,
+    "hd": 193924,
+    "bayer": "Alp Pav",
+    "english": "Peacock",
+    "chinese": "孔雀十一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "孔雀座α — 孔雀十一"
+  },
+  {
+    "hygId": 11734,
+    "hip": 11767,
+    "hd": 8890,
+    "bayer": "Alp UMi",
+    "english": "Polaris",
+    "chinese": "勾陈一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "小熊座α — 勾陈一/北极星"
+  },
+  {
+    "hygId": 30251,
+    "hip": 30324,
+    "hd": 44743,
+    "bayer": "Bet CMa",
+    "english": "Mirzam",
+    "chinese": "军市一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大犬座β — 军市一"
+  },
+  {
+    "hygId": 46259,
+    "hip": 46390,
+    "hd": 81797,
+    "bayer": "Alp Hya",
+    "english": "Alphard",
+    "chinese": "星宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "长蛇座α — 星宿一"
+  },
+  {
+    "hygId": 9861,
+    "hip": 9884,
+    "hd": 12929,
+    "bayer": "Alp Ari",
+    "english": "Hamal",
+    "chinese": "娄宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "白羊座α — 娄宿三"
+  },
+  {
+    "hygId": 50440,
+    "hip": 50583,
+    "hd": 89484,
+    "bayer": "Gam-1 Leo",
+    "english": "Algieba",
+    "chinese": "轩辕十二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/軒轅十二",
+    "sourceEvidence": "轩辕十二=gamma Leo=Algieba; HD89484, HIP50583. Traditional name covers the binary; HYG identifies gamma1."
+  },
+  {
+    "hygId": 3413,
+    "hip": 3419,
+    "hd": 4128,
+    "bayer": "Bet Cet",
+    "english": "Diphda",
+    "chinese": "土司空",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "鲸鱼座β — 土司空"
+  },
+  {
+    "hygId": 92564,
+    "hip": 92855,
+    "hd": 175191,
+    "bayer": "Sig Sgr",
+    "english": "Nunki",
+    "chinese": "斗宿四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座σ — 斗宿四"
+  },
+  {
+    "hygId": 68714,
+    "hip": 68933,
+    "hd": 123139,
+    "bayer": "The Cen",
+    "english": "Menkent",
+    "chinese": "库楼三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "半人马座θ — 库楼三"
+  },
+  {
+    "hygId": 676,
+    "hip": 677,
+    "hd": 358,
+    "bayer": "Alp And",
+    "english": "Alpheratz",
+    "chinese": "壁宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙女座α/飞马座δ — 壁宿二"
+  },
+  {
+    "hygId": 5436,
+    "hip": 5447,
+    "hd": 6860,
+    "bayer": "Bet And",
+    "english": "Mirach",
+    "chinese": "奎宿九",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙女座β — 奎宿九"
+  },
+  {
+    "hygId": 27298,
+    "hip": 27366,
+    "hd": 38771,
+    "bayer": "Kap Ori",
+    "english": "Saiph",
+    "chinese": "参宿六",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座κ — 参宿六"
+  },
+  {
+    "hygId": 72380,
+    "hip": 72607,
+    "hd": 131873,
+    "bayer": "Bet UMi",
+    "english": "Kochab",
+    "chinese": "帝",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "小熊座β — 帝/北极二"
+  },
+  {
+    "hygId": 111768,
+    "hip": 112122,
+    "hd": 214952,
+    "bayer": "Bet Gru",
+    "english": "Tiaki",
+    "chinese": "鹤二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹤座β — 鹤二"
+  },
+  {
+    "hygId": 85769,
+    "hip": 86032,
+    "hd": 159561,
+    "bayer": "Alp Oph",
+    "english": "Rasalhague",
+    "chinese": "候",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "蛇夫座α — 候"
+  },
+  {
+    "hygId": 14540,
+    "hip": 14576,
+    "hd": 19356,
+    "bayer": "Bet Per",
+    "english": "Algol",
+    "chinese": "大陵五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "英仙座β — 大陵五"
+  },
+  {
+    "hygId": 9618,
+    "hip": 9640,
+    "hd": 12533,
+    "bayer": "Gam-1 And",
+    "english": "Almach",
+    "chinese": "天大将军一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/天大將軍一",
+    "sourceEvidence": "天大将军一 gamma1 And: HD12533, HIP9640; gamma2 is HD12534. HYG selects gamma1."
+  },
+  {
+    "hygId": 57459,
+    "hip": 57632,
+    "hd": 102647,
+    "bayer": "Bet Leo",
+    "english": "Denebola",
+    "chinese": "五帝座一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "狮子座β — 五帝座一"
+  },
+  {
+    "hygId": 4417,
+    "hip": 4427,
+    "hd": 5394,
+    "bayer": "Gam Cas",
+    "english": "Cih",
+    "chinese": "策",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙后座γ — 策"
+  },
+  {
+    "hygId": 39318,
+    "hip": 39429,
+    "hd": 66811,
+    "bayer": "Zet Pup",
+    "english": "Naos",
+    "chinese": "弧矢增二十二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船尾座ζ — 弧矢增二十二"
+  },
+  {
+    "hygId": 45425,
+    "hip": 45556,
+    "hd": 80404,
+    "bayer": "Iot Car",
+    "english": "Aspidiske",
+    "chinese": "海石二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船底座ι — 海石二"
+  },
+  {
+    "hygId": 76035,
+    "hip": 76267,
+    "hd": 139006,
+    "bayer": "Alp CrB",
+    "english": "Alphecca",
+    "chinese": "贯索四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "北冕座α — 贯索四"
+  },
+  {
+    "hygId": 44689,
+    "hip": 44816,
+    "hd": 78647,
+    "bayer": "Lam Vel",
+    "english": "Suhail",
+    "chinese": "天记",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船帆座λ — 天记"
+  },
+  {
+    "hygId": 65173,
+    "hip": 65378,
+    "hd": 116656,
+    "bayer": "Zet UMa",
+    "english": "Mizar",
+    "chinese": "开阳",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座ζ — 开阳/北斗六"
+  },
+  {
+    "hygId": 100128,
+    "hip": 100453,
+    "hd": 194093,
+    "bayer": "Gam Cyg",
+    "english": "Sadr",
+    "chinese": "天津一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹅座γ — 天津一"
+  },
+  {
+    "hygId": 3172,
+    "hip": 3179,
+    "hd": 3712,
+    "bayer": "Alp Cas",
+    "english": "Schedar",
+    "chinese": "王良四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙后座α — 王良四"
+  },
+  {
+    "hygId": 87561,
+    "hip": 87833,
+    "hd": 164058,
+    "bayer": "Gam Dra",
+    "english": "Eltanin",
+    "chinese": "天棓四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天龙座γ — 天棓四"
+  },
+  {
+    "hygId": 25865,
+    "hip": 25930,
+    "hd": 36486,
+    "bayer": "Del Ori",
+    "english": "Mintaka",
+    "chinese": "参宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座δ — 参宿三"
+  },
+  {
+    "hygId": 744,
+    "hip": 746,
+    "hd": 432,
+    "bayer": "Bet Cas",
+    "english": "Caph",
+    "chinese": "王良一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙后座β — 王良一"
+  },
+  {
+    "hygId": 78165,
+    "hip": 78401,
+    "hd": 143275,
+    "bayer": "Del Sco",
+    "english": "Dschubba",
+    "chinese": "房宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座δ — 房宿三"
+  },
+  {
+    "hygId": 82144,
+    "hip": 82396,
+    "hd": 151680,
+    "bayer": "Eps Sco",
+    "english": "Larawag",
+    "chinese": "尾宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座ε — 尾宿二"
+  },
+  {
+    "hygId": 53754,
+    "hip": 53910,
+    "hd": 95418,
+    "bayer": "Bet UMa",
+    "english": "Merak",
+    "chinese": "天璇",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座β — 天璇/北斗二"
+  },
+  {
+    "hygId": 71879,
+    "hip": 72105,
+    "hd": 129988,
+    "bayer": "Eps Boo",
+    "english": "Izar",
+    "chinese": "梗河一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "牧夫座ε — 梗河一"
+  },
+  {
+    "hygId": 106972,
+    "hip": 107315,
+    "hd": 206778,
+    "bayer": "Eps Peg",
+    "english": "Enif",
+    "chinese": "危宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "飞马座ε — 危宿三"
+  },
+  {
+    "hygId": 2076,
+    "hip": 2081,
+    "hd": 2261,
+    "bayer": "Alp Phe",
+    "english": "Ankaa",
+    "chinese": "火鸟六",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "凤凰座α — 火鸟六"
+  },
+  {
+    "hygId": 57828,
+    "hip": 58001,
+    "hd": 103287,
+    "bayer": "Gam UMa",
+    "english": "Phecda",
+    "chinese": "天玑",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大熊座γ — 天玑/北斗三"
+  },
+  {
+    "hygId": 83755,
+    "hip": 84012,
+    "hd": 155125,
+    "bayer": "Eta Oph",
+    "english": "Sabik",
+    "chinese": "宋",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "蛇夫座η — 宋/天市左垣十一"
+  },
+  {
+    "hygId": 113521,
+    "hip": 113881,
+    "hd": 217906,
+    "bayer": "Bet Peg",
+    "english": "Scheat",
+    "chinese": "室宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "飞马座β — 室宿二"
+  },
+  {
+    "hygId": 35806,
+    "hip": 35904,
+    "hd": 58350,
+    "bayer": "Eta CMa",
+    "english": "Aludra",
+    "chinese": "弧矢二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "大犬座η — 弧矢二"
+  },
+  {
+    "hygId": 104861,
+    "hip": 105199,
+    "hd": 203280,
+    "bayer": "Alp Cep",
+    "english": "Alderamin",
+    "chinese": "天钩五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙王座α — 天钩五"
+  },
+  {
+    "hygId": 45809,
+    "hip": 45941,
+    "hd": 81188,
+    "bayer": "Kap Vel",
+    "english": "Markeb",
+    "chinese": "天社五",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船帆座κ — 天社五; HK Markeb aliases do not identify this HYG kappa Vel row."
+  },
+  {
+    "hygId": 102157,
+    "hip": 102488,
+    "hd": 197989,
+    "bayer": "Eps Cyg",
+    "english": "Aljanah",
+    "chinese": "天津九",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹅座ε — 天津九"
+  },
+  {
+    "hygId": 113603,
+    "hip": 113963,
+    "hd": 218045,
+    "bayer": "Alp Peg",
+    "english": "Markab",
+    "chinese": "室宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "飞马座α — 室宿一"
+  },
+  {
+    "hygId": 14100,
+    "hip": 14135,
+    "hd": 18884,
+    "bayer": "Alp Cet",
+    "english": "Menkar",
+    "chinese": "天囷一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "鲸鱼座α — 天囷一"
+  },
+  {
+    "hygId": 54712,
+    "hip": 54872,
+    "hd": 97603,
+    "bayer": "Del Leo",
+    "english": "Zosma",
+    "chinese": "西上相",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "狮子座δ — 西上相/太微右垣五"
+  },
+  {
+    "hygId": 78580,
+    "hip": 78820,
+    "hd": 144217,
+    "bayer": "Bet-1 Sco",
+    "english": "Acrab",
+    "chinese": "房宿四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座β — 房宿四; HYG retains beta1 identity."
+  },
+  {
+    "hygId": 25920,
+    "hip": 25985,
+    "hd": 36673,
+    "bayer": "Alp Lep",
+    "english": "Arneb",
+    "chinese": "厕一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天兔座α — 厕一"
+  },
+  {
+    "hygId": 59621,
+    "hip": 59803,
+    "hd": 106625,
+    "bayer": "Gam Crv",
+    "english": "Gienah",
+    "chinese": "轸宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "乌鸦座γ — 轸宿一"
+  },
+  {
+    "hygId": 93213,
+    "hip": 93506,
+    "hd": 176687,
+    "bayer": "Zet Sgr",
+    "english": "Ascella",
+    "chinese": "斗宿六",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座ζ — 斗宿六"
+  },
+  {
+    "hygId": 74556,
+    "hip": 74785,
+    "hd": 135742,
+    "bayer": "Bet Lib",
+    "english": "Zubeneschamali",
+    "chinese": "氐宿四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天秤座β — 氐宿四"
+  },
+  {
+    "hygId": 76835,
+    "hip": 77070,
+    "hd": 140573,
+    "bayer": "Alp Ser",
+    "english": "Unukalhai",
+    "chinese": "蜀",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "巨蛇座α — 蜀/天市右垣七"
+  },
+  {
+    "hygId": 8884,
+    "hip": 8903,
+    "hd": 11636,
+    "bayer": "Bet Ari",
+    "english": "Sheratan",
+    "chinese": "娄宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "白羊座β — 娄宿一"
+  },
+  {
+    "hygId": 26569,
+    "hip": 26634,
+    "hd": 37795,
+    "bayer": "Alp Col",
+    "english": "Phact",
+    "chinese": "丈人一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鸽座α — 丈人一"
+  },
+  {
+    "hygId": 28309,
+    "hip": 28380,
+    "hd": 40312,
+    "bayer": "The Aur",
+    "english": "Mahasim",
+    "chinese": "五车四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "御夫座θ — 五车四"
+  },
+  {
+    "hygId": 61166,
+    "hip": 61359,
+    "hd": 109379,
+    "bayer": "Bet Crv",
+    "english": "Kraz",
+    "chinese": "轸宿四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "乌鸦座β — 轸宿四"
+  },
+  {
+    "hygId": 6672,
+    "hip": 6686,
+    "hd": 8538,
+    "bayer": "Del Cas",
+    "english": "Ruchbah",
+    "chinese": "阁道三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "仙后座δ — 阁道三"
+  },
+  {
+    "hygId": 67711,
+    "hip": 67927,
+    "hd": 121370,
+    "bayer": "Eta Boo",
+    "english": "Muphrid",
+    "chinese": "右摄提一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "牧夫座η — 右摄提一"
+  },
+  {
+    "hygId": 22961,
+    "hip": 23015,
+    "hd": 31398,
+    "bayer": "Iot Aur",
+    "english": "Hassaleh",
+    "chinese": "五车一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "御夫座ι — 五车一"
+  },
+  {
+    "hygId": 85436,
+    "hip": 85696,
+    "hd": 158408,
+    "bayer": "Ups Sco",
+    "english": "Lesath",
+    "chinese": "尾宿九",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座υ — 尾宿九"
+  },
+  {
+    "hygId": 89653,
+    "hip": 89931,
+    "hd": 168454,
+    "bayer": "Del Sgr",
+    "english": "Kaus Media",
+    "chinese": "箕宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座δ — 箕宿二"
+  },
+  {
+    "hygId": 96970,
+    "hip": 97278,
+    "hd": 186791,
+    "bayer": "Gam Aql",
+    "english": "Tarazed",
+    "chinese": "河鼓三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹰座γ — 河鼓三"
+  },
+  {
+    "hygId": 79352,
+    "hip": 79593,
+    "hd": 146051,
+    "bayer": "Del Oph",
+    "english": "Yed Prior",
+    "chinese": "梁",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "蛇夫座δ — 梁/天市右垣九"
+  },
+  {
+    "hygId": 80089,
+    "hip": 80331,
+    "hd": 148387,
+    "bayer": "Eta Dra",
+    "english": "Athebyne",
+    "chinese": "少宰",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天龙座η — 少宰/紫微左垣三"
+  },
+  {
+    "hygId": 61748,
+    "hip": 61941,
+    "hd": 110379,
+    "bayer": "Gam Vir",
+    "english": "Porrima",
+    "chinese": "东上相",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "室女座γ — 东上相/太微左垣二"
+  },
+  {
+    "hygId": 26176,
+    "hip": 26241,
+    "hd": 37043,
+    "bayer": "Iot Ori",
+    "english": "Hatysa",
+    "chinese": "伐三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "猎户座ι — 伐三"
+  },
+  {
+    "hygId": 72396,
+    "hip": 72622,
+    "hd": 130841,
+    "bayer": "Alp-2 Lib",
+    "english": "Zubenelgenubi",
+    "chinese": "氐宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/氐宿一",
+    "sourceEvidence": "氐宿一=Zubenelgenubi; HD130841, HIP72622; external identification explicitly alpha2 Librae."
+  },
+  {
+    "hygId": 86475,
+    "hip": 86742,
+    "hd": 161096,
+    "bayer": "Bet Oph",
+    "english": "Cebalrai",
+    "chinese": "宗正一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "蛇夫座β — 宗正一"
+  },
+  {
+    "hygId": 23820,
+    "hip": 23875,
+    "hd": 33111,
+    "bayer": "Bet Eri",
+    "english": "Cursa",
+    "chinese": "玉井三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "波江座β — 玉井三"
+  },
+  {
+    "hygId": 80571,
+    "hip": 80816,
+    "hd": 148856,
+    "bayer": "Bet Her",
+    "english": "Kornephoros",
+    "chinese": "河中",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "武仙座β — 河中/天市右垣一"
+  },
+  {
+    "hygId": 84086,
+    "hip": 84345,
+    "hd": 156014,
+    "bayer": "Alp-1 Her",
+    "english": "Rasalgethi",
+    "chinese": "帝座",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/帝座",
+    "sourceEvidence": "帝座=Alpha Herculis; HD156014; text distinguishes alpha1 red giant and alpha2 binary. HYG selects alpha1."
+  },
+  {
+    "hygId": 59565,
+    "hip": 59747,
+    "hd": 106490,
+    "bayer": "Del Cru",
+    "english": "Imai",
+    "chinese": "十字架四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "南十字座δ — 十字架四"
+  },
+  {
+    "hygId": 85410,
+    "hip": 85670,
+    "hd": 159181,
+    "bayer": "Bet Dra",
+    "english": "Rastaban",
+    "chinese": "天棓三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天龙座β — 天棓三"
+  },
+  {
+    "hygId": 25542,
+    "hip": 25606,
+    "hd": 36079,
+    "bayer": "Bet Lep",
+    "english": "Nihal",
+    "chinese": "厕二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天兔座β — 厕二"
+  },
+  {
+    "hygId": 81020,
+    "hip": 81266,
+    "hd": 149438,
+    "bayer": "Tau Sco",
+    "english": "Paikauhale",
+    "chinese": "心宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座τ — 心宿三"
+  },
+  {
+    "hygId": 90217,
+    "hip": 90496,
+    "hd": 169916,
+    "bayer": "Lam Sgr",
+    "english": "Kaus Borealis",
+    "chinese": "斗宿二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座λ — 斗宿二"
+  },
+  {
+    "hygId": 1065,
+    "hip": 1067,
+    "hd": 886,
+    "bayer": "Gam Peg",
+    "english": "Algenib",
+    "chinese": "壁宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "飞马座γ — 壁宿一"
+  },
+  {
+    "hygId": 39644,
+    "hip": 39757,
+    "hd": 67523,
+    "bayer": "Rho Pup",
+    "english": "Tureis",
+    "chinese": "弧矢增三十二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "船尾座ρ — 弧矢增三十二. Match HYG rho Pup, not HK table's older Tureis=iota Car alias."
+  },
+  {
+    "hygId": 17661,
+    "hip": 17702,
+    "hd": 23630,
+    "bayer": "Eta Tau",
+    "english": "Alcyone",
+    "chinese": "昴宿六",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "金牛座η — 昴宿六"
+  },
+  {
+    "hygId": 63405,
+    "hip": 63608,
+    "hd": 113226,
+    "bayer": "Eps Vir",
+    "english": "Vindemiatrix",
+    "chinese": "东次将",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "室女座ε — 东次将/太微左垣四"
+  },
+  {
+    "hygId": 107213,
+    "hip": 107556,
+    "hd": 207098,
+    "bayer": "Del Cap",
+    "english": "Deneb Algedi",
+    "chinese": "垒壁阵四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "摩羯座δ — 垒壁阵四"
+  },
+  {
+    "hygId": 118485,
+    "hip": null,
+    "hd": 60178,
+    "bayer": "Alp Gem",
+    "english": "Castor B",
+    "chinese": "北河二B",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/北河二",
+    "sourceEvidence": "北河二=alpha Gem=Castor; SIMBAD link explicitly labels HD60178 Castor Ba. B qualifies the B subsystem; HYG has no HIP for this row."
+  },
+  {
+    "hygId": 96858,
+    "hip": 97165,
+    "hd": 186882,
+    "bayer": "Del Cyg",
+    "english": "Fawaris",
+    "chinese": "天津二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹅座δ — 天津二"
+  },
+  {
+    "hygId": 30270,
+    "hip": 30343,
+    "hd": 44478,
+    "bayer": "Mu Gem",
+    "english": "Tejat",
+    "chinese": "井宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "双子座μ — 井宿一"
+  },
+  {
+    "hygId": 13813,
+    "hip": 13847,
+    "hd": 18622,
+    "bayer": "The-1 Eri",
+    "english": "Acamar",
+    "chinese": "天园六",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "波江座θ — 天园六; HYG retains theta1/HD18622, not theta2."
+  },
+  {
+    "hygId": 93846,
+    "hip": 94141,
+    "hd": 178524,
+    "bayer": "Pi Sgr",
+    "english": "Albaldah",
+    "chinese": "建三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "人马座π — 建三"
+  },
+  {
+    "hygId": 36087,
+    "hip": 36188,
+    "hd": 58715,
+    "bayer": "Bet CMi",
+    "english": "Gomeisa",
+    "chinese": "南河二",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "小犬座β — 南河二"
+  },
+  {
+    "hygId": 62925,
+    "hip": 63125,
+    "hd": 112413,
+    "bayer": "Alp-2 CVn",
+    "english": "Cor Caroli",
+    "chinese": "常陈一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/常陳一",
+    "sourceEvidence": "常陈一=alpha CVn=Cor Caroli; alpha2 is brighter (2.84–2.98); IAU Cor Caroli applies to alpha2. Dedicated page resolves bulk table's alpha1 typo."
+  },
+  {
+    "hygId": 78029,
+    "hip": 78265,
+    "hd": 143018,
+    "bayer": "Pi Sco",
+    "english": "Fang",
+    "chinese": "房宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/房宿一",
+    "sourceEvidence": "房宿一=pi Sco; HD143018, HIP78265"
+  },
+  {
+    "hygId": 79870,
+    "hip": 80112,
+    "hd": 147165,
+    "bayer": "Sig Sco",
+    "english": "Alniyat",
+    "chinese": "心宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天蝎座σ — 心宿一"
+  },
+  {
+    "hygId": 105936,
+    "hip": 106278,
+    "hd": 204867,
+    "bayer": "Bet Aqr",
+    "english": "Sadalsuud",
+    "chinese": "虚宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "宝瓶座β — 虚宿一"
+  },
+  {
+    "hygId": 111804,
+    "hip": 112158,
+    "hd": 215182,
+    "bayer": "Eta Peg",
+    "english": "Matar",
+    "chinese": "离宫四",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "飞马座η — 离宫四"
+  },
+  {
+    "hygId": 60776,
+    "hip": 60965,
+    "hd": 108767,
+    "bayer": "Del Crv",
+    "english": "Algorab",
+    "chinese": "轸宿三",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "乌鸦座δ — 轸宿三"
+  },
+  {
+    "hygId": 108728,
+    "hip": 109074,
+    "hd": 209750,
+    "bayer": "Alp Aqr",
+    "english": "Sadalmelik",
+    "chinese": "危宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "宝瓶座α — 危宿一"
+  },
+  {
+    "hygId": 18497,
+    "hip": 18543,
+    "hd": 25025,
+    "bayer": "Gam Eri",
+    "english": "Zaurak",
+    "chinese": "天苑一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "波江座γ — 天苑一"
+  },
+  {
+    "hygId": 26386,
+    "hip": 26451,
+    "hd": 37202,
+    "bayer": "Zet Tau",
+    "english": "Tianguan",
+    "chinese": "天关",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "金牛座ζ — 天关"
+  },
+  {
+    "hygId": 47772,
+    "hip": 47908,
+    "hd": 84441,
+    "bayer": "Eps Leo",
+    "english": "Ras Elased Australis",
+    "chinese": "轩辕九",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "狮子座ε — 轩辕九"
+  },
+  {
+    "hygId": 88361,
+    "hip": 88635,
+    "hd": 165135,
+    "bayer": "Gam-2 Sgr",
+    "english": "Alnasl",
+    "chinese": "箕宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/箕宿一",
+    "sourceEvidence": "人马座gamma2=箕宿一=Alnasl; HD165135, HIP88635. Gamma1 is a different star 0.86 degrees away."
+  },
+  {
+    "hygId": 93452,
+    "hip": 93747,
+    "hd": 177724,
+    "bayer": "Zet Aql",
+    "english": "Okab",
+    "chinese": "吴越",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹰座ζ — 吴越/天市左垣六"
+  },
+  {
+    "hygId": 74868,
+    "hip": 75097,
+    "hd": 137422,
+    "bayer": "Gam UMi",
+    "english": "Pherkad",
+    "chinese": "太子",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "小熊座γ — 太子/北极一"
+  },
+  {
+    "hygId": 82263,
+    "hip": 82514,
+    "hd": 151890,
+    "bayer": "Mu-1 Sco",
+    "english": "Xamidimura",
+    "chinese": "尾宿一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/尾宿一",
+    "sourceEvidence": "尾宿一=天蝎座mu1; HD151890, HIP82514. HYG selects mu1, not adjacent mu2 (Pipirima)."
+  },
+  {
+    "hygId": 107742,
+    "hip": 108085,
+    "hd": 207971,
+    "bayer": "Gam Gru",
+    "english": "Aldhanab",
+    "chinese": "败臼一",
+    "sourceUrl": "https://zh.wikipedia.org/zh-hans/恆星亮度列表",
+    "sourceEvidence": "天鹤座γ — 败臼一; not beta Gru/鹤二."
+  }
+]

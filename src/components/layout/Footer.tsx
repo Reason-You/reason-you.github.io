@@ -1,6 +1,9 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import UseMySkyButton from '@/components/ui/UseMySkyButton';
+import { formatSkyTime } from '@/lib/sky/time';
+import { useLabelStore } from '@/lib/stores/labelStore';
 import { useSkyStore } from '@/lib/stores/skyStore';
 
 interface FooterProps {
@@ -12,7 +15,11 @@ function formatCoordinate(value: number, positive: string, negative: string): st
 }
 
 export default function Footer({ lastUpdated }: FooterProps) {
+  const isLookUp = usePathname().replace(/\/$/, '') === '/look-up';
+  const snapshotDate = useSkyStore((state) => state.snapshotDate);
   const observer = useSkyStore((state) => state.observer);
+  const pinnedCount = useLabelStore((state) => state.pinnedIds.length);
+  const clearNames = useLabelStore((state) => state.clearAll);
   const skyLabel = observer.source === 'geolocation' ? 'Your sky' :
     observer.source === 'override' ? 'Custom sky' : 'Fudan sky';
   const coordinates = `${formatCoordinate(observer.latitude, 'N', 'S')}, ${formatCoordinate(observer.longitude, 'E', 'W')}`;
@@ -22,7 +29,13 @@ export default function Footer({ lastUpdated }: FooterProps) {
       <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="shrink-0 text-xs text-neutral-500">
-            Last updated: {lastUpdated || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {isLookUp ? (
+              <time dateTime={snapshotDate === null ? undefined : new Date(snapshotDate).toISOString()}>
+                {snapshotDate === null ? 'Facing South' : formatSkyTime(snapshotDate)}
+              </time>
+            ) : (
+              <>Last updated: {lastUpdated || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</>
+            )}
           </p>
           <div className="min-w-0 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center sm:justify-end gap-x-2 gap-y-2 text-xs text-neutral-500">
             <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
@@ -34,6 +47,18 @@ export default function Footer({ lastUpdated }: FooterProps) {
               <span className="inline-flex items-center gap-x-2">
                 <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">·</span>
                 <UseMySkyButton />
+                {isLookUp && pinnedCount > 0 && (
+                  <>
+                    <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">·</span>
+                    <button
+                      type="button"
+                      onClick={clearNames}
+                      className="whitespace-nowrap text-xs text-neutral-400 hover:text-accent dark:text-neutral-500 dark:hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+                    >
+                      Clear star names
+                    </button>
+                  </>
+                )}
               </span>
             </div>
             <span aria-hidden="true" className="hidden sm:inline text-neutral-300 dark:text-neutral-700">·</span>

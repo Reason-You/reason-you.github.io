@@ -3,8 +3,7 @@ import "./globals.css";
 import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
-import MeteorBackground from "@/components/ui/MeteorBackground";
-import StarfieldBackground from "@/components/ui/StarfieldBackground";
+import SiteShell from "@/components/layout/SiteShell";
 import { getConfig } from "@/lib/config";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -107,19 +106,18 @@ export default function RootLayout({
       </head>
       <body className={`font-sans antialiased`}>
         <ThemeProvider>
-          <StarfieldBackground />
-          <MeteorBackground />
-          <div className="relative z-10">
-            <Navigation
-              items={config.navigation}
-              siteTitle={config.site.title}
-              enableOnePageMode={config.features.enable_one_page_mode}
-            />
-            <main className="min-h-screen pt-16 lg:pt-20">
-              {children}
-            </main>
-            <Footer lastUpdated={config.site.last_updated} />
-          </div>
+          <SiteShell
+            navigation={
+              <Navigation
+                items={config.navigation}
+                siteTitle={config.site.title}
+                enableOnePageMode={config.features.enable_one_page_mode}
+              />
+            }
+            footer={<Footer lastUpdated={config.site.last_updated} />}
+          >
+            {children}
+          </SiteShell>
         </ThemeProvider>
       </body>
     </html>

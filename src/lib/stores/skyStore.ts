@@ -18,6 +18,9 @@ interface SkyStore {
   /** ?bortle= / ?mag= wins over the real data. */
   pollutionOverride: LightPollution | null;
   dateOverride: number | null;
+  /** Instant of the frame actually drawn on Look Up, published after rendering. */
+  snapshotDate: number | null;
+  setSnapshotDate: (timestamp: number) => void;
   preference: SkyPreference;
   status: SkyStatus;
   /** Initialise once, then apply changed URL parameters on client navigation. */
@@ -51,6 +54,10 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
   pollution: { ...FUDAN_FALLBACK },
   pollutionOverride: null,
   dateOverride: null,
+  snapshotDate: null,
+  setSnapshotDate: (timestamp) => {
+    if (get().snapshotDate !== timestamp) set({ snapshotDate: timestamp });
+  },
   preference: "fudan",
   status: "default",
 

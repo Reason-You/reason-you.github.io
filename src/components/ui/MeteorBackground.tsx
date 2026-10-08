@@ -33,7 +33,7 @@ function createMeteor(width: number, height: number): Meteor {
   };
 }
 
-export default function MeteorBackground() {
+export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction?: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const theme = useThemeStore((state) => state.theme);
   const effectiveTheme = resolveTheme(theme);
@@ -122,9 +122,9 @@ export default function MeteorBackground() {
         ctx.arc(meteor.x, meteor.y, meteor.width * 0.9, 0, Math.PI * 2);
         ctx.fill();
 
-        // Meteors belong to the sky window at the top of the page: recycle them
-        // once they leave the top ~55vh instead of letting them cross the article.
-        if (meteor.x - meteor.length > width || meteor.y > height * 0.55) {
+        // Meteors belong to the page's flight window: recycle them once they
+        // leave it instead of letting them cross the article.
+        if (meteor.x - meteor.length > width || meteor.y > height * maxYFraction) {
           resetMeteor(i);
         }
       }
@@ -139,7 +139,7 @@ export default function MeteorBackground() {
       window.cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  }, [maxYFraction]);
 
   return (
     <canvas

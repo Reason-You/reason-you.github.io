@@ -1,6 +1,10 @@
 import { STAR_DATA } from "./catalog-data";
 
 export interface Star {
+  /** Stable row identity in HYG v4.1, including separately catalogued components. */
+  id: number;
+  /** Hipparcos identifier, when available. */
+  hip: number | null;
   /** Right ascension in sidereal hours (J2000). */
   ra: number;
   /** Declination in degrees (J2000). */
@@ -18,7 +22,9 @@ let cachedCatalog: Star[] | null = null;
 /** Materialise the compact tuple catalog into readable objects (cached). */
 export function getCatalog(): Star[] {
   if (cachedCatalog) return cachedCatalog;
-  cachedCatalog = STAR_DATA.map(([ra, dec, mag, colorIndex, name]) => ({
+  cachedCatalog = STAR_DATA.map(([id, hip, ra, dec, mag, colorIndex, name]) => ({
+    id,
+    hip,
     ra,
     dec,
     mag,

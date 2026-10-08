@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Disclosure } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -17,6 +17,14 @@ interface NavigationProps {
   enableOnePageMode?: boolean;
 }
 
+function NavigationQuery({ onChange }: { onChange: (search: string) => void }) {
+  const query = useSearchParams().toString();
+  useEffect(() => {
+    onChange(query ? `?${query}` : '');
+  }, [query, onChange]);
+  return null;
+}
+
 export default function Navigation({ items, siteTitle, enableOnePageMode }: NavigationProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -25,10 +33,6 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
   // Keep the current query string (e.g. ?lat=&lon= sky test params, or ?sky=)
   // when navigating between pages, so a shared/test link does not "run away".
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    setSearch(window.location.search);
-  }, []);
 
   const withQuery = (href: string): string => {
     if (!search) return href;
@@ -95,14 +99,14 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
   }, [enableOnePageMode, items]);
 
   const isDesktopItemActive = (item: SiteConfig['navigation'][number]) =>
-    enableOnePageMode
+    enableOnePageMode && item.type !== 'link'
       ? activeHash === `#${item.target}` || (!activeHash && item.target === 'about')
       : (item.href === '/'
         ? pathname === '/'
         : pathname.startsWith(item.href));
 
   const getDesktopItemHref = (item: SiteConfig['navigation'][number]) =>
-    withQuery(enableOnePageMode ? `/#${item.target}` : item.href);
+    withQuery(enableOnePageMode && item.type !== 'link' ? `/#${item.target}` : item.href);
 
   const activeItem = items.find((item) => isDesktopItemActive(item)) ?? null;
   const activeHref = activeItem ? getDesktopItemHref(activeItem) : null;
@@ -112,6 +116,9 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
     <Disclosure as="nav" className="fixed top-0 left-0 right-0 z-50">
       {({ open }) => (
         <>
+          <Suspense fallback={null}>
+            <NavigationQuery onChange={setSearch} />
+          </Suspense>
           <motion.div
             initial={{ y: -100 }}
             animate={{ y: 0 }}
@@ -163,7 +170,7 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                             key={item.title}
                             href={href}
                             prefetch={true}
-                            onClick={() => enableOnePageMode && setActiveHash(`#${item.target}`)}
+                            onClick={() => enableOnePageMode && item.type !== 'link' && setActiveHash(`#${item.target}`)}
                             onMouseEnter={() => setHoveredHref(href)}
                             className={cn(
                               'relative px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-150',
@@ -236,14 +243,14 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                 >
                   <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {items.map((item, index) => {
-                      const isActive = enableOnePageMode
+                      const isActive = enableOnePageMode && item.type !== 'link'
                         ? (item.href === '/' ? pathname === '/' && !activeHash : activeHash === `#${item.target}`)
                         : (item.href === '/'
                           ? pathname === '/'
                           : pathname.startsWith(item.href));
 
                       const href = withQuery(
-                        enableOnePageMode
+                        enableOnePageMode && item.type !== 'link'
                           ? (item.href === '/' ? '/' : `/#${item.target}`)
                           : item.href
                       );
@@ -259,7 +266,7 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                             as={Link}
                             href={href}
                             prefetch={true}
-                            onClick={() => enableOnePageMode && setActiveHash(item.href === '/' ? '' : `#${item.target}`)}
+                            onClick={() => enableOnePageMode && item.type !== 'link' && setActiveHash(item.href === '/' ? '' : `#${item.target}`)}
                             className={cn(
                               'block px-3 py-2 rounded-md text-base font-medium transition-all duration-200',
                               isActive

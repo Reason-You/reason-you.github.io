@@ -239,3 +239,122 @@ body {
   /* Soften card borders in dark mode only */
   border-color: rgba(148, 163, 184, 0.24);
 }
+
+/* The fixed navigation reserves its height; the sky takes the remaining flex space. */
+.look-up-shell {
+  --look-up-nav-height: 4rem;
+  --previous-sky-center: 30dvh;
+  height: 100svh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 4rem;
+}
+
+.look-up-shell > footer {
+  flex-shrink: 0;
+}
+
+.look-up-main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.look-up-sky {
+  touch-action: manipulation;
+  isolation: isolate;
+}
+
+.look-up-scene {
+  z-index: 10;
+}
+
+.sky-entering .look-up-scene {
+  animation: look-up-arrive 600ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+  will-change: transform;
+}
+
+@keyframes look-up-arrive {
+  from {
+    transform: translateY(calc(var(--previous-sky-center) - var(--look-up-nav-height) - 50%));
+    opacity: 0;
+  }
+  40% { opacity: 1; }
+  to { transform: translateY(0); }
+}
+
+/* Route transitions cross-fade the page background in step with the sky motion;
+   the resting sky keeps opacity 1. Vertical travel is driven per transition.
+   Meteors stay visible during the flight: the outgoing layer holds, then fades;
+   the incoming layer ramps up early. */
+.sky-background-fade-in {
+  animation: sky-background-fade-in 480ms linear both;
+}
+
+.sky-background-fade-out {
+  animation: sky-background-fade-out 600ms linear 120ms both;
+}
+
+@keyframes sky-background-fade-in {
+  0% { opacity: 0; }
+  30% { opacity: 0.8; }
+  65%, 100% { opacity: 1; }
+}
+
+@keyframes sky-background-fade-out {
+  0%, 45% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 639px) {
+  .look-up-shell {
+    --previous-sky-center: 35dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-entering .look-up-scene {
+    animation: none;
+    will-change: auto;
+  }
+
+  .sky-background-fade-in,
+  .sky-background-fade-out {
+    animation: none;
+  }
+}
+
+.look-up-label {
+  width: max-content;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+}
+
+.look-up-star-focus {
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.look-up-star-focus:focus-visible {
+  outline: 1px solid var(--neutral-500);
+  outline-offset: 3px;
+}
+
+@media (pointer: coarse) {
+  .look-up-star-focus {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .look-up-shell {
+    --look-up-nav-height: 5rem;
+    padding-top: 5rem;
+  }
+}

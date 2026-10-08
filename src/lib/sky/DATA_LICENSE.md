@@ -17,10 +17,24 @@ separately from the PRISM source code (which is MIT — see the repository root
 
 The upstream CSV (~120,000 rows) was reduced to the brightest stars with
 visual magnitude ≤ 6.5 (8,920 rows), rounded, and reshaped into the compact
-tuple array you see in `catalog-data.ts`. Only these columns are kept:
-right ascension (hours, J2000), declination (degrees, J2000), visual magnitude,
-B-V colour index, and proper name.
+tuple array in `catalog-data.ts`. The retained columns are HYG row identifier,
+Hipparcos identifier, right ascension (hours, J2000), declination (degrees, J2000),
+visual magnitude, B-V colour index, and proper name.
+
+Regenerate with `python3 scripts/update_star_catalog.py path/to/hygdata_v41.csv`.
 
 Because the data is CC BY-SA 4.0, this derived catalog remains under
 **CC BY-SA 4.0**. Attribution: "Star data from the HYG Database by David Nash /
 Astronexus (CC BY-SA 4.0), reduced to magnitude ≤ 6.5."
+
+## Bilingual names
+
+`star-names-data.json` is a sourced name/identity mapping for HYG entries with
+visual magnitude ≤ 3.0. Chinese names were converted to simplified Chinese;
+explicit A/B suffixes distinguish the Castor and Alpha Centauri components.
+Sources and identification notes are in `docs/sky-star-names.md`.
+
+Wikipedia-derived mapping data is attributed to the contributors of the cited
+articles and distributed under **CC BY-SA 4.0**. The Hong Kong Space Museum's
+*Glossary of Bright Stars* supplies an additional institutional reference for
+traditional Chinese names and Bayer designations.

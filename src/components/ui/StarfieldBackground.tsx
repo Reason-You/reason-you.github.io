@@ -1,7 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { useSkyStore } from '@/lib/stores/skyStore';
 import { resolveTheme, useThemeStore } from '@/lib/stores/themeStore';
 import { computeSky, SkySnapshot } from '@/lib/sky/astro';
@@ -14,15 +13,6 @@ import {
   SKY_UPDATE_INTERVAL_MS,
   SKY_VIEW,
 } from '@/lib/sky/constants';
-
-function SkyInitializer() {
-  const query = useSearchParams().toString();
-  const initialize = useSkyStore((state) => state.initialize);
-  useEffect(() => {
-    void initialize(query);
-  }, [query, initialize]);
-  return null;
-}
 
 /**
  * A very restrained, real-sky background layer.
@@ -176,15 +166,10 @@ export default function StarfieldBackground() {
   }, [isDark]);
 
   return (
-    <>
-      <Suspense fallback={null}>
-        <SkyInitializer />
-      </Suspense>
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-0 h-screen w-full max-w-full z-0"
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="pointer-events-none absolute left-0 top-0 h-screen w-full max-w-full z-0"
+    />
   );
 }

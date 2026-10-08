@@ -1,11 +1,13 @@
-import { SkySnapshot } from "./astro";
-import { Camera, project } from "./projection";
+import { SkySnapshot, SkyStar } from "./astro";
+import { Camera, project, ProjectedPoint } from "./projection";
 
 export interface RenderStyle {
   /** Effective theme; stars are strongly suppressed on the light theme. */
   isDark: boolean;
   /** Smaller screens keep a slightly taller sky window. */
   mobile: boolean;
+  /** The homepage fades its window; Look Up uses the whole camera frame. */
+  presentation?: "background" | "look-up";
 }
 
 const MIN_MAGNITUDE = -1.5;
@@ -154,26 +156,23 @@ function drawSkyGlow(
   ctx.fillRect(0, 0, camera.width, h);
 }
 
-/**
- * Draw one static frame of the sky. No animation, no per-frame astronomy:
- * the caller owns scheduling.
- */
-export function drawSky(
-  ctx: CanvasRenderingContext2D,
+export interface RenderedStar {
+  star: SkyStar;
+  point: ProjectedPoint;
+  alpha: number;
+}
+
+/** Shared visibility and projection for drawing and pointer hit testing. */
+export function projectSkyStars(
   snapshot: SkySnapshot,
   camera: Camera,
   style: RenderStyle
-): void {
-  ctx.clearRect(0, 0, camera.width, camera.height);
-
+): RenderedStar[] {
   const themeFactor = style.isDark ? 1 : 0.14;
   const visibility = Number.isFinite(snapshot.visibility) ? snapshot.visibility * themeFactor : 0;
-
-  drawSkyGlow(ctx, camera, snapshot, style, Number.isFinite(snapshot.twilight) ? snapshot.twilight : 0);
-
-  if (visibility <= 0.001) return;
-
-  ctx.globalCompositeOperation = "source-over";
+  if (visibility <= 0.001) return [];
+  const fullSky = style.presentation === "look-up";
+  const rendered: RenderedStar[] = [];
 
   for (const star of snapshot.stars) {
     const point = project(star.altitude, star.azimuth, camera);
@@ -182,10 +181,9 @@ export function drawSky(
       continue;
     }
 
-    // Vertical window: fade with height and thin out fainter stars downward.
-    const skyMask = verticalSkyMask(point.y, camera.height, style.mobile);
+    const skyMask = fullSky ? 1 : verticalSkyMask(point.y, camera.height, style.mobile);
     if (skyMask <= 0.004) continue;
-    const limit = verticalLimitingMagnitude(
+    const limit = fullSky ? snapshot.pollution.limitingMagnitude : verticalLimitingMagnitude(
       point.y,
       camera.height,
       snapshot.pollution.limitingMagnitude,
@@ -193,10 +191,31 @@ export function drawSky(
     );
     if (star.mag > limit) continue;
 
-    const alpha =
-      magnitudeToAlpha(star.mag, snapshot.pollution.limitingMagnitude, visibility) * skyMask;
+    const alpha = Math.min(0.96,
+      magnitudeToAlpha(star.mag, snapshot.pollution.limitingMagnitude, visibility) * skyMask *
+      (fullSky ? 1.15 : 1)
+    );
     if (!Number.isFinite(alpha) || alpha <= 0.004) continue;
+    rendered.push({ star, point, alpha });
+  }
+  return rendered;
+}
 
+/** Draw one static frame; astronomy and pointer events never run an animation loop. */
+export function drawSky(
+  ctx: CanvasRenderingContext2D,
+  snapshot: SkySnapshot,
+  camera: Camera,
+  style: RenderStyle
+): RenderedStar[] {
+  ctx.clearRect(0, 0, camera.width, camera.height);
+  if (style.presentation !== "look-up") {
+    drawSkyGlow(ctx, camera, snapshot, style, Number.isFinite(snapshot.twilight) ? snapshot.twilight : 0);
+  }
+  const rendered = projectSkyStars(snapshot, camera, style);
+  ctx.globalCompositeOperation = "source-over";
+
+  for (const { star, point, alpha } of rendered) {
     const radius = magnitudeToRadius(star.mag);
     const [r, g, b] = colorIndexToRgb(star.colorIndex);
     const color = `${r}, ${g}, ${b}`;
@@ -218,4 +237,5 @@ export function drawSky(
     ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
+  return rendered;
 }

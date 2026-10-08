@@ -1,0 +1,180 @@
+.campfire-decoration {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.campfire-body,
+.campfire-toggle {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 116px;
+  height: 94px;
+  transform: translateX(-50%);
+}
+
+.campfire-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.campfire-toggle {
+  z-index: 30;
+  border: 0;
+  border-radius: 12px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.campfire-toggle:focus-visible {
+  outline: 1px solid var(--neutral-500);
+  outline-offset: 3px;
+}
+
+.campfire-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(440px, 94%);
+  height: 14%;
+  transform: translateX(-50%) scale(0.85);
+  transform-origin: 50% 100%;
+  opacity: 0;
+  transition: opacity 400ms ease-in, transform 400ms ease-in;
+}
+
+.campfire-glow-breathe {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 84%,
+    rgba(174, 112, 65, 0.18) 0%,
+    rgba(146, 98, 66, 0.09) 26%,
+    rgba(108, 81, 68, 0.03) 50%,
+    rgba(108, 81, 68, 0) 78%);
+}
+
+.campfire-flames {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.55);
+  opacity: 0;
+  transition: opacity 380ms ease-in, transform 380ms ease-in;
+}
+
+.campfire-log-light {
+  opacity: 0;
+  transition: opacity 380ms ease-in;
+}
+
+.campfire-flame-breathe,
+.campfire-flame-tip {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-glow {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  transition: opacity 760ms ease-out, transform 760ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-flames {
+  opacity: 1;
+  transform: scaleY(1);
+  transition: opacity 700ms ease-out, transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-log-light {
+  opacity: 1;
+  transition: opacity 700ms ease-out;
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-glow-breathe {
+  animation: campfire-warmth 5.8s ease-in-out infinite;
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-flame-breathe {
+  animation: campfire-breathe 4.7s ease-in-out infinite alternate;
+}
+
+.campfire-decoration[data-fire-on='true'] .campfire-flame-tip {
+  animation: campfire-tip 5.3s ease-in-out infinite alternate;
+}
+
+.campfire-ember {
+  position: absolute;
+  bottom: 14px;
+  width: 1.5px;
+  height: 1.5px;
+  border-radius: 50%;
+  background: #d9ad7c;
+  opacity: 0;
+  animation: campfire-ember-rise 3.8s ease-out both;
+}
+
+@keyframes campfire-warmth {
+  0%, 100% { opacity: 0.92; }
+  50% { opacity: 1; }
+}
+
+@keyframes campfire-breathe {
+  from { transform: skewX(-2deg) scaleY(0.97); opacity: 0.94; }
+  to { transform: skewX(2deg) scaleY(1.03); opacity: 1; }
+}
+
+@keyframes campfire-tip {
+  from { transform: rotate(-3deg) scaleY(0.95); }
+  to { transform: rotate(2deg) scaleY(1.02); }
+}
+
+@keyframes campfire-ember-rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 0.45; }
+  70% { opacity: 0.22; }
+  100% { transform: translate(var(--ember-drift), var(--ember-rise)); opacity: 0; }
+}
+
+@media (max-width: 639px) {
+  .campfire-body,
+  .campfire-toggle {
+    bottom: 12px;
+    width: 94px;
+    height: 76px;
+  }
+
+  .campfire-glow {
+    width: min(300px, 90%);
+    height: 12%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campfire-glow,
+  .campfire-decoration[data-fire-on='true'] .campfire-glow {
+    transform: translateX(-50%);
+    transition: opacity 200ms linear;
+  }
+
+  .campfire-flames,
+  .campfire-decoration[data-fire-on='true'] .campfire-flames {
+    transform: none;
+    transition: opacity 200ms linear;
+  }
+
+  .campfire-log-light,
+  .campfire-decoration[data-fire-on='true'] .campfire-log-light {
+    transition: opacity 200ms linear;
+  }
+
+  .campfire-decoration[data-fire-on='true'] .campfire-glow-breathe,
+  .campfire-decoration[data-fire-on='true'] .campfire-flame-breathe,
+  .campfire-decoration[data-fire-on='true'] .campfire-flame-tip,
+  .campfire-ember {
+    animation: none;
+  }
+}
