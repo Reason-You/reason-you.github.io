@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useSkyStore } from '@/lib/stores/skyStore';
 import { resolveTheme, useThemeStore } from '@/lib/stores/themeStore';
 import { computeSky, SkySnapshot } from '@/lib/sky/astro';
@@ -13,6 +14,15 @@ import {
   SKY_UPDATE_INTERVAL_MS,
   SKY_VIEW,
 } from '@/lib/sky/constants';
+
+function SkyInitializer() {
+  const query = useSearchParams().toString();
+  const initialize = useSkyStore((state) => state.initialize);
+  useEffect(() => {
+    void initialize(query);
+  }, [query, initialize]);
+  return null;
+}
 
 /**
  * A very restrained, real-sky background layer.
@@ -38,15 +48,6 @@ export default function StarfieldBackground() {
   const observer = useSkyStore((state) => state.observer);
   const pollution = useSkyStore((state) => state.pollution);
   const dateOverride = useSkyStore((state) => state.dateOverride);
-  const applyOverrides = useSkyStore((state) => state.applyOverrides);
-  const loadPollution = useSkyStore((state) => state.loadPollution);
-
-  // Initialise URL overrides and VIIRS data. Location changes resolve their
-  // own data in the store before committing the new observer.
-  useEffect(() => {
-    applyOverrides();
-    void loadPollution();
-  }, [applyOverrides, loadPollution]);
 
   // Recompute + draw whenever the observer, light pollution or time override changes.
   useEffect(() => {
@@ -187,10 +188,15 @@ export default function StarfieldBackground() {
   }, [isDark]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="pointer-events-none absolute left-0 top-0 h-screen w-full z-0"
-    />
+    <>
+      <Suspense fallback={null}>
+        <SkyInitializer />
+      </Suspense>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-0 h-screen w-full z-0"
+      />
+    </>
   );
 }

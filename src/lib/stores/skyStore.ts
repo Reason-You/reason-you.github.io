@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { DEFAULT_OBSERVER, ObserverSpec } from "@/lib/sky/constants";
+import { ObserverSpec } from "@/lib/sky/constants";
 import {
   FUDAN_FALLBACK,
   LightPollution,
@@ -7,76 +7,105 @@ import {
 } from "@/lib/sky/lightPollution";
 import { defaultObserver, readOverrides, requestUserLocation } from "@/lib/sky/observer";
 
-export type SkyStatus = "default" | "locating" | "custom" | "error";
+export type SkyPreference = "fudan" | "local";
+export type SkyStatus = "default" | "locating" | "resetting" | "custom" | "error";
+
+export const SKY_PREFERENCE_KEY = "sky-preference";
 
 interface SkyStore {
   observer: ObserverSpec;
-  /** Effective light pollution for the current observer (real VIIRS data). */
   pollution: LightPollution;
-  /** ?bortle= / ?mag= manual override; wins over the real data. */
+  /** ?bortle= / ?mag= wins over the real data. */
   pollutionOverride: LightPollution | null;
-  /** Fixed instant for testing, as a timestamp. */
   dateOverride: number | null;
+  preference: SkyPreference;
   status: SkyStatus;
-  /** Read ?sky/?skyUtc/?lat/?lon/?bortle/?mag once, on mount. */
-  applyOverrides: () => void;
-  /** Resolve the real light pollution for the current observer. */
-  loadPollution: () => Promise<void>;
-  /** Ask the browser for the visitor's location (only on explicit gesture). */
+  /** Initialise once, then apply changed URL parameters on client navigation. */
+  initialize: (query: string) => Promise<void>;
   requestMySky: () => Promise<void>;
-  /** Resolve the default Fudan data, then return to that sky. */
   resetSky: () => Promise<void>;
 }
 
-let pollutionRequestSeq = 0;
-// URL overrides are read exactly once per page load, so a component remount
-// (hot reload, tab discard/restore) can never clobber the state the visitor
-// toggled to with "Use my sky".
-let overridesApplied = false;
+function readPreference(): SkyPreference {
+  try {
+    return localStorage.getItem(SKY_PREFERENCE_KEY) === "local" ? "local" : "fudan";
+  } catch {
+    return "fudan";
+  }
+}
+
+function savePreference(preference: SkyPreference): void {
+  try {
+    localStorage.setItem(SKY_PREFERENCE_KEY, preference);
+  } catch {
+    // The current session still works when persistent storage is unavailable.
+  }
+}
+
+let requestSeq = 0;
+let lastQuery: string | null = null;
+let lastUrlObserver: ObserverSpec | undefined;
 
 export const useSkyStore = create<SkyStore>((set, get) => ({
   observer: defaultObserver(),
   pollution: { ...FUDAN_FALLBACK },
   pollutionOverride: null,
   dateOverride: null,
+  preference: "fudan",
   status: "default",
 
-  applyOverrides: () => {
-    if (overridesApplied) return;
-    overridesApplied = true;
+  initialize: async (query) => {
+    if (lastQuery === query) return;
+    const firstVisit = lastQuery === null;
+    lastQuery = query;
     const overrides = readOverrides();
-    if (!overrides.observer && !overrides.pollution && !overrides.date) return;
+    const locationChanged = firstVisit ||
+      lastUrlObserver?.latitude !== overrides.observer?.latitude ||
+      lastUrlObserver?.longitude !== overrides.observer?.longitude;
+    lastUrlObserver = overrides.observer;
 
-    if (overrides.observer || overrides.pollution) pollutionRequestSeq += 1;
-
+    const preference = firstVisit ? readPreference() : get().preference;
+    const currentObserver = get().observer;
+    const observer = locationChanged
+      ? overrides.observer ??
+        (currentObserver.source === "geolocation" && preference === "local"
+          ? currentObserver : defaultObserver())
+      : currentObserver;
+    const pollutionOverride = overrides.pollution ?? null;
+    const seq = locationChanged ? ++requestSeq : requestSeq;
     set({
-      observer: overrides.observer ?? get().observer,
-      pollutionOverride: overrides.pollution ?? get().pollutionOverride,
-      dateOverride: overrides.date ? overrides.date.getTime() : null,
+      preference,
+      pollutionOverride,
+      dateOverride: overrides.date?.getTime() ?? null,
+      ...(firstVisit ? { observer, pollution: pollutionOverride ?? { ...FUDAN_FALLBACK } } : {}),
+      ...(locationChanged ? { status: observer.source === "geolocation" ? "custom" : "default" } : {}),
     });
-  },
 
-  loadPollution: async () => {
-    const { observer, pollutionOverride } = get();
-    const seq = ++pollutionRequestSeq;
-    if (pollutionOverride) {
-      set({ pollution: pollutionOverride });
-      return;
+    const pollution = pollutionOverride ??
+      await getLightPollution(observer.latitude, observer.longitude);
+    if (seq !== requestSeq) return;
+    if (!locationChanged && get().observer !== observer) return;
+    set({ observer, pollution: get().pollutionOverride ?? pollution });
+
+    // Restore only an opted-in, already-granted location after the Fudan data loads.
+    if (!locationChanged || overrides.observer || observer.source === "geolocation" ||
+        preference !== "local" || !navigator.permissions?.query) return;
+    try {
+      const permission = await navigator.permissions.query({ name: "geolocation" });
+      if (seq !== requestSeq || permission.state !== "granted") return;
+      await get().requestMySky();
+    } catch {
+      // Keep the current sky and the manual entry point.
     }
-
-    const pollution = await getLightPollution(observer.latitude, observer.longitude);
-    // Ignore stale responses if the observer changed while loading.
-    if (seq !== pollutionRequestSeq || get().observer !== observer) return;
-    set({ pollution });
   },
 
   requestMySky: async () => {
     if (get().status === "locating") return;
-    const seq = ++pollutionRequestSeq;
+    const seq = ++requestSeq;
     set({ status: "locating" });
     try {
       const location = await requestUserLocation();
-      if (seq !== pollutionRequestSeq) return;
+      if (seq !== requestSeq) return;
       const observer: ObserverSpec = {
         name: "Your location",
         latitude: location.latitude,
@@ -85,20 +114,24 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
       };
       const pollution = get().pollutionOverride ??
         await getLightPollution(observer.latitude, observer.longitude);
-      if (seq !== pollutionRequestSeq) return;
-      set({ observer, pollution, status: "custom" });
+      if (seq !== requestSeq) return;
+      set({ observer, pollution: get().pollutionOverride ?? pollution,
+        status: "custom", preference: "local" });
+      savePreference("local");
     } catch {
-      // Denied or failed: quietly keep the current sky, no error UI.
-      if (seq === pollutionRequestSeq) set({ status: "error" });
+      if (seq === requestSeq) set({ status: "error" });
     }
   },
 
   resetSky: async () => {
-    const seq = ++pollutionRequestSeq;
-    const observer = { ...DEFAULT_OBSERVER };
+    if (get().status === "resetting") return;
+    const seq = ++requestSeq;
+    set({ preference: "fudan", status: "resetting" });
+    savePreference("fudan");
+    const observer = defaultObserver();
     const pollution = get().pollutionOverride ??
       await getLightPollution(observer.latitude, observer.longitude);
-    if (seq !== pollutionRequestSeq) return;
-    set({ observer, pollution, status: "default" });
+    if (seq !== requestSeq) return;
+    set({ observer, pollution: get().pollutionOverride ?? pollution, status: "default" });
   },
 }));

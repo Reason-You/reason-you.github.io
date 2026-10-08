@@ -82,8 +82,8 @@ export interface UserLocation {
 }
 
 /**
- * Browser geolocation, requested only after an explicit user gesture.
- * The result is used locally for astronomy only and never sent anywhere.
+ * Browser geolocation after a user gesture or an already-granted permission check.
+ * Full-precision coordinates stay in memory for astronomy and static tile lookup.
  */
 export function requestUserLocation(): Promise<UserLocation> {
   return new Promise((resolve, reject) => {
@@ -98,7 +98,7 @@ export function requestUserLocation(): Promise<UserLocation> {
           longitude: position.coords.longitude,
         }),
       (error) => reject(error),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 10 * 60 * 1000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
     );
   });
 }

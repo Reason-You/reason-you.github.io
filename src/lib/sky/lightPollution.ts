@@ -103,10 +103,25 @@ const pendingTiles = new Map<string, Promise<TileData | null>>();
 
 let manifestPromise: Promise<boolean> | null = null;
 
+// Bound each static request, including its body: at most two sequential requests
+// (manifest and tile) are needed by a cold lookup.
+async function fetchStaticBlob(url: string): Promise<Blob | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(url, { cache: "force-cache", signal: controller.signal });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error("data-fetch-failed");
+    return await res.blob();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function tilesAvailable(): Promise<boolean> {
   if (!manifestPromise) {
-    manifestPromise = fetch(MANIFEST_URL, { cache: "force-cache" })
-      .then((res) => res.ok)
+    manifestPromise = fetchStaticBlob(MANIFEST_URL)
+      .then((blob) => blob !== null)
       .catch(() => false);
   }
   const available = await manifestPromise;
@@ -157,12 +172,8 @@ function loadTile(name: string): Promise<TileData | null> {
   const pending = pendingTiles.get(name);
   if (pending) return pending;
 
-  const promise = fetch(`${TILES_BASE}/${name}.png?data=${DATA_VERSION}`, { cache: "force-cache" })
-    .then(async (res) => {
-      if (res.status === 404) return null; // all-zero tiles are intentionally omitted
-      if (!res.ok) throw new Error("tile-fetch-failed");
-      return decodeImage(await res.blob());
-    })
+  const promise = fetchStaticBlob(`${TILES_BASE}/${name}.png?data=${DATA_VERSION}`)
+    .then((blob) => blob === null ? null : decodeImage(blob)) // all-zero tiles are omitted
     .catch(() => {
       tileCache.delete(name);
       throw new Error("tile-fetch-failed");

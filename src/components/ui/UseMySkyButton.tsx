@@ -4,7 +4,7 @@ import { useSkyStore } from '@/lib/stores/skyStore';
 
 /**
  * Extremely low-key entry point for the starfield easter egg.
- * Geolocation is only requested after this button is pressed.
+ * Manual location and default-sky selection share this single entry point.
  */
 export default function UseMySkyButton() {
   const status = useSkyStore((state) => state.status);
@@ -14,14 +14,18 @@ export default function UseMySkyButton() {
 
   const isCustom = observer.source === 'geolocation';
   const locating = status === 'locating';
+  const busy = locating || status === 'resetting';
 
-  const label = locating ? 'Locating…' : isCustom ? 'Back to Fudan sky' : 'Use my sky';
+  const label = locating ? 'Locating…' : status === 'resetting' ? 'Switching…' :
+    isCustom ? 'Back to Fudan sky' : 'Use my sky';
 
   return (
     <button
       type="button"
+      disabled={busy}
+      aria-busy={busy}
       onClick={() => {
-        if (locating) return;
+        if (busy) return;
         if (isCustom) void resetSky();
         else void requestMySky();
       }}
@@ -30,7 +34,7 @@ export default function UseMySkyButton() {
           ? 'Return to the Fudan University sky'
           : 'Compute the sky from your own location (stays in your browser)'
       }
-      className="text-xs text-neutral-400 hover:text-accent dark:text-neutral-500 dark:hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+      className="whitespace-nowrap text-xs text-neutral-400 hover:text-accent dark:text-neutral-500 dark:hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-wait"
     >
       {label}
     </button>
