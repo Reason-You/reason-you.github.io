@@ -4,6 +4,7 @@ import Navigation from "@/components/layout/Navigation";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import MeteorBackground from "@/components/ui/MeteorBackground";
+import StarfieldBackground from "@/components/ui/StarfieldBackground";
 import { getConfig } from "@/lib/config";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -106,6 +107,7 @@ export default function RootLayout({
       </head>
       <body className={`font-sans antialiased`}>
         <ThemeProvider>
+          <StarfieldBackground />
           <MeteorBackground />
           <div className="relative z-10">
             <Navigation

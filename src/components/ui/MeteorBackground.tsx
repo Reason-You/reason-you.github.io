@@ -20,7 +20,8 @@ function createMeteor(width: number, height: number): Meteor {
   const angle = randomBetween(0.3, 0.55);
   const speed = randomBetween(38, 68);
   const startX = randomBetween(-width * 0.15, width * 0.95);
-  const startY = randomBetween(-height * 0.25, height * 0.2);
+  // Keep meteors inside the top sky window (roughly 0-45vh).
+  const startY = randomBetween(-height * 0.22, height * 0.12);
 
   return {
     x: startX,
@@ -48,6 +49,12 @@ export default function MeteorBackground() {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Respect reduced-motion: keep the sky static and skip the meteor animation.
+    const prefersReducedMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
 
     let rafId = 0;
     let lastTs = 0;
@@ -115,7 +122,9 @@ export default function MeteorBackground() {
         ctx.arc(meteor.x, meteor.y, meteor.width * 0.9, 0, Math.PI * 2);
         ctx.fill();
 
-        if (meteor.x - meteor.length > width || meteor.y - meteor.length > height) {
+        // Meteors belong to the sky window at the top of the page: recycle them
+        // once they leave the top ~55vh instead of letting them cross the article.
+        if (meteor.x - meteor.length > width || meteor.y > height * 0.55) {
           resetMeteor(i);
         }
       }
@@ -136,7 +145,7 @@ export default function MeteorBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0"
+      className="pointer-events-none absolute left-0 top-0 h-screen w-full z-0"
     />
   );
 }

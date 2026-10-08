@@ -22,6 +22,20 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
   const [scrolled, setScrolled] = useState(false);
   const [activeHash, setActiveHash] = useState('');
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
+  // Keep the current query string (e.g. ?lat=&lon= sky test params, or ?sky=)
+  // when navigating between pages, so a shared/test link does not "run away".
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setSearch(window.location.search);
+  }, []);
+
+  const withQuery = (href: string): string => {
+    if (!search) return href;
+    const [path, hash] = href.split('#');
+    const separator = path.includes('?') ? '&' : '?';
+    return `${path}${separator}${search.slice(1)}${hash ? `#${hash}` : ''}`;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,7 +102,7 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
         : pathname.startsWith(item.href));
 
   const getDesktopItemHref = (item: SiteConfig['navigation'][number]) =>
-    enableOnePageMode ? `/#${item.target}` : item.href;
+    withQuery(enableOnePageMode ? `/#${item.target}` : item.href);
 
   const activeItem = items.find((item) => isDesktopItemActive(item)) ?? null;
   const activeHref = activeItem ? getDesktopItemHref(activeItem) : null;
@@ -118,7 +132,7 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                   className="flex-shrink-0"
                 >
                   <Link
-                    href="/"
+                    href={withQuery('/')}
                     className="inline-flex items-center"
                   >
                     <Image
@@ -228,9 +242,11 @@ export default function Navigation({ items, siteTitle, enableOnePageMode }: Navi
                           ? pathname === '/'
                           : pathname.startsWith(item.href));
 
-                      const href = enableOnePageMode
-                        ? (item.href === '/' ? '/' : `/#${item.target}`)
-                        : item.href;
+                      const href = withQuery(
+                        enableOnePageMode
+                          ? (item.href === '/' ? '/' : `/#${item.target}`)
+                          : item.href
+                      );
 
                       return (
                         <motion.div

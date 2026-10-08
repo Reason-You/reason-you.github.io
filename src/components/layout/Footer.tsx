@@ -1,5 +1,7 @@
 'use client';
 
+import UseMySkyButton from '@/components/ui/UseMySkyButton';
+
 interface FooterProps {
   lastUpdated?: string;
 }
@@ -13,6 +15,8 @@ export default function Footer({ lastUpdated }: FooterProps) {
             Last updated: {lastUpdated || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <p className="text-xs text-neutral-500 flex items-center">
+            <UseMySkyButton />
+            <span className="mx-2 text-neutral-300 dark:text-neutral-700">·</span>
             <a href="https://github.com/xyjoey/PRISM" target="_blank" rel="noopener noreferrer">
               Built with PRISM
             </a>

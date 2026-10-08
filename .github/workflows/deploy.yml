@@ -28,8 +28,70 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install light-pollution tooling
+        run: pip install --disable-pip-version-check rasterio scipy numpy Pillow
+
+      - name: Test light-pollution updates
+        run: python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
+
+      - name: Resolve latest VIIRS source
+        id: light-pollution-source
+        run: |
+          python3 scripts/update_light_pollution.py --resolve-source .cache/light-pollution-source.json
+          # Restore into empty destinations; omitted tiles from an older dataset must not remain.
+          mkdir -p "$RUNNER_TEMP/light-pollution-checkout"
+          if [ -d public/light-pollution ]; then
+            mv public/light-pollution "$RUNNER_TEMP/light-pollution-checkout/data"
+          fi
+          if [ -f src/lib/sky/light-pollution-meta.ts ]; then
+            mv src/lib/sky/light-pollution-meta.ts "$RUNNER_TEMP/light-pollution-checkout/meta.ts"
+          fi
+
+      - name: Restore light-pollution data
+        id: light-pollution-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .cache/light-pollution
+            public/light-pollution
+            src/lib/sky/light-pollution-meta.ts
+          key: ${{ steps.light-pollution-source.outputs.cache-key }}
+          restore-keys: |
+            light-pollution-data-
+
+      - name: Update light-pollution tiles
+        id: light-pollution-data
+        run: |
+          if [ -z "${{ steps.light-pollution-cache.outputs.cache-matched-key }}" ] || \
+             [ "${{ steps.light-pollution-source.outputs.cache-key }}" = "${{ steps.light-pollution-source.outputs.checkout-cache-key }}" ]; then
+            rm -rf public/light-pollution
+            rm -f src/lib/sky/light-pollution-meta.ts
+            if [ -d "$RUNNER_TEMP/light-pollution-checkout/data" ]; then
+              mv "$RUNNER_TEMP/light-pollution-checkout/data" public/light-pollution
+            fi
+            if [ -f "$RUNNER_TEMP/light-pollution-checkout/meta.ts" ]; then
+              mv "$RUNNER_TEMP/light-pollution-checkout/meta.ts" src/lib/sky/light-pollution-meta.ts
+            fi
+          fi
+          npm run update:light-pollution -- --source .cache/light-pollution-source.json
+
       - name: Build site
         run: npm run build
+
+      - name: Save light-pollution data
+        if: steps.light-pollution-data.outputs.cache-key != steps.light-pollution-cache.outputs.cache-matched-key
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache/light-pollution
+            public/light-pollution
+            src/lib/sky/light-pollution-meta.ts
+          key: ${{ steps.light-pollution-data.outputs.cache-key }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

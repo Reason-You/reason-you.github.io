@@ -1,0 +1,83 @@
+{
+  "sourceRecord": 17294744,
+  "sourceVersion": "v0.4",
+  "sourceYear": 2024,
+  "sourceFile": "nightlights.average_viirs.v21_m_500m_s_20240101_20241231_go_epsg4326_v20250904.tif",
+  "sourceHash": "md5:0b976892d40c2d0d99177c727289eaf2",
+  "processingVersion": "2",
+  "tileCoverageVersion": "1",
+  "datasetName": "OpenGeoHub / Zenodo global VIIRS nighttime lights",
+  "conceptDoi": "10.5281/zenodo.7750174",
+  "doi": "10.5281/zenodo.17294744",
+  "license": "cc-by-4.0",
+  "generatedAt": "2026-10-07T20:14:15.889432+00:00",
+  "grid": {
+    "topLat": 87.37,
+    "leftLon": -180.0,
+    "stepDeg": 0.01666667,
+    "width": 21600,
+    "height": 8962
+  },
+  "tile": {
+    "deg": 2.0,
+    "pixels": 120,
+    "count": 4723
+  },
+  "mapping": {
+    "pMax": 60.0,
+    "magAtQ0": 7.7,
+    "magAtQ255": 3.4,
+    "blurScales": [
+      [
+        3.0,
+        0.45
+      ],
+      [
+        12.0,
+        0.35
+      ],
+      [
+        40.0,
+        0.2
+      ]
+    ],
+    "bortleTable": [
+      [
+        7.6,
+        1
+      ],
+      [
+        6.8,
+        2
+      ],
+      [
+        6.3,
+        3
+      ],
+      [
+        5.8,
+        4
+      ],
+      [
+        5.3,
+        5
+      ],
+      [
+        4.8,
+        6
+      ],
+      [
+        4.4,
+        7
+      ],
+      [
+        4.0,
+        8
+      ],
+      [
+        3.5,
+        9
+      ]
+    ]
+  }
+}
