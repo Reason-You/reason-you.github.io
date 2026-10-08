@@ -145,7 +145,7 @@ export default function MeteorBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none absolute left-0 top-0 h-screen w-full z-0"
+      className="pointer-events-none absolute left-0 top-0 h-screen w-full max-w-full z-0"
     />
   );
 }

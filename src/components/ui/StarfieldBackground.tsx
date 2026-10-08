@@ -61,14 +61,9 @@ export default function StarfieldBackground() {
     let fadeTimer = 0;
     const isMobile = () => window.innerWidth < MOBILE_BREAKPOINT_PX;
 
-    const effectivePollution = () =>
-      isMobile()
-        ? { ...pollution, limitingMagnitude: Math.min(pollution.limitingMagnitude, 5.0) }
-        : pollution;
-
     const compute = () => {
       const date = dateOverride !== null ? new Date(dateOverride) : new Date();
-      return computeSky(date, observer, effectivePollution());
+      return computeSky(date, observer, pollution);
     };
 
     const render = () => {
@@ -127,16 +122,9 @@ export default function StarfieldBackground() {
       render();
     };
 
-    let lastMobile = isMobile();
     const onResize = () => {
       cancelAnimationFrame(rafId);
-      rafId = window.requestAnimationFrame(() => {
-        if (isMobile() !== lastMobile) {
-          lastMobile = isMobile();
-          snapshotRef.current = compute();
-        }
-        resize();
-      });
+      rafId = window.requestAnimationFrame(resize);
     };
 
     const preparedSnapshot = compute();
@@ -195,7 +183,7 @@ export default function StarfieldBackground() {
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-0 h-screen w-full z-0"
+        className="pointer-events-none absolute left-0 top-0 h-screen w-full max-w-full z-0"
       />
     </>
   );

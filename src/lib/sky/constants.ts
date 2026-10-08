@@ -59,5 +59,5 @@ export const SKY_UPDATE_INTERVAL_MS = 7 * 60 * 1000;
  */
 export const SKY_DAYTIME_VISIBILITY = 0.4;
 
-/** Below this width we reduce star count / DPR to stay light on phones. */
+/** Below this width use the mobile sky window and cap the canvas DPR at 1.5. */
 export const MOBILE_BREAKPOINT_PX = 640;
