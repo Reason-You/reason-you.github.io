@@ -130,6 +130,13 @@ async (page) => {
       assert(layout.documentWidth <= viewport.width && layout.documentHeight <= viewport.height + 1, 'no overflow');
       assert(layout.footerTime === 'January 15, 2026 · 21:00 · Facing South', 'local observation time');
       await screenshot(p, `${viewport.name}-B-off`);
+      if (!viewport.mobile) {
+        await p.locator('.campfire-toggle').hover();
+        await p.waitForFunction(() => Number(getComputedStyle(document.querySelector('.campfire-hint')).opacity) > 0.02, null, { timeout: 1500 });
+        await screenshot(p, `${viewport.name}-B-hover`);
+        await p.mouse.move(10, 10);
+        await p.waitForFunction(() => Number(getComputedStyle(document.querySelector('.campfire-hint')).opacity) < 0.01);
+      }
       await startEvidence(p);
       await activate(); await fireReady(p, true);
       const litEvidence = await compareEvidence(p); assertEvidence(litEvidence);
@@ -479,7 +486,7 @@ async (page) => {
   await check('names accumulate per star, remove individually, blank clicks keep them, footer button and Escape clear all', async () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, timezoneId: 'Asia/Shanghai' });
     const p = await context.newPage(); await p.goto(url()); await ready(p);
-    assert(await p.getByRole('button', { name: 'Clear star names' }).count() === 0, 'clear button hidden with no names');
+    assert(!(await p.getByRole('button', { name: 'Clear star names' }).isVisible()), 'clear button hidden with no names');
     const stars = await p.evaluate(() => {
       const scene = document.querySelector('.look-up-scene').getBoundingClientRect();
       const picked = [];
@@ -511,7 +518,7 @@ async (page) => {
     await p.locator('.look-up-star-focus').first().focus();
     await p.keyboard.press('Escape');
     await p.waitForFunction(() => document.querySelectorAll('.look-up-label').length === 0);
-    assert(await p.getByRole('button', { name: 'Clear star names' }).count() === 0, 'button hides after Escape');
+    assert(!(await p.getByRole('button', { name: 'Clear star names' }).isVisible()), 'button hides after Escape');
     for (const star of stars.slice(0, 2)) await p.mouse.click(star.x, star.y);
     await p.waitForFunction(() => document.querySelectorAll('.look-up-label').length === 2);
     await p.getByRole('button', { name: 'Clear star names' }).click();

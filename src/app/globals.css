@@ -331,6 +331,24 @@ body {
   white-space: nowrap;
 }
 
+/* The footer's clear action keeps a permanent slot on Stars Above so its
+   appearance never reflows the sky, and carries a 44px coarse-pointer hit area. */
+.footer-clear-names {
+  position: relative;
+}
+
+.footer-clear-names::after {
+  content: '';
+  position: absolute;
+  inset: -8px -10px;
+}
+
+@media (pointer: coarse) {
+  .footer-clear-names::after {
+    inset: -14px -16px;
+  }
+}
+
 .look-up-star-focus {
   width: 32px;
   height: 32px;

@@ -39,12 +39,13 @@ export default function Campfire() {
     <>
       <div className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
         <div className="campfire-glow"><div className="campfire-glow-breathe" /></div>
+        <div className="campfire-hint" />
         <div className="campfire-body">
-          <svg viewBox="0 0 128 104" className="campfire-art" focusable="false">
+          <svg viewBox="0 0 140 110" className="campfire-art" focusable="false">
             <defs>
               <linearGradient id={`${id}-wood`} x1="0" y1="0" x2="0.4" y2="1">
-                <stop offset="0" stopColor="#39343a" />
-                <stop offset="1" stopColor="#1c2130" />
+                <stop offset="0" stopColor="#453d44" />
+                <stop offset="1" stopColor="#221f2e" />
               </linearGradient>
               <linearGradient id={`${id}-flame`} x1="0" y1="1" x2="0.1" y2="0">
                 <stop offset="0" stopColor="#e5c396" stopOpacity="0.88" />
@@ -60,26 +61,33 @@ export default function Campfire() {
                 <feGaussianBlur stdDeviation="0.55" />
               </filter>
             </defs>
-            <g fill={`url(#${id}-wood)`} stroke="#4a4142" strokeWidth="0.7">
-              <path d="M24 96 27 88Q29 86 34 88L99 94 103 100Q67 104 24 96Z" />
-              <path d="M30 98 32 93 91 82Q96 81 100 85L102 90Q64 102 30 98Z" />
-              <path d="M39 85Q38 82 42 81L86 98 81 102Q58 95 39 85Z" />
+            <g fill={`url(#${id}-wood)`} stroke="#4a4142" strokeWidth="0.75">
+              <path d="M28 102 31 95Q33 93 40 94L104 97Q112 98 111 104Q66 108 28 102Z" />
+              <path d="M36 97 38 91Q43 88 50 89L102 84Q109 84 110 88L111 93Q70 101 36 97Z" />
+              <path d="M50 91Q47 87 51 85L92 100 88 105Q68 99 50 91Z" />
             </g>
-            <g stroke="#66534b" strokeWidth="0.65" opacity="0.46" fill="none">
-              <path d="m35 93 35 5m-26-4 31 3m-35-1 49-10m-36 0 18 10" />
-              <ellipse cx="99" cy="87" rx="2" ry="2.6" transform="rotate(-20 99 87)" />
+            <g stroke="#66534b" strokeWidth="0.6" opacity="0.55" fill="none">
+              <path d="m38 96 44 3m-30-2 38 2m-32-1 42-9m-30-1 14 9" />
+              <ellipse cx="108" cy="100.5" rx="3.4" ry="4.1" transform="rotate(-14 108 100.5)" />
+              <ellipse cx="109" cy="90" rx="3" ry="3.6" transform="rotate(-10 109 90)" />
+              <ellipse cx="89" cy="102" rx="2.6" ry="3.1" transform="rotate(58 89 102)" />
+            </g>
+            <g fill="#6e5a4c" opacity="0.5">
+              <ellipse cx="108" cy="100.5" rx="2.2" ry="2.8" transform="rotate(-14 108 100.5)" />
+              <ellipse cx="109" cy="90" rx="1.9" ry="2.4" transform="rotate(-10 109 90)" />
             </g>
             <g fill="#a9764f" opacity="0.18">
-              <circle cx="62" cy="93" r="0.9" /><circle cx="70" cy="94" r="0.7" />
+              <circle cx="62" cy="98" r="0.9" /><circle cx="71" cy="99" r="0.7" /><circle cx="54" cy="97" r="0.6" />
             </g>
             <g className="campfire-log-light" fill="none" stroke="#ba8d62" strokeWidth="0.9">
-              <path d="m40 91 34 6m-18-2 28-6m-31-2 13 6" />
+              <path d="m42 96 40 2m-24 0 34-3m-40 5 24 2m6-9 30-4" />
             </g>
             <g className="campfire-flames" filter={`url(#${id}-soft)`}>
               <g className="campfire-flame-breathe">
-                <path fill={`url(#${id}-flame)`} d="M63 93C43 88 46 72 53 59C60 47 57 32 64 18C60 37 75 42 78 57C81 73 89 84 73 92Z" />
-                <path className="campfire-flame-tip" fill={`url(#${id}-flame)`} d="M69 93C88 87 79 73 75 62C72 53 74 47 72 43C71 61 57 75 61 89Z" />
-                <path fill={`url(#${id}-core)`} d="M61 94C53 87 61 78 65 67C69 80 77 86 71 93Z" />
+                <path fill={`url(#${id}-flame)`} d="M57 97C45 94 42 84 47 74C51 66 49 60 54 55C52 65 60 69 62 77C65 86 65 93 61 98Z" />
+                <path fill={`url(#${id}-flame)`} d="M84 96C95 92 94 82 90 73C87 66 88 61 85 56C86 66 78 69 76 76C73 85 74 92 78 97Z" />
+                <path className="campfire-flame-tip" fill={`url(#${id}-flame)`} d="M70 98C46 96 40 79 50 63C58 50 56 41 63 31C61 46 74 51 78 62C85 75 93 86 86 96Z" />
+                <path fill={`url(#${id}-core)`} d="M70 97C61 95 58 85 64 75C68 67 66 59 70 52C69 62 77 66 78 74C80 85 78 93 74 97Z" />
               </g>
             </g>
           </svg>

@@ -47,27 +47,33 @@ export default function Footer({ lastUpdated }: FooterProps) {
               <span className="inline-flex items-center gap-x-2">
                 <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">·</span>
                 <UseMySkyButton />
-                {isLookUp && pinnedCount > 0 && (
-                  <>
-                    <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">·</span>
-                    <button
-                      type="button"
-                      onClick={clearNames}
-                      className="whitespace-nowrap text-xs text-neutral-400 hover:text-accent dark:text-neutral-500 dark:hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-                    >
-                      Clear star names
-                    </button>
-                  </>
-                )}
+                <span
+                  aria-hidden={pinnedCount === 0 ? 'true' : undefined}
+                  className="inline-flex items-center gap-x-2"
+                >
+                  {pinnedCount > 0 && <span aria-hidden="true" className="text-neutral-300 dark:text-neutral-700">·</span>}
+                  <button
+                    type="button"
+                    onClick={clearNames}
+                    tabIndex={pinnedCount === 0 ? -1 : undefined}
+                    className={`footer-clear-names whitespace-nowrap text-xs transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${pinnedCount > 0 ? 'text-neutral-400 hover:text-accent dark:text-neutral-500 dark:hover:text-accent' : 'invisible pointer-events-none text-neutral-400 dark:text-neutral-500'}`}
+                  >
+                    Clear star names
+                  </button>
+                </span>
               </span>
             </div>
-            <span aria-hidden="true" className="hidden sm:inline text-neutral-300 dark:text-neutral-700">·</span>
-            <span className="inline-flex items-center whitespace-nowrap">
-              <a href="https://github.com/xyjoey/PRISM" target="_blank" rel="noopener noreferrer">
-                Built with PRISM
-              </a>
-              <span className="ml-2">🚀</span>
-            </span>
+            {!isLookUp && (
+              <>
+                <span aria-hidden="true" className="hidden sm:inline text-neutral-300 dark:text-neutral-700">·</span>
+                <span className="inline-flex items-center whitespace-nowrap">
+                  <a href="https://github.com/xyjoey/PRISM" target="_blank" rel="noopener noreferrer">
+                    Built with PRISM
+                  </a>
+                  <span className="ml-2">🚀</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

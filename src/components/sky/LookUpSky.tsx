@@ -36,7 +36,6 @@ function StarLabel({ star, camera }: { star: InteractiveStar; camera: Camera }) 
   return (
     <motion.div
       ref={labelRef}
-      id="look-up-label"
       role="status"
       className="look-up-label absolute pointer-events-none select-none text-neutral-500"
       style={position}
