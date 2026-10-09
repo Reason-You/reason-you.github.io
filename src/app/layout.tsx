@@ -5,6 +5,27 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import SiteShell from "@/components/layout/SiteShell";
 import { getConfig } from "@/lib/config";
+import localFont from "next/font/local";
+
+const inter = localFont({
+  src: "./fonts/inter-latin-var.woff2",
+  weight: "300 700",
+  style: "normal",
+  display: "swap",
+  variable: "--font-inter",
+  adjustFontFallback: false,
+});
+
+const crimsonText = localFont({
+  src: [
+    { path: "./fonts/crimson-text-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/crimson-text-latin-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/crimson-text-latin-400-italic.woff2", weight: "400", style: "italic" },
+  ],
+  display: "swap",
+  variable: "--font-crimson",
+  adjustFontFallback: false,
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
@@ -41,48 +62,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const config = getConfig();
-  const cacheBust = Math.floor(Date.now() / 1000);
 
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${crimsonText.variable} scroll-smooth`}
+      suppressHydrationWarning
+    >
       <head>
         <meta httpEquiv="Cache-Control" content="no-cache, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
-        {/* Speed up font connections */}
-        <link rel="dns-prefetch" href="https://google-fonts.jialeliu.com" />
-        <link rel="preconnect" href="https://google-fonts.jialeliu.com" crossOrigin="" />
-        {/* Non-blocking Google Fonts: preload + print media swap to avoid render-blocking */}
-        <link
-          rel="preload"
-          as="style"
-          href={`https://google-fonts.jialeliu.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap&v=${cacheBust}`}
-        />
-        <link
-          rel="stylesheet"
-          id="gfonts-css"
-          href={`https://google-fonts.jialeliu.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap&v=${cacheBust}`}
-          media="print"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(){
-                var l = document.getElementById('gfonts-css');
-                if (!l) return;
-                if (l.media !== 'all') {
-                  l.addEventListener('load', function(){ try { l.media = 'all'; } catch(e){} });
-                }
-              })();
-            `,
-          }}
-        />
-        <noscript>
-          {/* Fallback for no-JS environments */}
-          <link
-            rel="stylesheet"
-            href={`https://google-fonts.jialeliu.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap&v=${cacheBust}`}
-          />
-        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html: `
