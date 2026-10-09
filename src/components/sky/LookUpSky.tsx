@@ -295,8 +295,8 @@ export default function LookUpSky() {
         aria-hidden="true"
         className={`look-up-star-hint pointer-events-none absolute z-20 left-4 bottom-[120px] sm:left-6 sm:bottom-[100px] text-xs text-neutral-500 transition-opacity duration-[400ms] ${hintVisible ? 'opacity-100' : 'opacity-0'}`}
       >
-        <span className="hidden sm:inline">Hover over a bright star</span>
-        <span className="sm:hidden">Tap a bright star</span>
+        <span className="look-up-star-hint-hover">Hover over a bright star</span>
+        <span className="look-up-star-hint-tap">Tap a bright star</span>
       </div>
       {pinnedIds.length > 0 && (
         <button

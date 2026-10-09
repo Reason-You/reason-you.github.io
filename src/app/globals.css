@@ -353,6 +353,20 @@ html.dark .marshmallow-link:focus-visible {
   color: #c89a6b;
 }
 
+.look-up-star-hint-hover {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .look-up-star-hint-hover {
+    display: inline;
+  }
+
+  .look-up-star-hint-tap {
+    display: none;
+  }
+}
+
 .sky-clear-names {
   position: absolute;
 }

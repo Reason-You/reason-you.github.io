@@ -80,6 +80,9 @@ jobs:
           fi
           npm run update:light-pollution -- --source .cache/light-pollution-source.json
 
+      - name: Test sky logic
+        run: npm run test:sky
+
       - name: Build site
         run: npm run build
 

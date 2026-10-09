@@ -1,6 +1,7 @@
+// playwright-cli open http://127.0.0.1:3001/; playwright-cli run-code --filename=scripts/verify_stars_v2.cjs
 async (page) => {
   const browser = page.context().browser();
-  const base = 'http://127.0.0.1:3002';
+  const base = await page.evaluate(() => location.origin);
   const winter = 'skyUtc=2026-01-15T13:00:00Z&skydebug=1';
   const result = { checks: [], failures: [], errors: [], physicalDevices: false };
   const assert = (value, message) => { if (!value) throw new Error(message); };
@@ -10,8 +11,13 @@ async (page) => {
   };
   const make = async (options = {}) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, timezoneId: 'Asia/Shanghai', ...options });
+    context.on('page', p => {
+      p.on('pageerror', error => result.errors.push(error.message));
+      p.on('console', message => {
+        if (message.type() === 'error' && /hydration|hydrating|did not match|server rendered/i.test(message.text())) result.errors.push(message.text());
+      });
+    });
     const p = await context.newPage();
-    p.on('pageerror', error => result.errors.push(error.message));
     await p.addInitScript(() => {
       const start = window.setTimeout.bind(window), stop = window.clearTimeout.bind(window);
       window.__timers = new Map();
@@ -97,7 +103,7 @@ async (page) => {
           window.__documentMarker = 'same-document'; window.__sawEntry = false;
           new MutationObserver(() => { if (document.querySelector('.sky-entering')) window.__sawEntry = true; }).observe(document.body, { subtree: true, attributes: true });
         });
-        await link.click();
+        if (mobile) await link.tap(); else await link.click();
         await p.waitForURL('**/stars-above/**');
         await p.waitForTimeout(1100);
         assert(await p.evaluate(() => window.__documentMarker === 'same-document' && window.__sawEntry), 'client navigation and existing transition');
@@ -108,7 +114,8 @@ async (page) => {
         assert(initial.time === `${mobile ? 'Jan' : 'January'} 15, 2026 · 21:00 · Facing South`, 'rendered local clock');
         assert(await p.locator('.sky-clear-names').count() === 0, 'clear hidden');
         await p.waitForFunction(() => Number(getComputedStyle(document.querySelector('.look-up-star-hint')).opacity) > 0.99);
-        assert((await p.locator('.look-up-star-hint').innerText()) === (mobile ? 'Tap a bright star' : 'Hover over a bright star'), 'correct exploration hint');
+        const canHover = await p.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches);
+        assert((await p.locator('.look-up-star-hint').innerText()) === (canHover ? 'Hover over a bright star' : 'Tap a bright star'), 'correct exploration hint');
         await p.screenshot({ path: `/tmp/stars-v2-${size[0]}-hint-off.png`, animations: 'allow' });
         const targets = await stars(p); assert(targets.length === 3, 'three separated named stars');
         if (mobile) await p.touchscreen.tap(targets[0].x, targets[0].y);
@@ -319,6 +326,97 @@ async (page) => {
       return evidence;
     } finally { await context.close(); }
   });
+
+  const inputDevices = [
+    { name: 'desktop mouse', width: 1280, height: 720, touch: false },
+    { name: 'phone touch', width: 390, height: 844, touch: true },
+    { name: 'tablet touch 768', width: 768, height: 1024, touch: true },
+    { name: 'tablet touch 820', width: 820, height: 1180, touch: true },
+    { name: 'narrow desktop mouse', width: 390, height: 844, touch: false },
+  ];
+  for (const device of inputDevices) {
+    await check(`${device.name}: input hint, successful discovery and persistence`, async () => {
+      const { context, p } = await make({ viewport: { width: device.width, height: device.height }, isMobile: device.touch, hasTouch: device.touch });
+      try {
+        await p.goto(`${base}/stars-above/?${winter}`); await ready(p);
+        await p.waitForFunction(() => Number(getComputedStyle(document.querySelector('.look-up-star-hint')).opacity) > 0.99);
+        const capabilities = await p.evaluate(() => ({ hover: matchMedia('(hover: hover)').matches, fine: matchMedia('(pointer: fine)').matches, coarse: matchMedia('(pointer: coarse)').matches }));
+        const expected = device.touch ? 'Tap a bright star' : 'Hover over a bright star';
+        assert(await p.locator('.look-up-star-hint').innerText() === expected, 'input capability, not viewport width');
+        assert(capabilities.coarse === device.touch && capabilities.hover !== device.touch, 'emulated primary input');
+        assert(await p.evaluate(() => localStorage.getItem('stars-above-star-hint-seen') === null), 'showing hint is not completion');
+        const target = (await stars(p))[0];
+        if (device.touch) await p.touchscreen.tap(target.x, target.y); else await p.mouse.move(target.x, target.y);
+        await p.waitForFunction(() => document.querySelector('.look-up-label [lang="zh-CN"]')?.textContent.trim() && localStorage.getItem('stars-above-star-hint-seen') === '1');
+        await p.waitForFunction(() => Number(getComputedStyle(document.querySelector('.look-up-star-hint')).opacity) < 0.01);
+        await p.reload(); await ready(p);
+        assert(await p.locator('.look-up-star-hint').evaluate(el => getComputedStyle(el).opacity) === '0', 'seen hint stays retired after refresh');
+        return { ...capabilities, text: expected };
+      } finally { await context.close(); }
+    });
+  }
+
+  const sampleQuery = 'lat=31.30&lon=121.50&skyUtc=2026-01-15T13:00:00Z&skydebug=1';
+  const fullQuery = `${sampleQuery}&sky=2026-01-15T22:00&bortle=2&mag=5.5&note=tea%20%26%20cream%2Bmilk&tag=one&tag=two&label=%E6%98%9F%E7%A9%BA`;
+  const navigationCases = [
+    { name: 'plain mouse', query: '', activation: 'click' },
+    { name: 'sample mouse', query: sampleQuery, activation: 'click' },
+    { name: 'all parameters keyboard', query: fullQuery, activation: 'keyboard' },
+    { name: 'local time phone tap', query: 'lat=31.30&lon=121.50&sky=2026-01-15T21:00&bortle=4&skydebug=1', activation: 'tap' },
+    { name: 'all parameters new tab', query: fullQuery, activation: 'middle' },
+    { name: 'plain new tab', query: '', activation: 'middle' },
+    { name: 'changed query keyboard', query: sampleQuery, changedQuery: fullQuery, activation: 'keyboard' },
+  ];
+  for (const scenario of navigationCases) {
+    await check(`${scenario.name}: About link query preservation`, async () => {
+      const touch = scenario.activation === 'tap';
+      const { context, p } = await make({ viewport: { width: touch ? 390 : 1280, height: touch ? 844 : 720 }, isMobile: touch, hasTouch: touch });
+      try {
+        await p.goto(`${base}/${scenario.query ? `?${scenario.query}` : ''}`);
+        const query = scenario.changedQuery ?? scenario.query;
+        if (scenario.changedQuery) await p.evaluate(q => history.replaceState(null, '', `${location.pathname}?${q}`), scenario.changedQuery);
+        const expected = await p.evaluate(q => [...new URLSearchParams(q).entries()], query);
+        await p.waitForFunction(expected => {
+          const link = document.querySelector('.marshmallow-link');
+          return link && JSON.stringify([...new URL(link.href).searchParams.entries()]) === JSON.stringify(expected);
+        }, expected);
+        const link = p.locator('.marshmallow-link');
+        assert((await link.innerText()) === 'Let’s roast marshmallows at the end of the universe!', 'original sentence');
+        await link.scrollIntoViewIfNeeded();
+        await p.waitForTimeout(900);
+        await p.evaluate(() => {
+          window.__documentMarker = 'query-navigation'; window.__sawEntry = false;
+          new MutationObserver(() => { if (document.querySelector('.sky-entering')) window.__sawEntry = true; }).observe(document.body, { subtree: true, attributes: true });
+        });
+        const sourceUrl = p.url();
+        let destination = p;
+        if (scenario.activation === 'middle') {
+          const opened = context.waitForEvent('page');
+          await link.click({ button: 'middle' }); destination = await opened;
+        } else if (scenario.activation === 'keyboard') {
+          await p.keyboard.press('Tab'); await link.focus(); await p.keyboard.press('Enter');
+        } else if (touch) await link.tap();
+        else await link.click();
+        await destination.waitForURL(url => url.pathname.replace(/\/$/, '') === '/stars-above');
+        const received = await destination.evaluate(() => [...new URL(location.href).searchParams.entries()]);
+        assert(JSON.stringify(received) === JSON.stringify(expected), 'all query entries preserved once, including duplicate keys and encoded values');
+        if (scenario.activation === 'middle') assert(p.url() === sourceUrl, 'new tab leaves Home intact');
+        else {
+          await destination.waitForTimeout(1100);
+          assert(await destination.evaluate(() => window.__documentMarker === 'query-navigation' && window.__sawEntry), 'client routing with sky transition');
+        }
+        await destination.waitForFunction(() => !!document.querySelector('footer time')?.dateTime);
+        if (query) {
+          await ready(destination);
+          const frame = await destination.evaluate(() => ({ date: window.__sky.snapshot.date.toISOString(), observer: window.__sky.observer, pollution: window.__sky.lightPollution }));
+          assert(frame.date === '2026-01-15T13:00:00.000Z' && frame.observer.latitude === 31.3 && frame.observer.longitude === 121.5, 'URL time and observer applied');
+          if (query.includes('mag=')) assert(frame.pollution.limitingMagnitude === 5.5 && frame.pollution.source === 'override', 'mag preserved and takes precedence over bortle');
+          if (scenario.activation === 'tap') assert(frame.pollution.bortleApprox === 4, 'bortle preserved');
+        }
+        return { activation: scenario.activation, entries: expected.length };
+      } finally { await context.close(); }
+    });
+  }
 
   result.ok = !result.failures.length && !result.errors.length;
   return result;

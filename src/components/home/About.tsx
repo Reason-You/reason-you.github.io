@@ -1,12 +1,25 @@
 'use client';
 
+import { Suspense, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
 interface AboutProps {
     content: string;
     title?: string;
+}
+
+const marshmallowLinkClassName = 'marshmallow-link rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2';
+
+function MarshmallowLink({ children }: { children: ReactNode }) {
+    const query = useSearchParams().toString();
+    return (
+        <Link href={`/stars-above${query ? `?${query}` : ''}`} className={marshmallowLinkClassName}>
+            {children}
+        </Link>
+    );
 }
 
 export default function About({ content, title = 'About' }: AboutProps) {
@@ -28,12 +41,13 @@ export default function About({ content, title = 'About' }: AboutProps) {
                         ol: ({ children }) => <ol className="list-decimal list-inside mb-4 space-y-1 ml-4">{children}</ol>,
                         li: ({ children }) => <li className="mb-1">{children}</li>,
                         a: ({ ...props }) => props.href === '/stars-above' ? (
-                            <Link
-                                href="/stars-above"
-                                className="marshmallow-link rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-                            >
-                                {props.children}
-                            </Link>
+                            <Suspense fallback={
+                                <Link href="/stars-above" className={marshmallowLinkClassName}>
+                                    {props.children}
+                                </Link>
+                            }>
+                                <MarshmallowLink>{props.children}</MarshmallowLink>
+                            </Suspense>
                         ) : (
                             <a
                                 {...props}
