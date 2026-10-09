@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import MeteorBackground from '@/components/ui/MeteorBackground';
 import { useSkyStore } from '@/lib/stores/skyStore';
@@ -21,7 +21,9 @@ interface SkyFrame {
   stars: InteractiveStar[];
 }
 
-function StarLabel({ star, camera }: { star: InteractiveStar; camera: Camera }) {
+function StarLabel({ star, camera, onDisplay }: {
+  star: InteractiveStar; camera: Camera; onDisplay: () => void;
+}) {
   const labelRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
   const [position, setPosition] = useState({ left: star.point.x + 18, top: star.point.y });
@@ -43,6 +45,9 @@ function StarLabel({ star, camera }: { star: InteractiveStar; camera: Camera }) 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
+      onAnimationComplete={(definition) => {
+        if (typeof definition === 'object' && 'opacity' in definition && definition.opacity === 1) onDisplay();
+      }}
     >
       <div lang="zh-CN" className="text-sm leading-6">{star.name.chinese}</div>
       <div className="text-xs leading-5">{star.name.english}</div>
@@ -67,6 +72,7 @@ export default function LookUpSky() {
   const setSnapshotDate = useSkyStore((state) => state.setSnapshotDate);
   const [frame, setFrame] = useState<SkyFrame | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [hintSeen, setHintSeen] = useState(true);
   const pinnedIds = useLabelStore((state) => state.pinnedIds);
   const togglePinned = useLabelStore((state) => state.toggle);
   const clearPinned = useLabelStore((state) => state.clearAll);
@@ -150,6 +156,15 @@ export default function LookUpSky() {
     isDarkRef.current = isDark;
     renderRef.current();
   }, [isDark]);
+
+  useEffect(() => {
+    setHintSeen(window.localStorage.getItem('stars-above-star-hint-seen') !== null);
+  }, []);
+  const acknowledgeStar = useCallback(() => {
+    setHintSeen(true);
+    window.localStorage.setItem('stars-above-star-hint-seen', '1');
+  }, []);
+  const hintVisible = !hintSeen && (frame?.stars.length ?? 0) > 0;
 
   // Leaving Look Up hands the sky over to the page background: a viewport-sized
   // layer re-renders the background's own view of the same snapshot beneath the
@@ -269,10 +284,36 @@ export default function LookUpSky() {
       }}
       onPointerCancel={() => { pointerDown.current = null; }}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') clearPinned();
+        if (event.key === 'Escape') {
+          setHoveredId(null);
+          clearPinned();
+        }
       }}
     >
       <Campfire />
+      <div
+        aria-hidden="true"
+        className={`look-up-star-hint pointer-events-none absolute z-20 left-4 bottom-[120px] sm:left-6 sm:bottom-[100px] text-xs text-neutral-500 transition-opacity duration-[400ms] ${hintVisible ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <span className="hidden sm:inline">Hover over a bright star</span>
+        <span className="sm:hidden">Tap a bright star</span>
+      </div>
+      {pinnedIds.length > 0 && (
+        <button
+          type="button"
+          className="sky-clear-names absolute right-4 bottom-5 sm:right-6 sm:bottom-6 z-30 text-xs text-neutral-500 hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            setHoveredId(null);
+            clearPinned();
+          }}
+        >
+          Clear names
+        </button>
+      )}
       <div ref={sceneRef} className="look-up-scene absolute inset-0">
       <MeteorBackground maxYFraction={0.9} />
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
@@ -298,9 +339,9 @@ export default function LookUpSky() {
       ))}
       <AnimatePresence>
         {frame && activeStars.map((entry) => (
-          <StarLabel key={entry.star.id} star={entry} camera={frame.camera} />
+          <StarLabel key={entry.star.id} star={entry} camera={frame.camera} onDisplay={acknowledgeStar} />
         ))}
-        {frame && hoverStar && <StarLabel key={`hover-${hoverStar.star.id}`} star={hoverStar} camera={frame.camera} />}
+        {frame && hoverStar && <StarLabel key={`hover-${hoverStar.star.id}`} star={hoverStar} camera={frame.camera} onDisplay={acknowledgeStar} />}
       </AnimatePresence>
       </div>
     </div>

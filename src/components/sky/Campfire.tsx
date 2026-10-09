@@ -18,9 +18,38 @@ interface Ember {
 export default function Campfire() {
   const [fireOn, setFireOn] = useState(false);
   const [embers, setEmbers] = useState<Ember[]>([]);
+  const [marshmallow, setMarshmallow] = useState<'idle' | 'playing' | 'cancel' | 'static'>('idle');
+  const marshmallowPlayed = useRef(false);
   const emberId = useRef(0);
   const reducedMotion = useReducedMotion();
   const id = useId();
+
+  // Completion belongs to this visit; extinguishing preserves the next roast.
+  useEffect(() => {
+    const timers: number[] = [];
+    if (!fireOn) {
+      setMarshmallow((current) => current === 'idle' ? current : 'cancel');
+      timers.push(window.setTimeout(() => setMarshmallow('idle'), 250));
+    } else if (!marshmallowPlayed.current) {
+      setMarshmallow('idle');
+      timers.push(window.setTimeout(() => {
+        setMarshmallow(reducedMotion ? 'static' : 'playing');
+        timers.push(window.setTimeout(() => {
+          if (reducedMotion) {
+            setMarshmallow('cancel');
+            timers.push(window.setTimeout(() => {
+              marshmallowPlayed.current = true;
+              setMarshmallow('idle');
+            }, 250));
+          } else {
+            marshmallowPlayed.current = true;
+            setMarshmallow('idle');
+          }
+        }, reducedMotion ? 1200 : 3000));
+      }, 800));
+    }
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [fireOn, reducedMotion]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -91,6 +120,25 @@ export default function Campfire() {
               </g>
             </g>
           </svg>
+          {marshmallow !== 'idle' && (
+            <div className={`campfire-marshmallow m-${marshmallow}${reducedMotion ? ' m-reduced' : ''}`}>
+              <svg viewBox="0 0 90 44" focusable="false" aria-hidden="true">
+                <defs>
+                  <radialGradient id={`${id}-caramel`} cx="0.35" cy="0.3" r="0.9">
+                    <stop offset="0" stopColor="#b97b46" />
+                    <stop offset="0.6" stopColor="#c99a63" stopOpacity="0.85" />
+                    <stop offset="1" stopColor="#c99a63" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                <line x1="88" y1="5" x2="30" y2="28" stroke="#8a6b4f" strokeWidth="2" strokeLinecap="round" />
+                <g className="campfire-marshmallow-body">
+                  <ellipse cx="26" cy="30" rx="8" ry="9.5" fill="#f4eee4" stroke="#d8cfc2" strokeWidth="0.7" />
+                  <ellipse className="campfire-marshmallow-cream" cx="26" cy="30" rx="8" ry="9.5" fill="#e8d6b4" opacity="0" />
+                  <ellipse className="campfire-marshmallow-caramel" cx="23" cy="27" rx="5.2" ry="6.2" fill={`url(#${id}-caramel)`} opacity="0" />
+                </g>
+              </svg>
+            </div>
+          )}
           {embers.map((ember) => {
             const path = EMBER_PATHS[ember.path];
             return (

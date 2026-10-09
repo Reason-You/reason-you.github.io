@@ -117,6 +117,82 @@
   animation: campfire-ember-rise 3.8s ease-out both;
 }
 
+.campfire-marshmallow {
+  position: absolute;
+  top: 24.07%;
+  right: -7.35%;
+  width: 66.18%;
+  height: 40.74%;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+
+.campfire-marshmallow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: marshmallow-visit 3s linear both;
+}
+
+.campfire-marshmallow-body {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: marshmallow-turn 3s ease-in-out both;
+}
+
+.campfire-marshmallow-cream {
+  animation: marshmallow-cream 3s linear both;
+}
+
+.campfire-marshmallow-caramel {
+  animation: marshmallow-caramel 3s linear both;
+}
+
+.campfire-marshmallow.m-cancel {
+  opacity: 0;
+}
+
+.campfire-marshmallow.m-cancel * {
+  animation-play-state: paused;
+}
+
+.campfire-marshmallow.m-reduced * {
+  animation: none;
+}
+
+.campfire-marshmallow.m-reduced .campfire-marshmallow-cream {
+  opacity: 0.35;
+}
+
+.campfire-marshmallow.m-reduced .campfire-marshmallow-caramel {
+  opacity: 0.85;
+}
+
+@keyframes marshmallow-visit {
+  0% { transform: translateX(74px); opacity: 0; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+  23%, 77% { transform: translateX(0); opacity: 1; }
+  77% { animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36); }
+  100% { transform: translateX(74px); opacity: 0; }
+}
+
+@keyframes marshmallow-turn {
+  0%, 23% { transform: rotate(0deg); }
+  77%, 100% { transform: rotate(360deg); }
+}
+
+@keyframes marshmallow-cream {
+  0%, 23% { opacity: 0; }
+  55% { opacity: 0.2; }
+  77%, 100% { opacity: 0.35; }
+}
+
+@keyframes marshmallow-caramel {
+  0%, 30% { opacity: 0; }
+  55% { opacity: 0.35; }
+  77%, 100% { opacity: 0.85; }
+}
+
 @keyframes campfire-warmth {
   0%, 100% { opacity: 0.92; }
   50% { opacity: 1; }
@@ -201,6 +277,10 @@
   .campfire-decoration[data-fire-on='true'] .campfire-flame-breathe,
   .campfire-decoration[data-fire-on='true'] .campfire-flame-tip,
   .campfire-ember {
+    animation: none;
+  }
+
+  .campfire-marshmallow * {
     animation: none;
   }
 }

@@ -331,22 +331,71 @@ body {
   white-space: nowrap;
 }
 
-/* The footer's clear action keeps a permanent slot on Stars Above so its
-   appearance never reflows the sky, and carries a 44px coarse-pointer hit area. */
-.footer-clear-names {
-  position: relative;
+/* Slow caramel warmth on approach; quicker recovery on departure. */
+.marshmallow-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 400ms ease;
 }
 
-.footer-clear-names::after {
+.marshmallow-link strong {
+  color: inherit;
+}
+
+.marshmallow-link:hover,
+.marshmallow-link:focus-visible {
+  color: #9a6b3f;
+  transition-duration: 800ms;
+}
+
+html.dark .marshmallow-link:hover,
+html.dark .marshmallow-link:focus-visible {
+  color: #c89a6b;
+}
+
+.sky-clear-names {
+  position: absolute;
+}
+
+.sky-clear-names::after {
   content: '';
   position: absolute;
   inset: -8px -10px;
 }
 
+.sky-location-trigger::after {
+  content: '';
+  position: absolute;
+  inset: -14px -6px;
+}
+
 @media (pointer: coarse) {
-  .footer-clear-names::after {
+  .sky-clear-names::after {
     inset: -14px -16px;
   }
+}
+
+/* Lightweight location card above the horizon footer. */
+.sky-location-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 1rem;
+  display: grid;
+  gap: 2px;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: var(--background);
+  font-size: 0.75rem;
+  line-height: 1.15rem;
+  color: var(--neutral-500);
+  white-space: nowrap;
+  z-index: 40;
+}
+
+html.dark .sky-location-popover {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: var(--background);
 }
 
 .look-up-star-focus {

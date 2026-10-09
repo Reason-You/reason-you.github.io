@@ -21,7 +21,7 @@ const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel,
 } = require('../src/lib/sky/look-up.ts');
 const names = require('../src/lib/sky/star-names-data.json');
-const { formatSkyTime } = require('../src/lib/sky/time.ts');
+const { formatSkyTime, formatSkyTimeShort } = require('../src/lib/sky/time.ts');
 const city = { limitingMagnitude: 4, bortleApprox: 8, lightProxy: 0, source: 'override' };
 const darkSky = { ...city, limitingMagnitude: 6.5, bortleApprox: 1 };
 const scenes = [
@@ -182,9 +182,12 @@ test('footer uses the system timezone, 24-hour clock and rendered instant', () =
     process.env.TZ = 'Asia/Shanghai';
     assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 21:00 · Facing South');
     assert.equal(formatSkyTime(Date.parse('2026-01-15T16:00:00Z')), 'January 16, 2026 · 00:00 · Facing South');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T13:00:00Z')), 'Jan 15, 2026 · 21:00 · Facing South');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T16:00:00Z')), 'Jan 16, 2026 · 00:00 · Facing South');
     process.env.TZ = 'America/New_York';
     assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 08:00 · Facing South');
     assert.equal(formatSkyTime(Date.parse('2026-07-15T13:00:00Z')), 'July 15, 2026 · 09:00 · Facing South');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-07-15T13:00:00Z')), 'Jul 15, 2026 · 09:00 · Facing South');
   } finally {
     if (previous === undefined) delete process.env.TZ;
     else process.env.TZ = previous;
