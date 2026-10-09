@@ -1,6 +1,6 @@
 # Look Up
 
-独立路由 `/look-up/`。导航顺序为 Home · Research · CV · Look Up。
+独立路由 `/stars-above/`。导航顺序为 Home · Research · CV · Stars Above。
 本地原型保留现有 Navigation、Footer、主题和主页星空/流星行为。
 
 篝火、观测时间与入场过渡见 [look-up-campfire.md](look-up-campfire.md)。
@@ -71,7 +71,7 @@ Tab、Enter/Space 与 Escape 提供键盘探索与关闭功能。
 浏览器记录为零页面异常；60 个空闲显示帧中为零天空重绘。
 
 本机六个场景中，天文计算约 0.5–5.5 ms，单次绘制约 0.2–1.9 ms。
-第一阶段构建报告 `/look-up` 路由自身为 10.9 kB，First Load JS 为 338 kB。
+第一阶段构建报告 `/stars-above` 路由自身为 10.9 kB，First Load JS 为 338 kB。
 完整数值记录：`.cache/look-up-preview/browser-report.json`。
 
 构建、Lint、TypeScript 和 10 项单元测试通过。单元测试包含独立恒星时/地平坐标
@@ -91,15 +91,15 @@ python3 -m http.server 3001 --bind 127.0.0.1 --directory out
 
 # 在另一个终端运行浏览器验证与截图
 mkdir -p .cache/look-up-preview
-playwright-cli -s=look-up open http://127.0.0.1:3001/look-up/
+playwright-cli -s=look-up open http://127.0.0.1:3001/stars-above/
 playwright-cli -s=look-up --raw run-code --filename=scripts/capture_look_up.cjs
 ```
 
 场景 URL：
 
-- [A](http://127.0.0.1:3001/look-up/?lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z)
-- [B](http://127.0.0.1:3001/look-up/?lat=31.2989&lon=121.5035&skyUtc=2026-07-15T13:00:00Z)
-- [C](http://127.0.0.1:3001/look-up/?lat=-24.77&lon=15.96&skyUtc=2026-05-15T20:00:00Z)
+- [A](http://127.0.0.1:3001/stars-above/?lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z)
+- [B](http://127.0.0.1:3001/stars-above/?lat=31.2989&lon=121.5035&skyUtc=2026-07-15T13:00:00Z)
+- [C](http://127.0.0.1:3001/stars-above/?lat=-24.77&lon=15.96&skyUtc=2026-05-15T20:00:00Z)
 
 截图文件名为 `{A-winter|B-summer|C-namibrand}-{desktop|mobile}-{blank|selected}.png`。
 `?skydebug=1` 提供复用的 `window.__sky` 检查接口。

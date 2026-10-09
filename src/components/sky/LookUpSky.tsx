@@ -163,7 +163,7 @@ export default function LookUpSky() {
       const rect = skyRectRef.current;
       const snapshot = snapshotRef.current;
       if (!canvas || !rect || !snapshot) return;
-      if (window.location.pathname.replace(/\/$/, '') === '/look-up') return;
+      if (window.location.pathname.replace(/\/$/, '') === '/stars-above') return;
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
       const width = window.innerWidth;

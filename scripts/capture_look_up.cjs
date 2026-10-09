@@ -13,7 +13,7 @@ async (page) => {
   });
   const mobile = await mobileContext.newPage();
   const assert = (value, message) => { if (!value) throw new Error(message); };
-  const url = (scene) => `${base}/look-up/?lat=${scene.lat}&lon=${scene.lon}&skyUtc=${scene.utc}&skydebug=1`;
+  const url = (scene) => `${base}/stars-above/?lat=${scene.lat}&lon=${scene.lon}&skyUtc=${scene.utc}&skydebug=1`;
   const pages = [{ page, key: 'desktop', width: 1280, height: 720 },
     { page: mobile, key: 'mobile', width: 390, height: 844 }];
 

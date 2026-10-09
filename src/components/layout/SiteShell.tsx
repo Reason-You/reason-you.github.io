@@ -16,13 +16,13 @@ type BackgroundPhase = 'steady' | 'fading-out' | 'fading-in';
 
 export default function SiteShell({ navigation, footer, children }: SiteShellProps) {
   const pathname = usePathname();
-  const isLookUp = pathname.replace(/\/$/, '') === '/look-up';
+  const isLookUp = pathname.replace(/\/$/, '') === '/stars-above';
   const previousPath = useRef(pathname);
   const [enteringSky, setEnteringSky] = useState(false);
   const [backgroundPhase, setBackgroundPhase] = useState<BackgroundPhase>('steady');
 
   useLayoutEffect(() => {
-    const wasLookUp = previousPath.current.replace(/\/$/, '') === '/look-up';
+    const wasLookUp = previousPath.current.replace(/\/$/, '') === '/stars-above';
     previousPath.current = pathname;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const entering = isLookUp && !wasLookUp && !reducedMotion;

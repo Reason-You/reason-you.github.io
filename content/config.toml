@@ -48,5 +48,5 @@ href = "/cv"
 [[navigation]]
 title = "Stars Above"
 type = "link"
-target = "look-up"
-href = "/look-up"
+target = "stars-above"
+href = "/stars-above"

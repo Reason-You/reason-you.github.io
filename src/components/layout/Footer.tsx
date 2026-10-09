@@ -15,7 +15,7 @@ function formatCoordinate(value: number, positive: string, negative: string): st
 }
 
 export default function Footer({ lastUpdated }: FooterProps) {
-  const isLookUp = usePathname().replace(/\/$/, '') === '/look-up';
+  const isLookUp = usePathname().replace(/\/$/, '') === '/stars-above';
   const snapshotDate = useSkyStore((state) => state.snapshotDate);
   const observer = useSkyStore((state) => state.observer);
   const pinnedCount = useLabelStore((state) => state.pinnedIds.length);

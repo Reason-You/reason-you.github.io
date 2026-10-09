@@ -9,7 +9,7 @@ async (page) => {
     try { const result = await task(); report.checks.push({ name, passed: true, result }); }
     catch (error) { report.failures.push({ name, error: String(error) }); }
   };
-  const url = () => `${base}/look-up/?${query}`;
+  const url = () => `${base}/stars-above/?${query}`;
   const ready = async (p) => {
     await p.waitForFunction(() => window.__sky?.rendered &&
       window.__sky.snapshot.date.toISOString() === '2026-01-15T13:00:00.000Z' &&
@@ -263,7 +263,7 @@ async (page) => {
     const p = await context.newPage(); await p.goto(url()); await ready(p);
     const utcClock = await p.locator('footer time').textContent();
     assert(utcClock === 'January 15, 2026 · 08:00 · Facing South', 'uses browser timezone, not observer longitude');
-    await p.goto(`${base}/look-up/?lat=31.2989&lon=121.5035&sky=2026-01-15T08:00&skydebug=1`); await ready(p);
+    await p.goto(`${base}/stars-above/?lat=31.2989&lon=121.5035&sky=2026-01-15T08:00&skydebug=1`); await ready(p);
     assert(await p.locator('footer time').textContent() === utcClock, 'timezone-less sky uses browser local time');
     for (const path of ['/', '/research/', '/cv/']) {
       await p.goto(`${base}${path}?${query}`);
@@ -276,7 +276,7 @@ async (page) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, timezoneId: 'Asia/Shanghai' });
     const p = await context.newPage();
     await p.clock.install({ time: '2026-01-15T13:00:00Z' });
-    await p.goto(`${base}/look-up/?lat=31.2989&lon=121.5035&skydebug=1`);
+    await p.goto(`${base}/stars-above/?lat=31.2989&lon=121.5035&skydebug=1`);
     await p.waitForFunction(() => window.__sky?.rendered && window.__sky.lightPollution.source === 'viirs');
     const before = await p.evaluate(() => window.__sky.snapshot.date.getTime());
     await p.clock.fastForward(421000);

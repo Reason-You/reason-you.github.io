@@ -1,6 +1,6 @@
 # Look Up 篝火
 
-本地原型。进入 `/look-up/` 即有熄灭的篝火，可随时点燃；页面同时显示本地观测
+本地原型。进入 `/stars-above/` 即有熄灭的篝火，可随时点燃；页面同时显示本地观测
 时间。提交、推送和部署等待确认。
 
 ## 文件
@@ -156,11 +156,11 @@ python3 -m http.server 3001 --bind 127.0.0.1 --directory out
 
 # 另一个终端
 mkdir -p .cache/campfire
-playwright-cli -s=campfire open http://127.0.0.1:3001/look-up/
+playwright-cli -s=campfire open http://127.0.0.1:3001/stars-above/
 playwright-cli -s=campfire --raw run-code --filename=scripts/capture_campfire.cjs
 ```
 
-- [Look Up，初始熄灭](http://127.0.0.1:3001/look-up/?lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z)
+- [Look Up，初始熄灭](http://127.0.0.1:3001/stars-above/?lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z)
 
 测试记录：`.cache/campfire/browser-report.json`。
 
