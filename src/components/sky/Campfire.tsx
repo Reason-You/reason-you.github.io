@@ -10,6 +10,21 @@ const EMBER_PATHS = [
   { left: '50%', drift: '-3px', rise: '-53px' },
 ] as const;
 
+// Marshmallow lifecycle while the fire burns:
+//   idle → entering → roasting → ready → eating → entering → …
+// Extinguishing falls back through retreat → idle from any phase. Each phase
+// owns exactly one pending timer; changing phase (or unmounting) clears it, so
+// no roast can outlive the fire that started it. `round` remounts the stick so
+// every marshmallow starts its keyframes from scratch.
+type MarshmallowPhase = 'idle' | 'entering' | 'roasting' | 'ready' | 'eating' | 'retreat';
+
+const ENTER_DELAY_MS = 500; // the flames are visibly rising by then
+const EAT_MS = 260;         // shrink + fade of the eaten marshmallow
+const NEXT_MS = 500;        // from bite to the next stick entering
+const RETREAT_MS = 260;     // fade-out when the fire goes out
+const ROAST_MS = 1200;      // white → toasted while it turns
+const ROAST_MS_REDUCED = 700;
+
 interface Ember {
   id: number;
   path: number;
@@ -17,39 +32,53 @@ interface Ember {
 
 export default function Campfire() {
   const [fireOn, setFireOn] = useState(false);
+  const [phase, setPhase] = useState<MarshmallowPhase>('idle');
+  const [round, setRound] = useState(0);
+  const [eaten, setEaten] = useState(0);
   const [embers, setEmbers] = useState<Ember[]>([]);
-  const [marshmallow, setMarshmallow] = useState<'idle' | 'playing' | 'cancel' | 'static'>('idle');
-  const marshmallowPlayed = useRef(false);
   const emberId = useRef(0);
+  const wasLit = useRef(false);
   const reducedMotion = useReducedMotion();
   const id = useId();
 
-  // Completion belongs to this visit; extinguishing preserves the next roast.
   useEffect(() => {
     const timers: number[] = [];
+    const at = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
+    const enterMs = reducedMotion ? 200 : 700;
+    const roastMs = reducedMotion ? ROAST_MS_REDUCED : ROAST_MS;
+
     if (!fireOn) {
-      setMarshmallow((current) => current === 'idle' ? current : 'cancel');
-      timers.push(window.setTimeout(() => setMarshmallow('idle'), 250));
-    } else if (!marshmallowPlayed.current) {
-      setMarshmallow('idle');
-      timers.push(window.setTimeout(() => {
-        setMarshmallow(reducedMotion ? 'static' : 'playing');
-        timers.push(window.setTimeout(() => {
-          if (reducedMotion) {
-            setMarshmallow('cancel');
-            timers.push(window.setTimeout(() => {
-              marshmallowPlayed.current = true;
-              setMarshmallow('idle');
-            }, 250));
-          } else {
-            marshmallowPlayed.current = true;
-            setMarshmallow('idle');
-          }
-        }, reducedMotion ? 1200 : 3000));
-      }, 800));
+      wasLit.current = false;
+      setEaten(0);
+      if (phase === 'retreat') at(() => setPhase('idle'), RETREAT_MS);
+      else if (phase !== 'idle') setPhase('retreat');
+      return () => timers.forEach((timer) => window.clearTimeout(timer));
+    }
+
+    // A freshly lit fire always restarts from a hidden state, even when it is
+    // relit mid-bite: the flames take ~700ms to rise before the stick returns.
+    if (wasLit.current === false) {
+      wasLit.current = true;
+      if (phase !== 'idle') setPhase('idle');
+    }
+    if (phase === 'idle') {
+      at(() => {
+        setRound((current) => current + 1);
+        setPhase('entering');
+      }, ENTER_DELAY_MS);
+    } else if (phase === 'entering') {
+      at(() => setPhase('roasting'), enterMs);
+    } else if (phase === 'roasting') {
+      at(() => setPhase('ready'), roastMs);
+    } else if (phase === 'eating') {
+      at(() => setEaten((count) => count + 1), EAT_MS);
+      at(() => {
+        setRound((current) => current + 1);
+        setPhase('entering');
+      }, NEXT_MS);
     }
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [fireOn, reducedMotion]);
+  }, [fireOn, phase, reducedMotion]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -64,11 +93,25 @@ export default function Campfire() {
     return () => window.clearInterval(timer);
   }, [fireOn, reducedMotion]);
 
+  // Only a rested, fully roasted marshmallow counts; clicks during any other
+  // phase (or a second bite mid-animation) are ignored.
+  const eatMarshmallow = () => {
+    if (phase !== 'ready') return;
+    setPhase('eating');
+  };
+
+  const stopPropagation = (event: { stopPropagation(): void }) => event.stopPropagation();
+
   return (
     <>
       <div className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
         <div className="campfire-glow"><div className="campfire-glow-breathe" /></div>
         <div className="campfire-hint" />
+        {eaten > 0 && (
+          <div className="campfire-count">
+            {`Marshmallow${eaten > 1 ? 's' : ''} · ${eaten}`}
+          </div>
+        )}
         <div className="campfire-body">
           <svg viewBox="0 0 140 110" className="campfire-art" focusable="false">
             <defs>
@@ -120,8 +163,11 @@ export default function Campfire() {
               </g>
             </g>
           </svg>
-          {marshmallow !== 'idle' && (
-            <div className={`campfire-marshmallow m-${marshmallow}${reducedMotion ? ' m-reduced' : ''}`}>
+          {phase !== 'idle' && (
+            <div
+              key={round}
+              className={`campfire-marshmallow m-${phase}${reducedMotion ? ' m-reduced' : ''}`}
+            >
               <svg viewBox="0 0 90 44" focusable="false" aria-hidden="true">
                 <defs>
                   <radialGradient id={`${id}-caramel`} cx="0.35" cy="0.3" r="0.9">
@@ -152,6 +198,24 @@ export default function Campfire() {
           })}
         </div>
       </div>
+      {/* Stays mounted (disabled) through the bite animation so a fast
+          second click lands here instead of the fire toggle beneath. */}
+      {(phase === 'ready' || phase === 'eating') && (
+        <button
+          type="button"
+          className="campfire-eat"
+          aria-label="Eat roasted marshmallow"
+          disabled={phase === 'eating'}
+          onPointerDown={stopPropagation}
+          onPointerUp={stopPropagation}
+          onPointerMove={stopPropagation}
+          onPointerLeave={stopPropagation}
+          onClick={(event) => {
+            event.stopPropagation();
+            eatMarshmallow();
+          }}
+        />
+      )}
       <button
         type="button"
         className="campfire-toggle"

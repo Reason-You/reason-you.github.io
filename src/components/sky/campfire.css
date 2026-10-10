@@ -132,65 +132,148 @@
   display: block;
   width: 100%;
   height: 100%;
-  animation: marshmallow-visit 3s linear both;
 }
 
 .campfire-marshmallow-body {
   transform-box: fill-box;
   transform-origin: center;
-  animation: marshmallow-turn 3s ease-in-out both;
 }
 
-.campfire-marshmallow-cream {
-  animation: marshmallow-cream 3s linear both;
+/* The stick slides in from the right and settles beside the flame. */
+.campfire-marshmallow.m-entering svg {
+  animation: marshmallow-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.campfire-marshmallow-caramel {
-  animation: marshmallow-caramel 3s linear both;
+/* Roasting: one slow turn while cream and caramel build up over the roast. */
+.campfire-marshmallow.m-roasting .campfire-marshmallow-body {
+  animation: marshmallow-turn 1.2s ease-in-out both;
 }
 
-.campfire-marshmallow.m-cancel {
-  opacity: 0;
+.campfire-marshmallow.m-roasting .campfire-marshmallow-cream {
+  animation: marshmallow-cream 1.2s linear both;
 }
 
-.campfire-marshmallow.m-cancel * {
-  animation-play-state: paused;
+.campfire-marshmallow.m-roasting .campfire-marshmallow-caramel {
+  animation: marshmallow-caramel 1.2s linear both;
 }
 
-.campfire-marshmallow.m-reduced * {
-  animation: none;
+/* Roasted: it rests by the flame, swaying faintly, waiting to be eaten. */
+.campfire-marshmallow.m-ready .campfire-marshmallow-body {
+  animation: marshmallow-sway 5.2s ease-in-out infinite alternate;
 }
 
-.campfire-marshmallow.m-reduced .campfire-marshmallow-cream {
+.campfire-marshmallow.m-ready .campfire-marshmallow-cream {
   opacity: 0.35;
 }
 
-.campfire-marshmallow.m-reduced .campfire-marshmallow-caramel {
+.campfire-marshmallow.m-ready .campfire-marshmallow-caramel {
   opacity: 0.85;
 }
 
-@keyframes marshmallow-visit {
-  0% { transform: translateX(74px); opacity: 0; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-  23%, 77% { transform: translateX(0); opacity: 1; }
-  77% { animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36); }
-  100% { transform: translateX(74px); opacity: 0; }
+/* Eaten: the marshmallow shrinks away, then the bare stick draws back. */
+.campfire-marshmallow.m-eating .campfire-marshmallow-body {
+  animation: marshmallow-eat 240ms ease-in both;
+}
+
+.campfire-marshmallow.m-eating svg {
+  animation: marshmallow-retract 300ms cubic-bezier(0.55, 0, 0.85, 0.36) 100ms both;
+}
+
+/* The fire went out: whatever was roasting simply fades. */
+.campfire-marshmallow.m-retreat {
+  opacity: 0;
+}
+
+.campfire-marshmallow.m-reduced svg,
+.campfire-marshmallow.m-reduced .campfire-marshmallow-body,
+.campfire-marshmallow.m-reduced .campfire-marshmallow-cream,
+.campfire-marshmallow.m-reduced .campfire-marshmallow-caramel {
+  animation: none;
+}
+
+.campfire-marshmallow.m-reduced.m-eating {
+  opacity: 0;
+  transition: opacity 160ms ease-in;
+}
+
+.campfire-marshmallow.m-reduced .campfire-marshmallow-cream,
+.campfire-marshmallow.m-reduced .campfire-marshmallow-caramel {
+  transition: opacity 200ms linear;
+}
+
+/* Bite-sized hit area over the resting marshmallow, above the fire toggle.
+   Shifted right of centre so the flame itself stays a clean extinguish tap. */
+.campfire-eat {
+  position: absolute;
+  left: calc(50% + 24px);
+  bottom: 43px;
+  width: 46px;
+  height: 46px;
+  transform: translateX(-50%);
+  z-index: 40;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.campfire-eat:focus-visible {
+  outline: 1px solid var(--neutral-500);
+  outline-offset: 3px;
+}
+
+/* A quiet tally of this fire's eaten marshmallows, resting beside the logs. */
+.campfire-count {
+  position: absolute;
+  right: calc(50% + 78px);
+  bottom: 26px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(163, 141, 122, 0.9);
+  white-space: nowrap;
+  animation: campfire-count-in 400ms ease-out both;
+}
+
+@keyframes campfire-count-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes marshmallow-enter {
+  from { transform: translateX(74px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes marshmallow-turn {
-  0%, 23% { transform: rotate(0deg); }
-  77%, 100% { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes marshmallow-cream {
-  0%, 23% { opacity: 0; }
+  0% { opacity: 0; }
   55% { opacity: 0.2; }
-  77%, 100% { opacity: 0.35; }
+  100% { opacity: 0.35; }
 }
 
 @keyframes marshmallow-caramel {
-  0%, 30% { opacity: 0; }
-  55% { opacity: 0.35; }
-  77%, 100% { opacity: 0.85; }
+  0% { opacity: 0; }
+  45% { opacity: 0.3; }
+  100% { opacity: 0.85; }
+}
+
+@keyframes marshmallow-sway {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(2.4deg); }
+}
+
+@keyframes marshmallow-eat {
+  to { transform: scale(0); opacity: 0; }
+}
+
+@keyframes marshmallow-retract {
+  to { transform: translateX(74px); opacity: 0; }
 }
 
 @keyframes campfire-warmth {
@@ -244,6 +327,19 @@
     height: 88px;
   }
 
+  .campfire-eat {
+    left: calc(50% + 23px);
+    bottom: 33px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .campfire-count {
+    right: calc(50% + 64px);
+    bottom: 24px;
+    font-size: 10px;
+  }
+
   .campfire-glow {
     width: min(300px, 90%);
     height: 12%;
@@ -276,11 +372,8 @@
   .campfire-decoration[data-fire-on='true'] .campfire-glow-breathe,
   .campfire-decoration[data-fire-on='true'] .campfire-flame-breathe,
   .campfire-decoration[data-fire-on='true'] .campfire-flame-tip,
-  .campfire-ember {
-    animation: none;
-  }
-
-  .campfire-marshmallow * {
+  .campfire-ember,
+  .campfire-count {
     animation: none;
   }
 }
