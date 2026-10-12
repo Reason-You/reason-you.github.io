@@ -66,8 +66,9 @@ test('clicked constellation figures accumulate without duplicates until the last
   toggle(sirius);assert.deepEqual(state,{pinnedIds:[],constellationIds:[]});
   toggle(sirius);assert.deepEqual(state.constellationIds,['CMa']);
 });
-test('preview accepts only the two explicit levels; ordinary skies have no overlay',()=>{
-  for(const v of [null,'','1','0','0.10','invalid'])assert.equal(readConstellationPreview(v),null);
+test('ordinary skies enable 0.12 interaction; explicit preview levels remain available',()=>{
+  assert.equal(readConstellationPreview(null),.12);
+  for(const v of ['','1','0','0.10','invalid'])assert.equal(readConstellationPreview(v),null);
   assert.equal(readConstellationPreview('0.08'),.08);assert.equal(readConstellationPreview('0.12'),.12);
 });
 test('every real endpoint reuses the current camera projection across locations, dates, magnitude limits and directions',()=>{

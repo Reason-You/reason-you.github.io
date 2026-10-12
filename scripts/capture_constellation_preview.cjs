@@ -29,7 +29,7 @@ async page => {
     await context.addInitScript(()=>localStorage.setItem('theme-storage',JSON.stringify({state:{theme:'dark'},version:0})));
     const p=await context.newPage();p.on('pageerror',e=>report.errors.push(e.message));p.on('console',m=>{if(m.type()==='error')report.errors.push(m.text())});
     try{
-      const query=`skyUtc=${scene.utc}&facing=${scene.facing}&bortle=2&skydebug=1${alpha===null?'':`&constellationPreview=${alpha}`}`;
+      const query=`skyUtc=${scene.utc}&facing=${scene.facing}&bortle=2&skydebug=1&constellationPreview=${alpha===null?'0':alpha}`;
       const url=`${base}/stars-above/?${query}`;await p.goto(url);
       await p.waitForFunction(({facing})=>window.__sky?.rendered&&window.__sky.facing===facing&&window.__sky.lightPollution.source==='override',scene);
       await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(1100);
@@ -40,7 +40,7 @@ async page => {
       if(width===390)await p.touchscreen.tap(point.x,point.y);else await p.mouse.move(point.x,point.y);
       await p.locator('.look-up-label').waitFor();assert((await p.locator('.look-up-label').innerText()).includes(point.name),'existing name shown');
       if(alpha!==null)await p.waitForFunction(({id,alpha})=>{const g=document.querySelector('.constellation-preview g');return g?.dataset.constellation===id&&Math.abs(Number(getComputedStyle(g).opacity)-alpha)<.00001},{id:scene.id,alpha});
-      else assert(await p.locator('.constellation-preview').count()===0,'no default layer');
+      else assert(await p.locator('.constellation-preview').count()===0,'explicit comparison layer disabled');
       const state=await inspect(p);assert(state.valid&&state.sameSky,'real endpoints, no sky redraw');
       if(alpha!==null){assert(state.lines.length>0&&state.width==='0.6'&&state.pointerEvents==='none','thin auxiliary layer');const graph=source.constellations.find(c=>c.id===scene.id);assert(state.lines.every(l=>graph.lines.some(e=>e.fromHip===l.fromHip&&e.toHip===l.toHip)),'source HIP graph');}
       await shot(p,`constellation-${name}`);

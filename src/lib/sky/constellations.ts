@@ -13,7 +13,7 @@ export interface ConstellationSegment {
 }
 
 export function readConstellationPreview(value: string | null): 0.08 | 0.12 | null {
-  return value === '0.08' ? 0.08 : value === '0.12' ? 0.12 : null;
+  return value === null || value === '0.12' ? 0.12 : value === '0.08' ? 0.08 : null;
 }
 
 export function constellationForHip(hip: number | null) {

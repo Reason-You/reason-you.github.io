@@ -1,6 +1,6 @@
-# 星座连线预览
+# 星座连线
 
-Stars Above 的独立 SVG 辅助层，普通访问保持纯星空。仅两档预览参数生效：`constellationPreview=0.08`、`constellationPreview=0.12`。
+Stars Above 默认启用 0.12 透明度的星座交互。独立 SVG 辅助层在 hover 或点击固定时显示连线，未交互时保持纯星空。`constellationPreview=0.08`、`constellationPreview=0.12` 可用于两档对照，`constellationPreview=0` 用于关闭辅助层的基准测试。
 
 ## 数据
 

@@ -32,11 +32,12 @@ async page => {
    });assert(state.valid&&state.sameSky,JSON.stringify({width,reducedMotion,expected,state}));return state;
   }
   try{
-   await p.goto(`${base}/stars-above/?${query}`);await p.waitForFunction(()=>window.__sky?.lightPollution.source==='viirs');await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(1100);
+   await p.goto(`${base}/stars-above/?${query}&constellationPreview=0`);await p.waitForFunction(()=>window.__sky?.lightPollution.source==='viirs');await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(1100);
    const normal=await p.evaluate(()=>JSON.stringify({snapshot:window.__sky.snapshot,camera:window.__sky.camera,rendered:window.__sky.rendered}));
-   assert(await p.locator('.constellation-preview').count()===0,'ordinary sky remains off');
-   await p.goto(`${base}/stars-above/?${query}&constellationPreview=0.12`);await p.waitForFunction(()=>window.__sky?.lightPollution.source==='viirs');await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(1100);
+   assert(await p.locator('.constellation-preview').count()===0,'explicit comparison sky has no overlay');
+   await p.goto(`${base}/stars-above/?${query}`);await p.waitForFunction(()=>window.__sky?.lightPollution.source==='viirs');await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(1100);
    assert(normal===await p.evaluate(()=>JSON.stringify({snapshot:window.__sky.snapshot,camera:window.__sky.camera,rendered:window.__sky.rendered})),'astronomy and star rendering unchanged');
+   assert(await p.locator('.constellation-preview').count()===1,'ordinary entry enables constellation interaction without preview parameters');
    await p.evaluate(()=>{window.__beforeConstellation=window.__sky});await inspect([]);
    const all=await points(),rigel=all.find(e=>e.hip===24436),sirius=all.find(e=>e.hip===32349),betelgeuse=all.find(e=>e.hip===27989);
    assert(rigel?.named&&sirius?.named&&betelgeuse?.named,'named anchors in real VIIRS sky');
