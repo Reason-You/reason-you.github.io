@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import UseMySkyButton from '@/components/ui/UseMySkyButton';
 import { formatSkyTime, formatSkyTimeShort } from '@/lib/sky/time';
 import { useSkyStore } from '@/lib/stores/skyStore';
+import { useSkyDirection } from '@/components/sky/SkyDirection';
+import { SKY_DIRECTIONS } from '@/lib/sky/look-up';
 
 interface FooterProps {
   lastUpdated?: string;
@@ -16,6 +18,8 @@ function formatCoordinate(value: number, positive: string, negative: string): st
 
 export default function Footer({ lastUpdated }: FooterProps) {
   const isLookUp = usePathname().replace(/\/$/, '') === '/stars-above';
+  const { facing, cycleFacing } = useSkyDirection();
+  const direction = SKY_DIRECTIONS[facing];
   const snapshotDate = useSkyStore((state) => state.snapshotDate);
   const observer = useSkyStore((state) => state.observer);
   const [locationOpen, setLocationOpen] = useState(false);
@@ -52,19 +56,27 @@ export default function Footer({ lastUpdated }: FooterProps) {
               <p className="font-medium text-neutral-600 dark:text-neutral-300">{skyLabel}</p>
               <p>{observer.name}</p>
               <p className="tabular-nums">{coordinates}</p>
-              <p>Facing South</p>
+              <p>Facing {direction.name} · {direction.azimuth.toFixed(1)}°</p>
             </div>
           )}
           <div className="flex flex-col md:flex-row items-center justify-between gap-1.5 md:gap-2 text-xs text-neutral-500">
-            <p className="shrink-0">
-              <time dateTime={snapshotDate === null ? undefined : new Date(snapshotDate).toISOString()}>
-                {snapshotDate === null ? 'Facing South' : (
-                  <>
-                    <span className="hidden md:inline">{formatSkyTime(snapshotDate)}</span>
-                    <span className="md:hidden">{formatSkyTimeShort(snapshotDate)}</span>
-                  </>
-                )}
-              </time>
+            <p className="sky-observation shrink-0 flex items-center gap-1.5">
+              {snapshotDate !== null && <>
+                <time dateTime={new Date(snapshotDate).toISOString()}>
+                  <span className="hidden md:inline">{formatSkyTime(snapshotDate)}</span>
+                  <span className="md:hidden">{formatSkyTimeShort(snapshotDate)}</span>
+                </time>
+                <span aria-hidden="true">·</span>
+              </>}
+              <button type="button" onClick={cycleFacing}
+                className="sky-direction-trigger relative inline-flex items-center gap-1 rounded hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+                title={`${direction.azimuth.toFixed(1)}° true azimuth`}
+                aria-label={`Facing ${direction.name}, ${direction.azimuth.toFixed(1)} degrees. Turn to face ${SKY_DIRECTIONS[direction.next].name}`}>
+                Facing {direction.name}
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="opacity-50" aria-hidden="true">
+                  <path d="M12.8 6A5 5 0 1 0 13 10M13 2v4H9" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
             </p>
             <div className="sky-location relative flex items-center gap-x-2 whitespace-nowrap">
               <button

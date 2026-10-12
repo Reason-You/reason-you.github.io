@@ -9,7 +9,7 @@
 
 - `src/components/sky/Campfire.tsx`：SVG 木柴/火焰、原生按钮、局部状态与余烬。
 - `src/components/sky/campfire.css`：低位暖光、700 ms 切换、呼吸/摆动和余烬的一次性动画。
-- `src/lib/sky/time.ts`：浏览器系统时区的年月日、24 小时时分和 Facing South。
+- `src/lib/sky/time.ts`：浏览器系统时区的年月日和 24 小时时分；方向由 Footer 的转向按钮显示。
 - `scripts/capture_campfire.cjs`：对照截图与浏览器验证。
 - `docs/look-up-campfire.md`：实现与测试说明。
 
@@ -93,7 +93,7 @@ eating 阶段保持挂载并禁用，吞掉误触，不会穿透熄火。reduced
 Look Up 在 Canvas 完成绘制后将 `SkySnapshot.date.getTime()` 发布到 Sky Store。
 Footer 订阅该时间，以浏览器默认系统时区格式化，显示：
 
-`January 15, 2026 · 21:00 · Facing South`
+`January 15, 2026 · 21:00`，旁边独立显示 `Facing South` 转向按钮。
 
 `skyUtc` 和 `sky` 的日期解析继续复用原实现。固定测试时刻显示该时刻的本地时间；
 正常访问随七分钟星图计算周期更新。格式使用 h23，午夜显示 00:00。
@@ -186,6 +186,8 @@ mkdir -p .cache/campfire
 playwright-cli -s=campfire open http://127.0.0.1:3001/stars-above/
 playwright-cli -s=campfire --raw run-code --filename=scripts/capture_campfire.cjs
 ```
+
+默认只执行浏览器验证；需要保存截图时，以 `?screenshots=1` 打开页面后运行脚本。
 
 - [Look Up，初始熄灭](http://127.0.0.1:3001/stars-above/?lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z)
 

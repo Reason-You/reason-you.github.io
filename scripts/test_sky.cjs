@@ -19,6 +19,7 @@ const { createCamera, project } = require('../src/lib/sky/projection.ts');
 const { projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
 const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel,
+  readFacing, SKY_DIRECTIONS,
 } = require('../src/lib/sky/look-up.ts');
 const names = require('../src/lib/sky/star-names-data.json');
 const { formatSkyTime, formatSkyTimeShort } = require('../src/lib/sky/time.ts');
@@ -73,6 +74,27 @@ test('pinhole camera stays orthonormal with square pixels and valid FOV across s
     const lower = project(20, 180, camera);
     near(lower.y - center.y, Math.tan(27.5 * Math.PI / 180) * camera.scale);
   }
+});
+
+test('four cardinal cameras reproject one immutable sky snapshot and cycle back to South', () => {
+  const snapshot = computeSky(new Date('2026-01-15T13:00:00Z'), DEFAULT_OBSERVER, city);
+  const original = JSON.stringify(snapshot);
+  let facing = 'south';
+  for (const expected of ['south', 'west', 'north', 'east']) {
+    assert.equal(facing, expected);
+    const camera = createLookUpCamera(1280, 575, facing);
+    const center = project(47.5, SKY_DIRECTIONS[facing].azimuth, camera);
+    near(center.x, 640);
+    near(center.y, 287.5);
+    const rendered = projectSkyStars(snapshot, camera, { isDark: true, mobile: false, presentation: 'look-up' });
+    assert.ok(rendered.length > 0);
+    assert.equal(JSON.stringify(snapshot), original);
+    facing = SKY_DIRECTIONS[facing].next;
+  }
+  assert.equal(facing, 'south');
+  assert.equal(readFacing('north'), 'north');
+  assert.equal(readFacing(null), 'south');
+  assert.equal(readFacing('invalid'), 'south');
 });
 
 // Independent mean-sidereal-time horizon equations; allow precession/nutation/refraction.
@@ -180,14 +202,14 @@ test('footer uses the system timezone, 24-hour clock and rendered instant', () =
   const previous = process.env.TZ;
   try {
     process.env.TZ = 'Asia/Shanghai';
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 21:00 · Facing South');
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T16:00:00Z')), 'January 16, 2026 · 00:00 · Facing South');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T13:00:00Z')), 'Jan 15, 2026 · 21:00 · Facing South');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T16:00:00Z')), 'Jan 16, 2026 · 00:00 · Facing South');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 21:00');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T16:00:00Z')), 'January 16, 2026 · 00:00');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T13:00:00Z')), 'Jan 15, 2026 · 21:00');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T16:00:00Z')), 'Jan 16, 2026 · 00:00');
     process.env.TZ = 'America/New_York';
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 08:00 · Facing South');
-    assert.equal(formatSkyTime(Date.parse('2026-07-15T13:00:00Z')), 'July 15, 2026 · 09:00 · Facing South');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-07-15T13:00:00Z')), 'Jul 15, 2026 · 09:00 · Facing South');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 08:00');
+    assert.equal(formatSkyTime(Date.parse('2026-07-15T13:00:00Z')), 'July 15, 2026 · 09:00');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-07-15T13:00:00Z')), 'Jul 15, 2026 · 09:00');
   } finally {
     if (previous === undefined) delete process.env.TZ;
     else process.env.TZ = previous;

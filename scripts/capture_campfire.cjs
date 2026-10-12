@@ -1,8 +1,9 @@
 async (page) => {
   const browser = page.context().browser();
-  const base = 'http://127.0.0.1:3001';
+  const base = await page.evaluate(() => location.origin);
+  const captureScreenshots = await page.evaluate(() => new URLSearchParams(location.search).get('screenshots') === '1');
   const directory = '.cache/campfire';
-  const query = 'lat=31.2989&lon=121.5035&skyUtc=2026-01-15T13:00:00Z&skydebug=1';
+  const query = 'skyUtc=2026-01-15T13:00:00Z&skydebug=1';
   const report = { physicalDeviceTesting: false, browser: 'Chromium', captures: [], checks: [], failures: [], pageErrors: [] };
   const assert = (value, message) => { if (!value) throw new Error(message); };
   const check = async (name, task) => {
@@ -20,6 +21,7 @@ async (page) => {
     await p.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   };
   const screenshot = async (p, name, preserveMotion = false) => {
+    if (!captureScreenshots) return;
     const path = `${directory}/${name}.png`;
     await p.screenshot({ path, scale: 'css', fullPage: false, animations: preserveMotion ? 'allow' : 'disabled' });
     report.captures.push(path);
@@ -128,7 +130,7 @@ async (page) => {
       assert(Math.abs(layout.fire.x + layout.fire.width / 2 - viewport.width / 2) < 1, 'horizontal centre');
       assert(layout.glow.height <= layout.sky.height * 0.15 + 1, 'light limited to bottom 15%');
       assert(layout.documentWidth <= viewport.width && layout.documentHeight <= viewport.height + 1, 'no overflow');
-      assert(layout.footerTime === 'January 15, 2026 · 21:00 · Facing South', 'local observation time');
+      assert(layout.footerTime === 'January 15, 2026 · 21:00', 'local observation time');
       await screenshot(p, `${viewport.name}-B-off`);
       if (!viewport.mobile) {
         await p.locator('.campfire-toggle').hover();
@@ -451,8 +453,8 @@ async (page) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, timezoneId: 'America/New_York' });
     const p = await context.newPage(); await p.goto(url()); await ready(p);
     const utcClock = await p.locator('footer time span').first().textContent();
-    assert(utcClock === 'January 15, 2026 · 08:00 · Facing South', 'uses browser timezone, not observer longitude');
-    await p.goto(`${base}/stars-above/?lat=31.2989&lon=121.5035&sky=2026-01-15T08:00&skydebug=1`); await ready(p);
+    assert(utcClock === 'January 15, 2026 · 08:00', 'uses browser timezone, not observer longitude');
+    await p.goto(`${base}/stars-above/?sky=2026-01-15T08:00&skydebug=1`); await ready(p);
     assert(await p.locator('footer time span').first().textContent() === utcClock, 'timezone-less sky uses browser local time');
     for (const path of ['/', '/research/', '/cv/']) {
       await p.goto(`${base}${path}?${query}`);
@@ -465,7 +467,7 @@ async (page) => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, timezoneId: 'Asia/Shanghai' });
     const p = await context.newPage();
     await p.clock.install({ time: '2026-01-15T13:00:00Z' });
-    await p.goto(`${base}/stars-above/?lat=31.2989&lon=121.5035&skydebug=1`);
+    await p.goto(`${base}/stars-above/?skydebug=1`);
     await p.waitForFunction(() => window.__sky?.rendered && window.__sky.lightPollution.source === 'viirs');
     const before = await p.evaluate(() => window.__sky.snapshot.date.getTime());
     await p.clock.fastForward(421000);

@@ -7,7 +7,7 @@ export function formatSkyTime(timestamp: number): string {
   const clock = date.toLocaleTimeString('en-GB', {
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   });
-  return `${calendar} · ${clock} · Facing South`;
+  return `${calendar} · ${clock}`;
 }
 
 /** Compact variant for narrow footers: abbreviated month, same clock. */
@@ -19,5 +19,5 @@ export function formatSkyTimeShort(timestamp: number): string {
   const clock = date.toLocaleTimeString('en-GB', {
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   });
-  return `${calendar} · ${clock} · Facing South`;
+  return `${calendar} · ${clock}`;
 }

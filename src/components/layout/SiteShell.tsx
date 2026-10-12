@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import SkyInitializer from '@/components/ui/SkyInitializer';
+import { SkyDirectionProvider } from '@/components/sky/SkyDirection';
 import StarfieldBackground from '@/components/ui/StarfieldBackground';
 import MeteorBackground from '@/components/ui/MeteorBackground';
 
@@ -25,6 +26,7 @@ export default function SiteShell({ navigation, footer, children }: SiteShellPro
     const wasLookUp = previousPath.current.replace(/\/$/, '') === '/stars-above';
     previousPath.current = pathname;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isLookUp) document.querySelectorAll('.look-up-exit-ghost').forEach(ghost => ghost.remove());
     const entering = isLookUp && !wasLookUp && !reducedMotion;
     const leaving = !isLookUp && wasLookUp && !reducedMotion;
     setEnteringSky(entering);
@@ -63,7 +65,7 @@ export default function SiteShell({ navigation, footer, children }: SiteShellPro
     : backgroundPhase === 'fading-in' ? ' sky-background-fade-in' : ''}`;
 
   return (
-    <>
+    <SkyDirectionProvider active={isLookUp}>
       <SkyInitializer />
       {(!isLookUp || backgroundPhase === 'fading-out') && (
         <div className={backgroundClassName}>
@@ -78,6 +80,6 @@ export default function SiteShell({ navigation, footer, children }: SiteShellPro
         </main>
         {footer}
       </div>
-    </>
+    </SkyDirectionProvider>
   );
 }

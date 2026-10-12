@@ -377,6 +377,12 @@ html.dark .marshmallow-link:focus-visible {
   inset: -8px -10px;
 }
 
+.sky-direction-trigger::after {
+  content: '';
+  position: absolute;
+  inset: -6px -3px;
+}
+
 .sky-location-trigger::after {
   content: '';
   position: absolute;

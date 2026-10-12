@@ -6,6 +6,7 @@ import MeteorBackground from '@/components/ui/MeteorBackground';
 import { useSkyStore } from '@/lib/stores/skyStore';
 import { useLabelStore } from '@/lib/stores/labelStore';
 import Campfire from './Campfire';
+import { useSkyDirection } from './SkyDirection';
 import { resolveTheme, useThemeStore } from '@/lib/stores/themeStore';
 import { computeSky, type SkySnapshot } from '@/lib/sky/astro';
 import { createCamera, type Camera } from '@/lib/sky/projection';
@@ -13,7 +14,7 @@ import { drawSky } from '@/lib/sky/renderer';
 import { MOBILE_BREAKPOINT_PX, SKY_CENTER_Y, SKY_UPDATE_INTERVAL_MS, SKY_VIEW } from '@/lib/sky/constants';
 import {
   createLookUpCamera, hitTestStar, interactiveStars, LOOK_UP_HIT_RADIUS,
-  positionStarLabel, type InteractiveStar,
+  positionStarLabel, SKY_DIRECTIONS, type InteractiveStar,
 } from '@/lib/sky/look-up';
 
 interface SkyFrame {
@@ -59,6 +60,11 @@ export default function LookUpSky() {
   const skyRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const directionLayerRef = useRef<HTMLDivElement>(null);
+  const previousLayerRef = useRef<HTMLDivElement>(null);
+  const { facing } = useSkyDirection();
+  const facingRef = useRef(facing);
+  const reprojectRef = useRef<() => void>(() => {});
   const skyRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const snapshotRef = useRef<SkySnapshot | null>(null);
   const starsRef = useRef<InteractiveStar[]>([]);
@@ -113,12 +119,17 @@ export default function LookUpSky() {
         (window as unknown as Record<string, unknown>).__sky = {
           observer: snapshot.observer,
           lightPollution: snapshot.pollution,
-          snapshot, camera, rendered, interactiveStars: stars,
+          snapshot, camera, rendered, interactiveStars: stars, facing: facingRef.current,
           computeDurationMs, renderDurationMs: performance.now() - started,
         };
       }
     };
     renderRef.current = render;
+    reprojectRef.current = () => {
+      if (!camera) return;
+      camera = createLookUpCamera(camera.width, camera.height, facingRef.current);
+      render();
+    };
     const resize = () => {
       const width = sky.clientWidth;
       const height = sky.clientHeight;
@@ -129,7 +140,7 @@ export default function LookUpSky() {
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      camera = createLookUpCamera(width, height);
+      camera = createLookUpCamera(width, height, facingRef.current);
       render();
     };
     const resizeObserver = new ResizeObserver(() => {
@@ -149,8 +160,39 @@ export default function LookUpSky() {
       cancelAnimationFrame(rafId);
       if (timer !== null) window.clearInterval(timer);
       renderRef.current = () => {};
+      reprojectRef.current = () => {};
     };
   }, [observer, pollution, dateOverride, setSnapshotDate, reconcilePinned]);
+
+  useLayoutEffect(() => {
+    if (facingRef.current === facing) return;
+    facingRef.current = facing;
+    setHoveredId(null);
+    pointerDown.current = null;
+    clearPinned();
+    const layer = directionLayerRef.current;
+    const previous = previousLayerRef.current;
+    const canvas = canvasRef.current;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (layer && previous && canvas && !reduced) {
+      const copy = document.createElement('canvas');
+      copy.width = canvas.width;
+      copy.height = canvas.height;
+      copy.className = 'absolute inset-0 h-full w-full';
+      copy.getContext('2d')?.drawImage(canvas, 0, 0);
+      previous.replaceChildren(copy);
+    }
+    reprojectRef.current();
+    if (!layer || !previous || reduced) return;
+    const incoming = layer.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease-in-out' });
+    const outgoing = previous.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-in-out' });
+    outgoing.onfinish = () => previous.replaceChildren();
+    return () => {
+      incoming.cancel();
+      outgoing.cancel();
+      previous.replaceChildren();
+    };
+  }, [facing, clearPinned]);
 
   useEffect(() => {
     isDarkRef.current = isDark;
@@ -257,7 +299,7 @@ export default function LookUpSky() {
       ref={skyRef}
       className="look-up-sky absolute inset-0 overflow-hidden"
       role="region"
-      aria-label="South-facing starry sky"
+      aria-label={`${SKY_DIRECTIONS[facing].name}-facing starry sky`}
       style={{ cursor: hoveredId !== null ? 'pointer' : 'default' }}
       onPointerMove={(event) => {
         if (event.pointerType === 'mouse') setHoveredId(hit(event)?.star.id ?? null);
@@ -316,6 +358,7 @@ export default function LookUpSky() {
       )}
       <div ref={sceneRef} className="look-up-scene absolute inset-0">
       <MeteorBackground maxYFraction={0.9} />
+      <div ref={directionLayerRef} className="look-up-direction absolute inset-0">
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
       {frame?.stars.map(({ star, name, point }) => (
         <button
@@ -343,6 +386,8 @@ export default function LookUpSky() {
         ))}
         {frame && hoverStar && <StarLabel key={`hover-${hoverStar.star.id}`} star={hoverStar} camera={frame.camera} onDisplay={acknowledgeStar} />}
       </AnimatePresence>
+      </div>
+      <div ref={previousLayerRef} aria-hidden="true" className="look-up-previous absolute inset-0 pointer-events-none" />
       </div>
     </div>
   );

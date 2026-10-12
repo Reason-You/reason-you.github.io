@@ -7,12 +7,23 @@ const DEG = Math.PI / 180;
 export const LOOK_UP_VERTICAL_FOV = 75;
 export const LOOK_UP_HIT_RADIUS = { mouse: 16, touch: 28 } as const;
 
+export const SKY_DIRECTIONS = {
+  south: { name: 'South', azimuth: 180, next: 'west' },
+  west: { name: 'West', azimuth: 270, next: 'north' },
+  north: { name: 'North', azimuth: 0, next: 'east' },
+  east: { name: 'East', azimuth: 90, next: 'south' },
+} as const;
+export type SkyFacing = keyof typeof SKY_DIRECTIONS;
+export function readFacing(value: string | null): SkyFacing {
+  return value === 'north' || value === 'east' || value === 'west' ? value : 'south';
+}
+
 /** A square-pixel perspective: portrait screens set vertical rather than horizontal FOV. */
-export function createLookUpCamera(width: number, height: number): Camera {
+export function createLookUpCamera(width: number, height: number, facing: SkyFacing = 'south'): Camera {
   const horizontalFov = width < MOBILE_BREAKPOINT_PX
     ? 2 * Math.atan(Math.tan(LOOK_UP_VERTICAL_FOV * DEG / 2) * width / height) / DEG
     : SKY_VIEW.horizontalFov;
-  return createCamera(width, height, { ...SKY_VIEW, horizontalFov });
+  return createCamera(width, height, { ...SKY_VIEW, azimuth: SKY_DIRECTIONS[facing].azimuth, horizontalFov });
 }
 
 export interface InteractiveStar extends RenderedStar {
@@ -45,10 +56,6 @@ export function hitTestStar(
     }
   }
   return closest;
-}
-
-export interface StarSelection {
-  hoveredId: number | null;
 }
 
 /** Pinned names accumulate: a click toggles one star; the sky update keeps only visible stars. */
