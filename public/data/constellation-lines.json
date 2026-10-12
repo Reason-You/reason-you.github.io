@@ -1,0 +1,322 @@
+{
+  "author": "Stellarium's team",
+  "source": "https://github.com/Stellarium/stellarium/blob/d4a1322b6a81bf15dc4ef65c267b2fc846c5f3ca/skycultures/modern/index.json",
+  "license": "CC-BY-SA-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "licenseDeclaration": "https://github.com/Stellarium/stellarium/blob/d4a1322b6a81bf15dc4ef65c267b2fc846c5f3ca/skycultures/modern/description.md#license",
+  "modifications": "Extracted five constellation figures; expanded HIP polylines into normalized undirected segment pairs.",
+  "constellations": [
+    {
+      "id": "Ori",
+      "name": "Orion",
+      "chinese": "猎户座",
+      "sourceId": "CON modern Ori",
+      "lines": [
+        {
+          "fromHip": 22449,
+          "toHip": 22509
+        },
+        {
+          "fromHip": 22449,
+          "toHip": 22549
+        },
+        {
+          "fromHip": 22449,
+          "toHip": 25336
+        },
+        {
+          "fromHip": 22509,
+          "toHip": 22845
+        },
+        {
+          "fromHip": 22549,
+          "toHip": 22730
+        },
+        {
+          "fromHip": 22730,
+          "toHip": 22797
+        },
+        {
+          "fromHip": 22797,
+          "toHip": 23123
+        },
+        {
+          "fromHip": 24436,
+          "toHip": 25930
+        },
+        {
+          "fromHip": 24436,
+          "toHip": 27366
+        },
+        {
+          "fromHip": 25336,
+          "toHip": 25930
+        },
+        {
+          "fromHip": 25336,
+          "toHip": 26207
+        },
+        {
+          "fromHip": 25930,
+          "toHip": 26311
+        },
+        {
+          "fromHip": 26207,
+          "toHip": 27989
+        },
+        {
+          "fromHip": 26311,
+          "toHip": 26727
+        },
+        {
+          "fromHip": 26727,
+          "toHip": 27366
+        },
+        {
+          "fromHip": 26727,
+          "toHip": 27989
+        },
+        {
+          "fromHip": 27913,
+          "toHip": 28716
+        },
+        {
+          "fromHip": 27913,
+          "toHip": 29038
+        },
+        {
+          "fromHip": 27989,
+          "toHip": 28614
+        },
+        {
+          "fromHip": 28614,
+          "toHip": 29038
+        },
+        {
+          "fromHip": 28614,
+          "toHip": 29426
+        },
+        {
+          "fromHip": 28716,
+          "toHip": 29434
+        },
+        {
+          "fromHip": 29038,
+          "toHip": 29426
+        },
+        {
+          "fromHip": 29426,
+          "toHip": 29434
+        }
+      ]
+    },
+    {
+      "id": "Sco",
+      "name": "Scorpius",
+      "chinese": "天蝎座",
+      "sourceId": "CON modern Sco",
+      "lines": [
+        {
+          "fromHip": 78265,
+          "toHip": 80763
+        },
+        {
+          "fromHip": 78401,
+          "toHip": 80763
+        },
+        {
+          "fromHip": 78820,
+          "toHip": 80763
+        },
+        {
+          "fromHip": 80763,
+          "toHip": 81266
+        },
+        {
+          "fromHip": 81266,
+          "toHip": 82396
+        },
+        {
+          "fromHip": 82396,
+          "toHip": 82514
+        },
+        {
+          "fromHip": 82514,
+          "toHip": 82671
+        },
+        {
+          "fromHip": 82671,
+          "toHip": 84143
+        },
+        {
+          "fromHip": 84143,
+          "toHip": 86228
+        },
+        {
+          "fromHip": 85927,
+          "toHip": 86670
+        },
+        {
+          "fromHip": 86228,
+          "toHip": 87073
+        },
+        {
+          "fromHip": 86670,
+          "toHip": 87073
+        }
+      ]
+    },
+    {
+      "id": "Cyg",
+      "name": "Cygnus",
+      "chinese": "天鹅座",
+      "sourceId": "CON modern Cyg",
+      "lines": [
+        {
+          "fromHip": 94779,
+          "toHip": 95853
+        },
+        {
+          "fromHip": 95853,
+          "toHip": 97165
+        },
+        {
+          "fromHip": 95947,
+          "toHip": 98110
+        },
+        {
+          "fromHip": 97165,
+          "toHip": 100453
+        },
+        {
+          "fromHip": 98110,
+          "toHip": 100453
+        },
+        {
+          "fromHip": 100453,
+          "toHip": 102098
+        },
+        {
+          "fromHip": 100453,
+          "toHip": 102488
+        },
+        {
+          "fromHip": 102488,
+          "toHip": 104732
+        },
+        {
+          "fromHip": 104732,
+          "toHip": 107310
+        }
+      ]
+    },
+    {
+      "id": "Cas",
+      "name": "Cassiopeia",
+      "chinese": "仙后座",
+      "sourceId": "CON modern Cas",
+      "lines": [
+        {
+          "fromHip": 746,
+          "toHip": 3179
+        },
+        {
+          "fromHip": 3179,
+          "toHip": 4427
+        },
+        {
+          "fromHip": 4427,
+          "toHip": 6686
+        },
+        {
+          "fromHip": 6686,
+          "toHip": 8886
+        }
+      ]
+    },
+    {
+      "id": "UMa",
+      "name": "Ursa Major",
+      "chinese": "大熊座",
+      "sourceId": "CON modern UMa",
+      "lines": [
+        {
+          "fromHip": 41704,
+          "toHip": 46733
+        },
+        {
+          "fromHip": 41704,
+          "toHip": 48319
+        },
+        {
+          "fromHip": 44127,
+          "toHip": 46853
+        },
+        {
+          "fromHip": 44471,
+          "toHip": 46853
+        },
+        {
+          "fromHip": 46733,
+          "toHip": 54061
+        },
+        {
+          "fromHip": 46853,
+          "toHip": 48402
+        },
+        {
+          "fromHip": 48319,
+          "toHip": 48402
+        },
+        {
+          "fromHip": 48402,
+          "toHip": 53910
+        },
+        {
+          "fromHip": 50372,
+          "toHip": 54539
+        },
+        {
+          "fromHip": 50801,
+          "toHip": 54539
+        },
+        {
+          "fromHip": 53910,
+          "toHip": 54061
+        },
+        {
+          "fromHip": 53910,
+          "toHip": 58001
+        },
+        {
+          "fromHip": 54061,
+          "toHip": 59774
+        },
+        {
+          "fromHip": 54539,
+          "toHip": 57399
+        },
+        {
+          "fromHip": 57399,
+          "toHip": 58001
+        },
+        {
+          "fromHip": 58001,
+          "toHip": 59774
+        },
+        {
+          "fromHip": 59774,
+          "toHip": 62956
+        },
+        {
+          "fromHip": 62956,
+          "toHip": 65378
+        },
+        {
+          "fromHip": 65378,
+          "toHip": 67301
+        }
+      ]
+    }
+  ]
+}

@@ -48,7 +48,7 @@ async (page) => {
       snapshot: JSON.stringify({ snapshot: window.__sky.snapshot, camera: window.__sky.camera,
         rendered: window.__sky.rendered, pollution: window.__sky.lightPollution }),
       pixels: ctx.getImageData(0, 0, canvas.width, canvas.height).data.slice(),
-      storage: JSON.stringify({ ...localStorage }), draws: 0,
+      storage: JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([key]) => key !== 'stars-above-achievements-v1'))), draws: 0,
     };
     const original = ctx.clearRect;
     ctx.clearRect = function (...args) { window.__fireEvidence.draws++; return original.apply(this, args); };
@@ -65,14 +65,14 @@ async (page) => {
         rendered: window.__sky.rendered, pollution: window.__sky.lightPollution }),
       changedCanvasChannels: changedChannels,
       canvasDraws: baseline.draws,
-      sameStorage: baseline.storage === JSON.stringify({ ...localStorage }),
+      sameStorage: baseline.storage === JSON.stringify(Object.fromEntries(Object.entries(localStorage).filter(([key]) => key !== 'stars-above-achievements-v1'))),
     };
   });
   const assertEvidence = (evidence) => {
     assert(evidence.sameObject && evidence.sameSnapshot, 'fire must not alter astronomical snapshot or projected star alpha');
     assert(evidence.changedCanvasChannels === 0, `star Canvas changed ${evidence.changedCanvasChannels} channels`);
     assert(evidence.canvasDraws === 0, `${evidence.canvasDraws} unwanted Canvas redraws`);
-    assert(evidence.sameStorage, 'fire must not persist state');
+    assert(evidence.sameStorage, 'current fire state must not persist');
   };
   const probeIntervals = () => {
     window.__fireIntervals = new Map();
@@ -279,15 +279,15 @@ async (page) => {
 
     await p.locator('.campfire-toggle').click(); await fireReady(p, false);
     await p.waitForFunction(() => !document.querySelector('.campfire-marshmallow') &&
-      !document.querySelector('.campfire-count'), null, { timeout: 2000 });
+      document.querySelector('.campfire-count')?.textContent === 'Marshmallows · 3', null, { timeout: 2000 });
     await screenshot(p, 'desktop-1280-marshmallow-reset');
     await p.locator('.campfire-toggle').click(); await fireReady(p, true);
     await waitForPhase(p, 'entering');
-    assert(await p.locator('.campfire-count').count() === 0, 'relight restarts from zero');
+    assert(await p.locator('.campfire-count').textContent() === 'Marshmallows · 3', 'relight preserves the visit tally');
     await waitForPhase(p, 'ready');
     await p.getByRole('button', { name: 'Eat roasted marshmallow', exact: true }).focus();
     await p.keyboard.press('Enter');
-    await p.waitForFunction(() => document.querySelector('.campfire-count')?.textContent === 'Marshmallow · 1');
+    await p.waitForFunction(() => document.querySelector('.campfire-count')?.textContent === 'Marshmallows · 4');
     await p.locator('.campfire-toggle').click(); await fireReady(p, false);
     await context.close();
     return { caramel: [earlyToast, lateToast], loop: 3, keyboard: 'Enter bites', rapid: 'single count, fire stays lit' };
@@ -403,7 +403,7 @@ async (page) => {
     await p.waitForSelector('.campfire-marshmallow.m-reduced.m-roasting');
     await screenshot(p, 'mobile-390-reduced-marshmallow');
     await p.locator('.campfire-toggle').tap(); await fireReady(p, false);
-    await p.waitForFunction(() => !document.querySelector('.campfire-marshmallow') && !document.querySelector('.campfire-count'));
+    await p.waitForFunction(() => !document.querySelector('.campfire-marshmallow') && document.querySelector('.campfire-count')?.textContent === 'Marshmallow · 1');
     await context.close();
     return { white, toasted, loops };
   });

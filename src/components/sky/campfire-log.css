@@ -1,0 +1,202 @@
+.campfire-log-control {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 50;
+  font-size: 12px;
+  color: var(--neutral-500);
+}
+
+.campfire-log-trigger {
+  position: relative;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color 180ms ease;
+}
+
+.campfire-log-trigger::after {
+  content: '';
+  position: absolute;
+  inset: -14px -7px;
+}
+
+.campfire-log-trigger:hover,
+.campfire-log-trigger:focus-visible {
+  color: var(--neutral-600);
+}
+
+html.dark .campfire-log-trigger:hover,
+html.dark .campfire-log-trigger:focus-visible {
+  color: var(--neutral-600);
+}
+
+.campfire-log-control button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.campfire-log {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: calc(100% + 14px);
+  right: 0;
+  width: min(370px, calc(100vw - 32px));
+  max-height: min(440px, 65vh);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.94);
+  color: var(--neutral-600);
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+
+html.dark .campfire-log {
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--neutral-500);
+}
+
+.campfire-log-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.campfire-log-header h2 {
+  margin-right: auto;
+  color: var(--primary);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.campfire-log-total {
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--neutral-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.campfire-log-close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.campfire-log-close::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+
+.campfire-log-selection {
+  flex-shrink: 0;
+  margin: 18px 0 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.campfire-log-caption {
+  color: var(--neutral-500);
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+
+.campfire-log-selected-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.achievement-icon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.campfire-log-selected-name .achievement-icon { margin-top: 3px; color: var(--primary); }
+.campfire-discovery .achievement-icon { align-self: center; }
+
+.campfire-log-selection h3 {
+  min-width: 0;
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--primary);
+  font-size: 18px;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+.campfire-log-description,
+.campfire-log-empty {
+  color: var(--neutral-500);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.campfire-log-description { margin-top: 7px; }
+.campfire-log-empty { padding: 8px 0; }
+
+.campfire-discoveries {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-500) transparent;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.campfire-discovery {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  line-height: 1.5;
+  padding: 7px 3px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.campfire-discovery:hover,
+.campfire-discovery[aria-pressed='true'] { color: var(--primary); }
+
+.campfire-discovery-count {
+  min-width: 20px;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--neutral-500);
+}
+
+.campfire-discovery-locked {
+  display: block;
+  padding: 3px 3px;
+  line-height: 1.5;
+  color: var(--neutral-500);
+}
+
+@media (max-height: 520px) {
+  .campfire-log { display: block; overflow: auto; overscroll-behavior: contain; }
+  .campfire-discoveries { overflow: visible; }
+}
+
+@media (max-width: 639px) {
+  .campfire-log-control { top: 18px; right: 16px; }
+  .campfire-log { padding: 14px; }
+  .campfire-log-header { gap: 8px; }
+  .campfire-log-close { width: 30px; height: 30px; }
+  .campfire-discovery { min-height: 40px; padding: 10px 3px; }
+}

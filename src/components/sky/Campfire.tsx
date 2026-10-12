@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useId, useReducer, useRef, useState, type CSSProperties } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { useSkyDirection } from './SkyDirection';
+import { campfireReducer, INITIAL_CAMPFIRE } from '@/lib/achievements/session';
+import { canBurnMarshmallow } from '@/lib/achievements/evaluate';
+import { useAchievementStore } from '@/lib/stores/achievementStore';
+import AchievementToast, { type CampfireMessage } from './AchievementToast';
 import './campfire.css';
 
 const EMBER_PATHS = [
@@ -13,11 +18,9 @@ const EMBER_PATHS = [
 // Marshmallow lifecycle while the fire burns:
 //   idle → entering → roasting → ready → eating → entering → …
 // Extinguishing falls back through retreat → idle from any phase. Each phase
-// owns exactly one pending timer; changing phase (or unmounting) clears it, so
+// owns its pending timers; changing phase (or unmounting) clears them, so
 // no roast can outlive the fire that started it. `round` remounts the stick so
 // every marshmallow starts its keyframes from scratch.
-type MarshmallowPhase = 'idle' | 'entering' | 'roasting' | 'ready' | 'eating' | 'retreat';
-
 const ENTER_DELAY_MS = 500; // the flames are visibly rising by then
 const EAT_MS = 260;         // shrink + fade of the eaten marshmallow
 const NEXT_MS = 500;        // from bite to the next stick entering
@@ -31,13 +34,17 @@ interface Ember {
 }
 
 export default function Campfire() {
-  const [fireOn, setFireOn] = useState(false);
-  const [phase, setPhase] = useState<MarshmallowPhase>('idle');
-  const [round, setRound] = useState(0);
-  const [eaten, setEaten] = useState(0);
+  const [session, dispatch] = useReducer(campfireReducer, INITIAL_CAMPFIRE);
+  const { fireOn, phase, round, eaten, burnt, completion } = session;
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+  const { facing } = useSkyDirection();
+  const [messages, setMessages] = useState<CampfireMessage[]>([]);
+  const lastCompletion = useRef(completion);
+  const hintedRound = useRef(-1);
+  const dismissMessage = useCallback((key: string) => setMessages(current => current.filter(message => message.key !== key)), []);
   const [embers, setEmbers] = useState<Ember[]>([]);
   const emberId = useRef(0);
-  const wasLit = useRef(false);
   const reducedMotion = useReducedMotion();
   const id = useId();
 
@@ -48,37 +55,39 @@ export default function Campfire() {
     const roastMs = reducedMotion ? ROAST_MS_REDUCED : ROAST_MS;
 
     if (!fireOn) {
-      wasLit.current = false;
-      setEaten(0);
-      if (phase === 'retreat') at(() => setPhase('idle'), RETREAT_MS);
-      else if (phase !== 'idle') setPhase('retreat');
-      return () => timers.forEach((timer) => window.clearTimeout(timer));
-    }
-
-    // A freshly lit fire always restarts from a hidden state, even when it is
-    // relit mid-bite: the flames take ~700ms to rise before the stick returns.
-    if (wasLit.current === false) {
-      wasLit.current = true;
-      if (phase !== 'idle') setPhase('idle');
-    }
-    if (phase === 'idle') {
-      at(() => {
-        setRound((current) => current + 1);
-        setPhase('entering');
-      }, ENTER_DELAY_MS);
+      if (phase === 'retreat') at(() => dispatch({ type: 'idle' }), RETREAT_MS);
+    } else if (phase === 'idle') {
+      at(() => dispatch({ type: 'enter' }), ENTER_DELAY_MS);
     } else if (phase === 'entering') {
-      at(() => setPhase('roasting'), enterMs);
-    } else if (phase === 'roasting') {
-      at(() => setPhase('ready'), roastMs);
-    } else if (phase === 'eating') {
-      at(() => setEaten((count) => count + 1), EAT_MS);
       at(() => {
-        setRound((current) => current + 1);
-        setPhase('entering');
-      }, NEXT_MS);
+        const current = sessionRef.current;
+        const eligible = canBurnMarshmallow(current.eaten + 1, current.eaten - current.ignitionStartCount + 1);
+        dispatch({ type: 'roast', roll: eligible ? Math.random() : 1 });
+      }, enterMs);
+    } else if (phase === 'roasting') {
+      at(() => dispatch({ type: 'ready' }), roastMs);
+    } else if (phase === 'eating') {
+      at(() => dispatch({ type: 'confirm' }), EAT_MS);
+      at(() => dispatch({ type: 'enter' }), NEXT_MS);
     }
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [fireOn, phase, reducedMotion]);
+
+  useEffect(() => {
+    if (!completion || completion === lastCompletion.current) return;
+    lastCompletion.current = completion;
+    const ids = useAchievementStore.getState().discover(completion);
+    setMessages(current => [
+      ...(completion.eaten === 40 ? current.filter(message => message.type === 'achievement') : current),
+      ...ids.map(id => ({ key: id, type: 'achievement' as const, id })),
+    ]);
+  }, [completion]);
+
+  useEffect(() => {
+    if (phase !== 'ready' || !burnt || hintedRound.current === round) return;
+    hintedRound.current = round;
+    setMessages(current => [...current, { key: `burnt-${round}`, type: 'burnt' }]);
+  }, [phase, burnt, round]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -96,14 +105,14 @@ export default function Campfire() {
   // Only a rested, fully roasted marshmallow counts; clicks during any other
   // phase (or a second bite mid-animation) are ignored.
   const eatMarshmallow = () => {
-    if (phase !== 'ready') return;
-    setPhase('eating');
+    dispatch({ type: 'eat', facing });
   };
 
   const stopPropagation = (event: { stopPropagation(): void }) => event.stopPropagation();
 
   return (
     <>
+      <AchievementToast message={messages[0]} quiet={eaten === 40} onDismiss={dismissMessage} />
       <div className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
         <div className="campfire-glow"><div className="campfire-glow-breathe" /></div>
         <div className="campfire-hint" />
@@ -167,6 +176,7 @@ export default function Campfire() {
             <div
               key={round}
               className={`campfire-marshmallow m-${phase}${reducedMotion ? ' m-reduced' : ''}`}
+              data-burnt={burnt}
             >
               <svg viewBox="0 0 90 44" focusable="false" aria-hidden="true">
                 <defs>
@@ -181,7 +191,9 @@ export default function Campfire() {
                   <ellipse cx="26" cy="30" rx="8" ry="9.5" fill="#f4eee4" stroke="#d8cfc2" strokeWidth="0.7" />
                   <ellipse className="campfire-marshmallow-cream" cx="26" cy="30" rx="8" ry="9.5" fill="#e8d6b4" opacity="0" />
                   <ellipse className="campfire-marshmallow-caramel" cx="23" cy="27" rx="5.2" ry="6.2" fill={`url(#${id}-caramel)`} opacity="0" />
+                  {burnt && <ellipse className="campfire-marshmallow-burnt" cx="22" cy="28" rx="3.8" ry="5" fill="#70492f" opacity="0" />}
                 </g>
+                {burnt && <path className="campfire-marshmallow-smoke" d="M24 19C20 15 27 12 23 8C21 6 23 3 25 1" fill="none" stroke="#94a3b8" strokeWidth="0.6" opacity="0" />}
               </svg>
             </div>
           )}
@@ -227,7 +239,8 @@ export default function Campfire() {
         onPointerLeave={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.stopPropagation();
-          setFireOn((on) => !on);
+          setMessages(current => current.filter(message => message.type === 'achievement'));
+          dispatch({ type: 'toggle' });
         }}
       />
     </>

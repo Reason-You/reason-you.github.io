@@ -1,3 +1,45 @@
+.campfire-notifications {
+  position: absolute;
+  left: 50%;
+  bottom: 138px;
+  width: min(480px, calc(100% - 40px));
+  transform: translateX(-50%);
+  z-index: 35;
+  pointer-events: none;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--neutral-500);
+}
+
+html.dark .campfire-notifications { color: var(--neutral-500); }
+.campfire-notification-caption { font-size: 10px; margin-bottom: 3px; }
+.campfire-notification-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.campfire-marshmallow-burnt { transition: opacity 400ms ease; }
+.campfire-marshmallow[data-burnt='true'].m-ready .campfire-marshmallow-burnt,
+.campfire-marshmallow[data-burnt='true'].m-eating .campfire-marshmallow-burnt { opacity: 0.65; }
+.campfire-marshmallow[data-burnt='true'].m-ready .campfire-marshmallow-smoke {
+  animation: marshmallow-smoke 2.4s ease-out both;
+}
+@keyframes marshmallow-smoke {
+  0% { opacity: 0; }
+  20% { opacity: 0.16; }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+@media (max-width: 639px) { .campfire-notifications { bottom: 120px; } }
+@media (prefers-reduced-motion: reduce) {
+  .campfire-marshmallow[data-burnt='true'].m-ready .campfire-marshmallow-smoke { animation: none; }
+  .campfire-marshmallow-burnt { transition: none; }
+}
+
 .campfire-decoration {
   position: absolute;
   inset: 0;

@@ -46,7 +46,7 @@ click/tap/Enter/Space 切换一次，名称为 Light campfire / Extinguish campf
 烤熟后点击（或键盘 Enter/Space）棉花糖：约 240 ms 缩小淡出，计数 +1，
 木签收回，600 ms 后自动送入下一颗白色棉花糖，无限循环。只有烤熟并成功
 点击才计数，烤制中或动画中的点击一律无效；快速连击不重复计数。计数只属于
-本轮篝火：熄火、刷新或离开页面即归零，不写 localStorage。文字为
+本次页面访问：熄火与再次点火保留累计数量，刷新或离开页面归零，不写 localStorage。文字为
 `Marshmallow · 1` / `Marshmallows · 2 …`，位于篝火左侧、柴堆高度，11 px
 （手机 10 px）低饱和暖棕色，无跳动反馈，为 0 时隐藏。
 
