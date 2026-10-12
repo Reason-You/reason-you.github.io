@@ -13,11 +13,15 @@ interface AboutProps {
 
 const marshmallowLinkClassName = 'marshmallow-link rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2';
 
+function MarshmallowLinkContent({ children }: { children: ReactNode }) {
+    return <>{children}{'\u2060'}<span aria-hidden="true" className="marshmallow-link-arrow">↗</span></>;
+}
+
 function MarshmallowLink({ children }: { children: ReactNode }) {
     const query = useSearchParams().toString();
     return (
         <Link href={`/stars-above${query ? `?${query}` : ''}`} className={marshmallowLinkClassName}>
-            {children}
+            <MarshmallowLinkContent>{children}</MarshmallowLinkContent>
         </Link>
     );
 }
@@ -43,7 +47,7 @@ export default function About({ content, title = 'About' }: AboutProps) {
                         a: ({ ...props }) => props.href === '/stars-above' ? (
                             <Suspense fallback={
                                 <Link href="/stars-above" className={marshmallowLinkClassName}>
-                                    {props.children}
+                                    <MarshmallowLinkContent>{props.children}</MarshmallowLinkContent>
                                 </Link>
                             }>
                                 <MarshmallowLink>{props.children}</MarshmallowLink>

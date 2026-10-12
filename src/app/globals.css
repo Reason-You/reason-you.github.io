@@ -342,6 +342,32 @@ body {
   color: inherit;
 }
 
+.marshmallow-link-arrow {
+  position: relative;
+  left: 0;
+  top: 0;
+  margin-inline-start: 0.25em;
+  font-size: 0.8em;
+  opacity: 0.8;
+  transition: left 400ms ease, top 400ms ease, opacity 400ms ease;
+}
+
+.marshmallow-link:hover .marshmallow-link-arrow,
+.marshmallow-link:focus-visible .marshmallow-link-arrow {
+  opacity: 1;
+  left: 1px;
+  top: -1px;
+  transition-duration: 800ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marshmallow-link:hover .marshmallow-link-arrow,
+  .marshmallow-link:focus-visible .marshmallow-link-arrow {
+    left: 0;
+    top: 0;
+  }
+}
+
 .marshmallow-link:hover,
 .marshmallow-link:focus-visible {
   color: #9a6b3f;

@@ -70,9 +70,10 @@ export function verticalLimitingMagnitude(
   return lerp(3, 1.2, smooth01((t - f45) / (fEnd - f45)));
 }
 
-/** Bright stars get a larger dot; faint stars still get a visible ~1px dot. */
+/** Bright stars gain up to 0.3 CSS px, smoothly returning to the base radius at mag 0.6. */
 export function magnitudeToRadius(magnitude: number): number {
-  return clamp(2.6 - (magnitude - MIN_MAGNITUDE) * 0.22, 0.8, 2.6);
+  const base = clamp(2.6 - (magnitude - MIN_MAGNITUDE) * 0.22, 0.8, 2.6);
+  return base + 0.3 * smooth01((0.6 - magnitude) / (0.6 - MIN_MAGNITUDE));
 }
 
 /** Continuous, monotonic alpha driven by the real visual magnitude. */
@@ -222,9 +223,9 @@ export function drawSky(
 
     // Subtle halo for the brightest stars only.
     if (star.mag < 0.6) {
-      const halo = radius * 3.4;
+      const halo = radius * 3.8;
       const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, halo);
-      gradient.addColorStop(0, `rgba(${color}, ${(alpha * 0.35).toFixed(3)})`);
+      gradient.addColorStop(0, `rgba(${color}, ${(alpha * 0.42).toFixed(3)})`);
       gradient.addColorStop(1, `rgba(${color}, 0)`);
       ctx.fillStyle = gradient;
       ctx.beginPath();

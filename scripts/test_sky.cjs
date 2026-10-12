@@ -16,7 +16,7 @@ const { getCatalog } = require('../src/lib/sky/catalog.ts');
 const { computeSky, twilightFactor } = require('../src/lib/sky/astro.ts');
 const { DEFAULT_OBSERVER, SKY_DAYTIME_VISIBILITY } = require('../src/lib/sky/constants.ts');
 const { createCamera, project } = require('../src/lib/sky/projection.ts');
-const { projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
+const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
 const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel,
   readFacing, SKY_DIRECTIONS,
@@ -169,6 +169,62 @@ test('daytime floor, light theme suppression, size and low-saturation color mapp
   assert.ok(magnitudeToRadius(-1) > magnitudeToRadius(3));
   assert.ok(magnitudeToAlpha(1, 4, 1) > magnitudeToAlpha(3, 4, 1));
   assert.deepEqual(colorIndexToRgb(undefined), [255, 253, 248]);
+});
+
+test('bright-star radius gain is bounded, monotonic and smooth at mag 0.6', () => {
+  const base = mag => Math.min(2.6, Math.max(0.8, 2.6 - (mag + 1.5) * 0.22));
+  near(magnitudeToRadius(-1.5) - base(-1.5), 0.3);
+  for (let i = 0; i <= 900; i += 1) {
+    const mag = -2 + i / 100;
+    const gain = magnitudeToRadius(mag) - base(mag);
+    assert.ok(gain >= -1e-12 && gain <= 0.3 + 1e-12);
+    assert.ok(magnitudeToRadius(mag) >= magnitudeToRadius(mag + 0.01));
+    if (mag >= 0.6) near(gain, 0);
+  }
+  const step = 1e-5;
+  const at = magnitudeToRadius(0.6);
+  near(at, base(0.6));
+  near(magnitudeToRadius(0.6 - step), at, 1e-5);
+  near((at - magnitudeToRadius(0.6 - step)) / step,
+    (magnitudeToRadius(0.6 + step) - at) / step, 1e-5);
+});
+
+test('both sky presentations share soft bright-star halos without changing projection or alpha', () => {
+  const snapshot = computeSky(new Date('2026-01-15T13:00:00Z'), DEFAULT_OBSERVER, darkSky);
+  for (const presentation of ['background', 'look-up']) {
+    for (const isDark of [true, false]) {
+      const arcs = [], gradients = [];
+      const ctx = {
+        clearRect() {}, fillRect() {}, beginPath() {}, fill() {},
+        arc(x, y, radius) { arcs.push({ x, y, radius }); },
+        createLinearGradient() { return { addColorStop() {} }; },
+        createRadialGradient(x, y, inner, endX, endY, radius) {
+          const gradient = { x, y, radius, stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } };
+          gradients.push(gradient);
+          return gradient;
+        },
+      };
+      const camera = createLookUpCamera(1440, 720);
+      const style = { presentation, isDark, mobile: false };
+      const projected = projectSkyStars(snapshot, camera, style);
+      const rendered = drawSky(ctx, snapshot, camera, style);
+      assert.deepEqual(rendered, projected);
+      const bright = rendered.filter(({ star }) => star.mag < 0.6);
+      assert.ok(bright.length > 0);
+      assert.equal(gradients.length, bright.length);
+      assert.equal(arcs.length, rendered.length + bright.length);
+      for (let i = 0; i < bright.length; i += 1) {
+        const { star, point, alpha } = bright[i];
+        const gradient = gradients[i];
+        near(gradient.x, point.x); near(gradient.y, point.y);
+        near(gradient.radius, magnitudeToRadius(star.mag) * 3.8);
+        const color = colorIndexToRgb(star.colorIndex).join(', ');
+        assert.deepEqual(gradient.stops, [
+          [0, `rgba(${color}, ${(alpha * 0.42).toFixed(3)})`], [1, `rgba(${color}, 0)`],
+        ]);
+      }
+    }
+  }
 });
 
 test('nearest pointer hit, mouse/touch radii, and brightness tie-break for unresolved components', () => {
