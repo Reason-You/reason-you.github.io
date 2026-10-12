@@ -96,3 +96,57 @@ test('missing, below-horizon, out-of-frame and culled endpoints remove their seg
   assert.equal(projectConstellation(c,[from,to],camera).length,1);
   for(const entries of [[from],[from,{...to,star:{...to.star,altitude:-.1}}],[from,{...to,point:{x:1500,y:300}}],[from,{...to,point:{x:500,y:-1}}],[]])assert.deepEqual(projectConstellation(c,entries,camera),[]);
 });
+
+const { CONSTELLATION_NAMES } = require('../src/lib/sky/constellation-names.ts');
+const { placeConstellationLabel, rectsOverlap, CONSTELLATION_LABEL_GAP } = require('../src/lib/sky/constellation-label.ts');
+
+test('all 88 Chinese names match the exact IAU/Stellarium ID and Latin name pairs',()=>{
+  assert.equal(Object.keys(CONSTELLATION_NAMES).length,88);
+  assert.deepEqual(Object.keys(CONSTELLATION_NAMES).sort(),CONSTELLATIONS.map(c=>c.id).sort());
+  assert.equal(new Set(Object.values(CONSTELLATION_NAMES).map(n=>n.chinese)).size,88);
+  for(const c of CONSTELLATIONS){const name=CONSTELLATION_NAMES[c.id];assert.equal(name.english,c.name);assert.equal(name.chinese,name.chinese.trim());assert.ok(name.chinese.endsWith('座'));}
+  for(const [id,chinese] of Object.entries({Ori:'猎户座',Sco:'天蝎座',Cyg:'天鹅座',Cas:'仙后座',UMa:'大熊座',UMi:'小熊座',CMa:'大犬座',CMi:'小犬座',CrB:'北冕座',CrA:'南冕座'}))assert.equal(CONSTELLATION_NAMES[id].chinese,chinese);
+});
+const labelSegments=[{fromHip:1,toHip:2,from:{x:160,y:140},to:{x:260,y:250}},{fromHip:2,toHip:3,from:{x:260,y:250},to:{x:340,y:180}}];
+const labelViewport={x:0,y:0,width:600,height:450};
+test('constellation name placement avoids measured long/short star-label rectangles with ten-pixel clearance',()=>{
+  const obstacles=[{x:180,y:140,width:130,height:45},{x:330,y:240,width:55,height:45}];
+  for(const width of [40,95,160]){
+    const size={width,height:31},position=placeConstellationLabel({segments:labelSegments,size,viewport:labelViewport,obstacles});assert.ok(position);
+    assert.ok(obstacles.every(r=>!rectsOverlap({...position,...size},r,CONSTELLATION_LABEL_GAP)));
+    assert.ok(position.x>=12&&position.y>=12&&position.x+width<=588&&position.y+31<=438);
+  }
+});
+test('constellation name stays stable until a new obstacle requires relocation',()=>{
+  const size={width:80,height:31},first=placeConstellationLabel({segments:labelSegments,size,viewport:labelViewport,obstacles:[]});assert.ok(first);
+  assert.deepEqual(placeConstellationLabel({segments:labelSegments,size,viewport:labelViewport,obstacles:[],previous:first}),first);
+  const obstacle={...first,...size};const next=placeConstellationLabel({segments:labelSegments,size,viewport:labelViewport,obstacles:[obstacle],previous:first});assert.ok(next);assert.ok(!rectsOverlap({...next,...size},obstacle,10));
+});
+test('no space or no visible geometry hides the name instead of moving star labels or leaving the viewport',()=>{
+  assert.equal(placeConstellationLabel({segments:labelSegments,size:{width:80,height:31},viewport:labelViewport,obstacles:[labelViewport]}),null);
+  assert.equal(placeConstellationLabel({segments:[],size:{width:80,height:31},viewport:labelViewport,obstacles:[]}),null);
+  assert.equal(placeConstellationLabel({segments:labelSegments,size:{width:700,height:31},viewport:labelViewport,obstacles:[]}),null);
+});
+
+const { selectConstellationLabel } = require('../src/lib/sky/constellations.ts');
+test('label selection falls back to a visible pinned figure when the latest figure is clipped out',()=>{
+  const rigel=getCatalog().find(s=>s.hip===24436).id,sirius=getCatalog().find(s=>s.hip===32349).id;
+  assert.equal(selectConstellationLabel(null,[rigel,sirius],['Ori','CMa'],['Ori']),'Ori');
+  assert.equal(selectConstellationLabel('Ori',[rigel,sirius],['Ori','CMa'],['Ori','CMa']),'Ori');
+  assert.equal(selectConstellationLabel(null,[sirius],['Ori','CMa'],['Ori']),'Ori');
+  assert.equal(selectConstellationLabel(null,[],[],[]),null);
+});
+test('elongated constellation labels follow the explored visible segment, not the distant global centroid',()=>{
+  const segments=[{fromHip:1,toHip:2,from:{x:80,y:140},to:{x:150,y:180}},
+    {fromHip:3,toHip:4,from:{x:500,y:200},to:{x:650,y:200}}];
+  const size={width:80,height:31},anchor={x:80,y:140};
+  const point=placeConstellationLabel({segments,size,viewport:{x:0,y:0,width:800,height:500},obstacles:[],anchor});assert.ok(point);
+  assert.ok(Math.hypot(point.x+40-anchor.x,point.y+15.5-anchor.y)<80);
+  const blocked={...point,...size};const next=placeConstellationLabel({segments,size,viewport:{x:0,y:0,width:800,height:500},obstacles:[blocked],anchor,previous:point});assert.ok(next);assert.ok(!rectsOverlap({...next,...size},blocked,10));
+});
+
+test('visible isolated members retain a nearby name when light pollution removes their connecting segment',()=>{
+  const segments=[{fromHip:1,toHip:2,from:{x:500,y:200},to:{x:650,y:200}}],anchor={x:80,y:140},size={width:80,height:31};
+  const point=placeConstellationLabel({segments,size,viewport:{x:0,y:0,width:800,height:500},obstacles:[],anchor});assert.ok(point);
+  assert.ok(Math.hypot(point.x+40-anchor.x,point.y+15.5-anchor.y)<80);
+});

@@ -1,15 +1,19 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
+import ConstellationLabel from './ConstellationLabel';
 import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { constellationForStarId, projectConstellation, readConstellationPreview, CONSTELLATIONS, CONSTELLATION_ATTRIBUTION } from '@/lib/sky/constellations';
+import { constellationForStarId, selectConstellationLabel, projectConstellation, readConstellationPreview, CONSTELLATIONS, CONSTELLATION_ATTRIBUTION } from '@/lib/sky/constellations';
 import type { Camera } from '@/lib/sky/projection';
 import type { RenderedStar } from '@/lib/sky/renderer';
 
-export default function ConstellationPreview({ starId, pinnedConstellations, rendered, camera }: {
+export default function ConstellationPreview({ starId, selectedStarIds, pinnedConstellations, rendered, camera, skyRef, sceneRef }: {
   starId: number | null;
+  selectedStarIds: readonly number[];
   pinnedConstellations: string[];
+  skyRef: RefObject<HTMLDivElement | null>;
+  sceneRef: RefObject<HTMLDivElement | null>;
   rendered: readonly RenderedStar[];
   camera: Camera;
 }) {
@@ -30,8 +34,14 @@ export default function ConstellationPreview({ starId, pinnedConstellations, ren
       constellation: c, segments: projectConstellation(c, rendered, camera),
     })).filter(c => c.segments.length > 0);
   }, [shown, pinnedConstellations, rendered, camera]);
+  const labelId = selectConstellationLabel(shown?.id ?? null, selectedStarIds, pinnedConstellations,
+    figures.map(figure => figure.constellation.id));
+  const labelFigure = figures.find(figure => figure.constellation.id === labelId);
+  const anchorId = shown?.id === labelId ? starId : [...selectedStarIds].reverse().find(id => constellationForStarId(id)?.id === labelId);
+  const anchor = rendered.find(entry => entry.star.id === anchorId)?.point ?? null;
   if (alpha === null) return null;
   return (
+    <>
     <svg className="constellation-preview absolute inset-0 h-full w-full pointer-events-none" aria-hidden="true"
       viewBox={`0 0 ${camera.width} ${camera.height}`}>
       <metadata>{CONSTELLATION_ATTRIBUTION}</metadata>
@@ -46,5 +56,11 @@ export default function ConstellationPreview({ starId, pinnedConstellations, ren
         ))}
       </AnimatePresence>
     </svg>
+    <AnimatePresence mode="wait">
+      {labelFigure && <ConstellationLabel key={labelFigure.constellation.id}
+        constellation={labelFigure.constellation} segments={labelFigure.segments} anchor={anchor} rendered={rendered} camera={camera}
+        skyRef={skyRef} sceneRef={sceneRef} />}
+    </AnimatePresence>
+    </>
   );
 }

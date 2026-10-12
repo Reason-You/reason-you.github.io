@@ -32,6 +32,17 @@ export function constellationForStarId(id: number | null) {
   return id === null ? null : byStarId.get(id) ?? null;
 }
 
+export function selectConstellationLabel(hoveredId: string | null, pinnedIds: readonly number[],
+  constellationIds: readonly string[], visibleIds: readonly string[]): string | null {
+  const visible = new Set(visibleIds);
+  if (hoveredId && visible.has(hoveredId)) return hoveredId;
+  for (const id of [...pinnedIds].reverse()) {
+    const constellation = constellationForStarId(id);
+    if (constellation && visible.has(constellation.id)) return constellation.id;
+  }
+  return [...constellationIds].reverse().find(id => visible.has(id)) ?? null;
+}
+
 export function toggleConstellationSelection(pinnedIds: number[], constellationIds: string[], starId: number) {
   const removing = pinnedIds.includes(starId);
   const nextIds = removing ? pinnedIds.filter(id => id !== starId) : [...pinnedIds, starId];

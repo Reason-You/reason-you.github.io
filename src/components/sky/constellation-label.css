@@ -1,0 +1,15 @@
+.constellation-label {
+  position: absolute;
+  visibility: hidden;
+  z-index: 10;
+  width: max-content;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  color: #697583;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+.dark .constellation-label { color: #7c8ba1; }
+.constellation-label-chinese { font-size: 12px; line-height: 17px; }
+.constellation-label-english { font-size: 10px; line-height: 14px; }

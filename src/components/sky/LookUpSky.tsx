@@ -41,6 +41,10 @@ function StarLabel({ star, camera, onDisplay }: {
       label.offsetWidth, label.offsetHeight));
   }, [star, camera]);
 
+  useLayoutEffect(() => {
+    labelRef.current?.dispatchEvent(new Event('sky-label-layout', { bubbles: true }));
+  }, [position]);
+
   return (
     <motion.div
       ref={labelRef}
@@ -426,8 +430,8 @@ export default function LookUpSky() {
       {frame && <Suspense fallback={null}>
         <ConstellationPreview
           key={`${facing}:${frame.camera.width}:${frame.camera.height}:${frame.snapshot.date.getTime()}:${frame.snapshot.observer.latitude}:${frame.snapshot.observer.longitude}:${frame.snapshot.pollution.limitingMagnitude}`}
-          starId={hoveredPreviewId} pinnedConstellations={pinnedConstellations}
-          rendered={frame.rendered} camera={frame.camera} />
+          starId={hoveredPreviewId} selectedStarIds={pinnedIds} pinnedConstellations={pinnedConstellations}
+          rendered={frame.rendered} camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} />
       </Suspense>}
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
       {frame?.stars.map(({ star, name, point }) => (
