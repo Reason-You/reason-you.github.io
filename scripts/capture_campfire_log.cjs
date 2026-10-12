@@ -2,9 +2,9 @@ async page => {
   const browser=page.context().browser(),base=await page.evaluate(()=>location.origin);
   const capture=await page.evaluate(()=>new URLSearchParams(location.search).get('screenshots')==='1');
   const directory='.cache/campfire-log';
-  const ids=['cosmic-roaster','still-hungry','phd-in-marshmallows','the-answer-was-marshmallows','halfway-to-the-end-of-the-universe','64-bit-sugar-rush','three-quarters-still-here','88-constellations-one-campfire','just-one-more','at-the-end-of-the-universe','four-skies-one-campfire','a-little-too-close-to-the-sun'];
-  const names=['Cosmic Roaster','Still Hungry?','Ph.D. in Marshmallows','The Answer Was Marshmallows','Halfway to the End of the Universe','64-bit Sugar Rush','Three Quarters. Still Here?','88 Constellations, One Campfire','Just One More.','At the End of the Universe','Four Skies, One Campfire','A Little Too Close to the Sun'];
-  const milestones=[10,20,30,42,50,64,75,88,99,100],key='stars-above-achievements-v1';
+  const ids=['cosmic-roaster','still-hungry','phd-in-marshmallows','the-answer-was-marshmallows','64-bit-sugar-rush','three-quarters-still-here','88-constellations-one-campfire','just-one-more','at-the-end-of-the-universe','four-skies-one-campfire','a-taste-of-the-stars','make-a-wish-at-the-marshmallowids'];
+  const names=['Cosmic Roaster','Still Hungry?','Ph.D. in Marshmallows','The Answer Was Marshmallows','64-bit Sugar Rush','Three Quarters. Still Here?','88 Constellations, One Campfire','Just One More.','At the End of the Universe','Four Skies, One Campfire','A Taste of the Stars','Make a Wish at the Marshmallowids'];
+  const milestones=[10,20,30,42,64,75,88,99,100],key='stars-above-achievements-v1';
   const report={checks:[],failures:[],errors:[],captures:[]};
   const assert=(v,m)=>{if(!v)throw new Error(m)};
   const ready=p=>p.waitForFunction(()=>window.__sky?.rendered&&window.__sky.lightPollution.source==='viirs');
@@ -14,7 +14,7 @@ async page => {
     await context.addInitScript(({theme,record,key,deny})=>{
       localStorage.setItem('theme-storage',JSON.stringify({state:{theme},version:0}));
       if(record!==null)localStorage.setItem(key,typeof record==='string'?record:JSON.stringify(record));
-      window.__roastRoll=.99;Math.random=()=>window.__roastRoll;
+      window.__roastRoll=.4;Math.random=()=>window.__roastRoll;
       if(deny){Storage.prototype.getItem=function(){throw new Error('Storage disabled')};Storage.prototype.setItem=function(){throw new Error('Storage disabled')};}
     },{theme,record,key,deny});
     const p=await context.newPage();p.on('pageerror',e=>report.errors.push(e.message));p.on('console',m=>{if(m.type()==='error')report.errors.push(m.text())});
@@ -76,7 +76,7 @@ async page => {
       await p.getByRole('button',{name:'Achievements',exact:true}).click();const log=p.getByRole('dialog',{name:'Campfire Log'});await log.waitFor();
       assert((await log.innerText()).includes('12 / 12 discovered'),'all restored');
       await log.getByRole('button',{name:/The Answer Was Marshmallows/}).click();await shot(p,`log-${width}-selected-42`);
-      await log.getByRole('button',{name:/Halfway to the End of the Universe/}).click();await shot(p,`log-${width}-long-name`);
+      await log.getByRole('button',{name:/Make a Wish at the Marshmallowids/}).click();await shot(p,`log-${width}-long-name`);
       const scroll=await log.locator('.campfire-discoveries').evaluate(el=>{const before=scrollY;el.scrollTop=el.scrollHeight;return {inner:el.scrollTop,outer:scrollY-before,overflow:el.scrollHeight>el.clientHeight}});
       assert(scroll.overflow&&scroll.inner>0&&scroll.outer===0,'only list scrolls');await shot(p,`log-${width}-scrolled`);
       assert((await log.locator('.campfire-discovery').allTextContents()).every((t,i)=>t.includes(names[i])),'all names intact');return scroll;
@@ -97,8 +97,8 @@ async page => {
     await light(p);const milestonesSeen=[];
     for(let n=1;n<=120;n++){
       if(n===2||n===3||n===40){await p.locator('.sky-direction-trigger').click();await p.waitForFunction(f=>window.__sky.facing===f,n===2?'west':n===3?'north':'east');}
-      if(n===5)await p.evaluate(()=>window.__roastRoll=.99);
-      assert(await p.locator('.campfire-marshmallow').getAttribute('data-burnt')===(n===5?'true':'false'),'single burnt fifth roast; protected milestones stay normal');
+      if(n===5||n===6)await p.evaluate(()=>window.__roastRoll=.4);
+      assert(await p.locator('.campfire-marshmallow').getAttribute('data-outcome')===(n===5?'starlit':n===6?'fireball':'normal'),'starlight variants and normal protected milestones');
       if(n===40){
         await p.getByRole('button',{name:'Eat roasted marshmallow',exact:true}).click();await phase(p,'eating');
         await p.locator('.sky-direction-trigger').click();await p.waitForFunction(()=>window.__sky.facing==='south');
@@ -115,7 +115,7 @@ async page => {
         if(n===10){await p.clock.runFor(200);await shot(p,'campfire-unlocked-ten');}
       }
       if(n===41){await p.waitForFunction(()=>document.querySelector('.campfire-notification')?.textContent.includes('Four Skies, One Campfire'));await p.clock.runFor(200);await shot(p,'campfire-four-skies-deferred');}
-      if(n===4)await p.evaluate(()=>window.__roastRoll=0);
+      if(n===4||n===5)await p.evaluate(n=>window.__roastRoll=n===4?.85:.95,n);
       if(n<120)await next(p);
     }
     const record=await p.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);assert(Object.keys(record.unlocked).length===12&&ids.every(id=>record.unlocked[id]),'all twelve earned through gameplay; no quantity discoveries above 100');
@@ -126,22 +126,10 @@ async page => {
     await p.getByRole('button',{name:'Achievements',exact:true}).click();assert((await p.getByRole('dialog').innerText()).includes('12 / 12 discovered'),'return retains discoveries');
     return {milestonesSeen,record};
   });
-  await check('burnt fifth roast, one-time result, edible count, hint/achievement queue, no reaward', {clock:true},async p=>{
-    await light(p);
-    for(let n=1;n<=4;n++){await bite(p,n);if(n<4)await next(p)}
-    await p.evaluate(()=>window.__roastRoll=0);await next(p);assert(await p.locator('.campfire-marshmallow').getAttribute('data-burnt')==='true','fifth roast burns');
-    await p.waitForFunction(()=>document.querySelector('.campfire-notification')?.textContent.includes('A little too close to the Sun.'));await p.clock.runFor(200);await shot(p,'campfire-burnt-ready');
-    await p.evaluate(()=>window.__roastRoll=.99);assert(await p.locator('.campfire-marshmallow').getAttribute('data-burnt')==='true','draw stable through ready');await bite(p,5);
-    assert((await p.locator('.campfire-notification').innerText()).includes('A little too close to the Sun.'),'existing hint is not overwritten');
-    await p.clock.runFor(2700);await p.waitForFunction(()=>document.querySelector('.campfire-notification')?.textContent.includes('A Little Too Close to the Sun'));await p.clock.runFor(200);await shot(p,'campfire-burnt-unlocked');
-    const record=await p.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);assert(Object.keys(record.unlocked).length===1&&record.unlocked[ids[11]],'first burnt discovery');
-    await p.locator('.campfire-toggle').click();await count(p,5);await p.clock.runFor(300);await p.evaluate(()=>window.__roastRoll=0);await light(p);
-    for(let n=6;n<=10;n++){
-      assert(await p.locator('.campfire-marshmallow').getAttribute('data-burnt')==='false','first four of a new fire and cumulative milestone ten are normal');await bite(p,n);await next(p);
-    }
-    assert(await p.locator('.campfire-marshmallow').getAttribute('data-burnt')==='true','eligible eleventh cumulative roast can burn');await bite(p,11);await p.clock.runFor(3500);
-    assert(await p.locator('.campfire-notification-name').count()===0,'burnt achievement does not reappear');
-    const repeated=await p.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);assert(Object.keys(repeated.unlocked).length===2&&repeated.unlocked[ids[11]]===record.unlocked[ids[11]]&&repeated.unlocked[ids[0]],'burnt timestamp retained; quantity ten earned across ignitions');return repeated;
+  await check('burnt marshmallow stays edible, with no discovery slot or award', {clock:true},async p=>{
+    await p.evaluate(()=>window.__roastRoll=.99);await light(p);assert(await p.locator('.campfire-marshmallow').getAttribute('data-outcome')==='burnt','burnt result');
+    await p.waitForFunction(()=>document.querySelector('.campfire-notification')?.textContent.includes('A little too close to the Sun.'));await bite(p,1);
+    assert(await p.evaluate(key=>localStorage.getItem(key)===null,key),'burnt does not award');await p.locator('.campfire-toggle').click();await count(p,1);return true;
   });
   await check('quantity and four-direction discoveries queue in priority order',{clock:true},async p=>{
     await light(p);

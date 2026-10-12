@@ -12,28 +12,30 @@ Stars Above 的隐藏发现记录。入口 `Achievements` 始终位于导航下�
 | 20 颗 | Still Hungry? | 餐具 |
 | 30 颗 | Ph.D. in Marshmallows | 学位帽 |
 | 42 颗 | The Answer Was Marshmallows | 轨道 |
-| 50 颗 | Halfway to the End of the Universe | 半蚀 |
 | 64 颗 | 64-bit Sugar Rush | 二进制 |
 | 75 颗 | Three Quarters. Still Here? | 扇形 |
 | 88 颗 | 88 Constellations, One Campfire | 连结星点 |
 | 99 颗 | Just One More. | 加号 |
 | 100 颗 | At the End of the Universe | 无限 |
 | 一次点火中四个方向各成功吃一颗 | Four Skies, One Campfire | 罗盘 |
-| 首次成功吃掉烤焦棉花糖 | A Little Too Close to the Sun | 太阳 |
+| 首次成功吃掉任意星光棉花糖 | A Taste of the Stars | 星光 |
+| 首次吃掉稀有亮星光棉花糖并释放火流星 | Make a Wish at the Marshmallowids | 火流星 |
 
 数量在一次 Stars Above 页面访问中累计；熄火、再次点火保留，刷新或离开页面重置。100 颗后继续计数。永久记录与当前访问的数量独立。
 
 ## 状态与确认
 
-`src/lib/achievements/session.ts` 的纯 reducer 是数量的唯一权威来源。`ignitionStartCount` 记录本次点火时的数量，仅用于推导本次火中的序号；方向集合在熄火时清空。
+`src/lib/achievements/session.ts` 的纯 reducer 是数量的唯一权威来源。方向集合在熄火时清空；烤制时长使用当前累计数量的平滑指数曲线，从 2400ms 趋近 800ms，等待、进入和变色同步缩短。吃掉的确认保持 260ms。
 
 原有阶段继续为 `idle → entering → roasting → ready → eating → entering`。只有 eating 的 260ms 确认事件增加数量，确认完成后评估成就。重复点击和重复确认被阶段状态拒绝；熄火取消尚未确认的食用和定时器。方向在点击吃掉时保存，转向发生在动画中途也不改变该次归属。
 
-烤焦从每次点火的第 5 颗开始判定，概率 8%。进入 roasting 时只抽样一次。累计数量 10、20、30、40、42、50、64、75、88、99、100 对应的棉花糖保持正常。烤焦是正常奶油/焦糖上的局部深棕色，淡烟在 reduced motion 下停用。
+进入 roasting 时只抽样一次，互斥结果为普通 82%、微弱星光 12%、稀有亮星光 3%、烤焦 3%。累计数量 10、20、30、40、42、64、75、88、99、100 固定为普通；50 可触发特殊结果。烤焦保持局部深棕色与淡烟，不占成就位。
 
 ## 通知
 
-首次解锁停留 2.5 秒，之后淡出；采用串行队列。相同确认事件按数量、四方向、烤焦的顺序排队。烤焦 ready 提示共用此队列。
+首次解锁停留 2.5 秒，之后淡出；采用串行队列。相同确认事件按数量、稀有火流星、四方向、普通星光的顺序排队。首次稀有星光同时解锁两个新成就时，selected discovery 默认选中 Make a Wish at the Marshmallowids。烤焦 ready 提示共用此队列，不授予成就。
+
+星光在确认吃掉后从表面光点的实际屏幕投影位置释放。独立 SVG 图层与背景流星共享亮度基准，不改动天文 Canvas。微弱星光流星为 1.5–2.8 倍、800–1150ms；稀有火流星为 3–10 倍、1200–2000ms，具有更宽的白金色拖尾与柔和余辉。亮度按核心、尾焰及光晕的总发光笔画能量分配，避免高亮端被 alpha 截断。背景流星继续使用原有慢速循环。reduced motion 改为原位短尾星光与淡出。
 
 累计计数 40 时通知静默。此时完成的四方向成就立即记入永久记录，首次通知在第 41 次成功食用后恢复。熄火保留已确认的发现通知，移除当前烤焦提示。已解锁成就不会重复发放。
 

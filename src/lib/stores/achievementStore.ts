@@ -25,7 +25,8 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
     const time = new Date().toISOString();
     const unlocked = { ...previous.unlocked };
     ids.forEach(id => { unlocked[id] = time; });
-    const record: AchievementRecord = { version: 1, unlocked, recentId: ids[ids.length - 1] };
+    const recentId = ids.includes('make-a-wish-at-the-marshmallowids') ? 'make-a-wish-at-the-marshmallowids' : ids[ids.length - 1];
+    const record: AchievementRecord = { version: 1, unlocked, recentId };
     set({ record });
     saveAchievementRecord(record);
     return ids;

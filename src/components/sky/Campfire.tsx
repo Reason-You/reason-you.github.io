@@ -4,7 +4,9 @@ import { useCallback, useEffect, useId, useReducer, useRef, useState, type CSSPr
 import { useReducedMotion } from 'framer-motion';
 import { useSkyDirection } from './SkyDirection';
 import { campfireReducer, INITIAL_CAMPFIRE } from '@/lib/achievements/session';
-import { canBurnMarshmallow } from '@/lib/achievements/evaluate';
+import { canHaveSpecialOutcome, isStarlit, roastTimings } from '@/lib/achievements/marshmallow';
+import { createMarshmallowMeteor, type MarshmallowMeteorFlight } from '@/lib/sky/marshmallow-meteor';
+import MarshmallowMeteor from './MarshmallowMeteor';
 import { useAchievementStore } from '@/lib/stores/achievementStore';
 import AchievementToast, { type CampfireMessage } from './AchievementToast';
 import './campfire.css';
@@ -21,12 +23,8 @@ const EMBER_PATHS = [
 // owns its pending timers; changing phase (or unmounting) clears them, so
 // no roast can outlive the fire that started it. `round` remounts the stick so
 // every marshmallow starts its keyframes from scratch.
-const ENTER_DELAY_MS = 500; // the flames are visibly rising by then
-const EAT_MS = 260;         // shrink + fade of the eaten marshmallow
-const NEXT_MS = 500;        // from bite to the next stick entering
-const RETREAT_MS = 260;     // fade-out when the fire goes out
-const ROAST_MS = 1200;      // white → toasted while it turns
-const ROAST_MS_REDUCED = 700;
+const EAT_MS = 260;
+const RETREAT_MS = 260;
 
 interface Ember {
   id: number;
@@ -35,7 +33,12 @@ interface Ember {
 
 export default function Campfire() {
   const [session, dispatch] = useReducer(campfireReducer, INITIAL_CAMPFIRE);
-  const { fireOn, phase, round, eaten, burnt, completion } = session;
+  const { fireOn, phase, round, eaten, outcome, timings, completion } = session;
+  const burnt = outcome === 'burnt';
+  const decoration = useRef<HTMLDivElement>(null);
+  const marshmallow = useRef<HTMLDivElement>(null);
+  const [flights, setFlights] = useState<MarshmallowMeteorFlight[]>([]);
+  const finishFlight = useCallback((id: number) => setFlights(current => current.filter(flight => flight.id !== id)), []);
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const { facing } = useSkyDirection();
@@ -49,26 +52,29 @@ export default function Campfire() {
   const id = useId();
 
   useEffect(() => {
+    const resize = () => setFlights([]);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
+
+  useEffect(() => {
     const timers: number[] = [];
     const at = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
-    const enterMs = reducedMotion ? 200 : 700;
-    const roastMs = reducedMotion ? ROAST_MS_REDUCED : ROAST_MS;
 
     if (!fireOn) {
       if (phase === 'retreat') at(() => dispatch({ type: 'idle' }), RETREAT_MS);
     } else if (phase === 'idle') {
-      at(() => dispatch({ type: 'enter' }), ENTER_DELAY_MS);
+      at(() => dispatch({ type: 'enter' }), sessionRef.current.timings.wait);
     } else if (phase === 'entering') {
       at(() => {
         const current = sessionRef.current;
-        const eligible = canBurnMarshmallow(current.eaten + 1, current.eaten - current.ignitionStartCount + 1);
-        dispatch({ type: 'roast', roll: eligible ? Math.random() : 1 });
-      }, enterMs);
+        dispatch({ type: 'roast', roll: canHaveSpecialOutcome(current.eaten + 1) ? Math.random() : 0 });
+      }, sessionRef.current.timings.enter);
     } else if (phase === 'roasting') {
-      at(() => dispatch({ type: 'ready' }), roastMs);
+      at(() => dispatch({ type: 'ready' }), sessionRef.current.timings.roast);
     } else if (phase === 'eating') {
       at(() => dispatch({ type: 'confirm' }), EAT_MS);
-      at(() => dispatch({ type: 'enter' }), NEXT_MS);
+      at(() => dispatch({ type: 'enter' }), EAT_MS + roastTimings(sessionRef.current.eaten + 1).wait);
     }
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [fireOn, phase, reducedMotion]);
@@ -76,12 +82,15 @@ export default function Campfire() {
   useEffect(() => {
     if (!completion || completion === lastCompletion.current) return;
     lastCompletion.current = completion;
-    const ids = useAchievementStore.getState().discover(completion);
+    const sky = decoration.current?.getBoundingClientRect();
+    const flight = sky ? createMarshmallowMeteor(round, completion.outcome, completion.origin, sky.width, sky.height) : null;
+    if (flight) setFlights(current => [...current, flight]);
+    const ids = useAchievementStore.getState().discover({ ...completion, meteorReleased: flight !== null });
     setMessages(current => [
       ...(completion.eaten === 40 ? current.filter(message => message.type === 'achievement') : current),
       ...ids.map(id => ({ key: id, type: 'achievement' as const, id })),
     ]);
-  }, [completion]);
+  }, [completion, round]);
 
   useEffect(() => {
     if (phase !== 'ready' || !burnt || hintedRound.current === round) return;
@@ -105,7 +114,13 @@ export default function Campfire() {
   // Only a rested, fully roasted marshmallow counts; clicks during any other
   // phase (or a second bite mid-animation) are ignored.
   const eatMarshmallow = () => {
-    dispatch({ type: 'eat', facing });
+    if (sessionRef.current.phase !== 'ready') return;
+    const star = marshmallow.current?.querySelector<SVGCircleElement>('[data-launch-star]');
+    const matrix = star?.getScreenCTM();
+    const sky = decoration.current?.getBoundingClientRect();
+    const point = star && matrix ? new DOMPoint(star.cx.baseVal.value, star.cy.baseVal.value).matrixTransform(matrix) : null;
+    const origin = point && sky ? { x: point.x - sky.left, y: point.y - sky.top } : null;
+    dispatch({ type: 'eat', facing, origin });
   };
 
   const stopPropagation = (event: { stopPropagation(): void }) => event.stopPropagation();
@@ -113,7 +128,8 @@ export default function Campfire() {
   return (
     <>
       <AchievementToast message={messages[0]} quiet={eaten === 40} onDismiss={dismissMessage} />
-      <div className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
+      {flights.map(flight => <MarshmallowMeteor key={flight.id} flight={flight} onFinish={finishFlight} />)}
+      <div ref={decoration} className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
         <div className="campfire-glow"><div className="campfire-glow-breathe" /></div>
         <div className="campfire-hint" />
         {eaten > 0 && (
@@ -175,7 +191,10 @@ export default function Campfire() {
           {phase !== 'idle' && (
             <div
               key={round}
+              ref={marshmallow}
               className={`campfire-marshmallow m-${phase}${reducedMotion ? ' m-reduced' : ''}`}
+              style={{ '--marshmallow-enter-ms': `${timings.enter}ms`, '--marshmallow-roast-ms': `${timings.roast}ms` } as CSSProperties}
+              data-outcome={outcome}
               data-burnt={burnt}
             >
               <svg viewBox="0 0 90 44" focusable="false" aria-hidden="true">
@@ -192,6 +211,18 @@ export default function Campfire() {
                   <ellipse className="campfire-marshmallow-cream" cx="26" cy="30" rx="8" ry="9.5" fill="#e8d6b4" opacity="0" />
                   <ellipse className="campfire-marshmallow-caramel" cx="23" cy="27" rx="5.2" ry="6.2" fill={`url(#${id}-caramel)`} opacity="0" />
                   {burnt && <ellipse className="campfire-marshmallow-burnt" cx="22" cy="28" rx="3.8" ry="5" fill="#70492f" opacity="0" />}
+                  {isStarlit(outcome) && <g className={`campfire-starlight ${outcome === 'fireball' ? 'campfire-starlight-rare' : ''}`}>
+                    {outcome === 'fireball' ? <>
+                      <circle cx="25" cy="27" r="4.5" fill="#e9c995" opacity="0.18" />
+                      <path d="M25 22.5 26 26 29.5 27 26 28 25 31.5 24 28 20.5 27 24 26Z" fill="#fff7dd" opacity="0.92" />
+                      <circle data-launch-star cx="25" cy="27" r="1.1" fill="#fffdf1" />
+                    </> : <>
+                      <path d="M23 24V28M21 26H25" stroke="#f2f5ff" strokeWidth="0.55" opacity="0.6" />
+                      <circle data-launch-star cx="23" cy="26" r="0.75" fill="#f2f5ff" opacity="0.7" />
+                      <circle cx="28" cy="31" r="0.6" fill="#dbe8ff" opacity="0.5" />
+                      <circle cx="22" cy="34" r="0.45" fill="#edf2ff" opacity="0.45" />
+                    </>}
+                  </g>}
                 </g>
                 {burnt && <path className="campfire-marshmallow-smoke" d="M24 19C20 15 27 12 23 8C21 6 23 3 25 1" fill="none" stroke="#94a3b8" strokeWidth="0.6" opacity="0" />}
               </svg>

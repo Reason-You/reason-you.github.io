@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useThemeStore, resolveTheme } from '@/lib/stores/themeStore';
+import { BACKGROUND_METEOR } from '@/lib/sky/meteor-appearance';
 
 type Meteor = {
   x: number;
@@ -88,8 +89,7 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
       lastTs = ts;
 
       const isDark = themeRef.current === 'dark';
-      const meteorColor = isDark ? [222, 240, 255] : [154, 174, 196];
-      const layerOpacity = isDark ? 0.26 : 0.14;
+      const { color: meteorColor, opacity: layerOpacity } = isDark ? BACKGROUND_METEOR.dark : BACKGROUND_METEOR.light;
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'source-over';
@@ -106,8 +106,8 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
 
         const gradient = ctx.createLinearGradient(tailX, tailY, meteor.x, meteor.y);
         gradient.addColorStop(0, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0)`);
-        gradient.addColorStop(0.75, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0.36)`);
-        gradient.addColorStop(1, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0.86)`);
+        gradient.addColorStop(0.75, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.midAlpha})`);
+        gradient.addColorStop(1, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.tipAlpha})`);
 
         ctx.strokeStyle = gradient;
         ctx.lineWidth = meteor.width;
@@ -117,7 +117,7 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
         ctx.lineTo(meteor.x, meteor.y);
         ctx.stroke();
 
-        ctx.fillStyle = `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0.75)`;
+        ctx.fillStyle = `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.headAlpha})`;
         ctx.beginPath();
         ctx.arc(meteor.x, meteor.y, meteor.width * 0.9, 0, Math.PI * 2);
         ctx.fill();
@@ -144,6 +144,7 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
   return (
     <canvas
       ref={canvasRef}
+      data-meteor-background
       aria-hidden="true"
       className="pointer-events-none absolute left-0 top-0 h-screen w-full max-w-full z-0"
     />
