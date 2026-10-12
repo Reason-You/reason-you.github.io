@@ -41,10 +41,10 @@ export function interactiveStars(rendered: RenderedStar[], camera: Camera): Inte
 }
 
 /** Choose the closest centre; unresolved components within 1px favour the brighter star. */
-export function hitTestStar(
-  stars: InteractiveStar[], x: number, y: number, radius: number
-): InteractiveStar | null {
-  let closest: InteractiveStar | null = null;
+export function hitTestStar<T extends RenderedStar>(
+  stars: readonly T[], x: number, y: number, radius: number
+): T | null {
+  let closest: T | null = null;
   let closestDistance = radius * radius;
   for (const candidate of stars) {
     const distance = (candidate.point.x - x) ** 2 + (candidate.point.y - y) ** 2;

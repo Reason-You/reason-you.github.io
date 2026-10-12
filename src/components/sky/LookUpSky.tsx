@@ -14,6 +14,7 @@ import { computeSky, type SkySnapshot } from '@/lib/sky/astro';
 import { createCamera, type Camera } from '@/lib/sky/projection';
 import { drawSky, type RenderedStar } from '@/lib/sky/renderer';
 import { MOBILE_BREAKPOINT_PX, SKY_CENTER_Y, SKY_UPDATE_INTERVAL_MS, SKY_VIEW } from '@/lib/sky/constants';
+import { constellationHitTargets, readConstellationPreview } from '@/lib/sky/constellations';
 import {
   createLookUpCamera, hitTestStar, interactiveStars, LOOK_UP_HIT_RADIUS,
   positionStarLabel, SKY_DIRECTIONS, type InteractiveStar,
@@ -72,6 +73,11 @@ export default function LookUpSky() {
   const skyRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const snapshotRef = useRef<SkySnapshot | null>(null);
   const starsRef = useRef<InteractiveStar[]>([]);
+  const previewStarsRef = useRef<RenderedStar[]>([]);
+  const visibleStarsRef = useRef<RenderedStar[]>([]);
+  const pointerStarRef = useRef<number | null>(null);
+  const suppressedStarRef = useRef<number | null>(null);
+  const previousPinCount = useRef(0);
   const renderRef = useRef<() => void>(() => {});
   const theme = useThemeStore((state) => state.theme);
   const isDark = resolveTheme(theme) === 'dark';
@@ -82,9 +88,10 @@ export default function LookUpSky() {
   const setSnapshotDate = useSkyStore((state) => state.setSnapshotDate);
   const [frame, setFrame] = useState<SkyFrame | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [tappedPreviewId, setTappedPreviewId] = useState<number | null>(null);
+  const [hoveredPreviewId, setHoveredPreviewId] = useState<number | null>(null);
   const [hintSeen, setHintSeen] = useState(true);
   const pinnedIds = useLabelStore((state) => state.pinnedIds);
+  const pinnedConstellations = useLabelStore((state) => state.constellationIds);
   const togglePinned = useLabelStore((state) => state.toggle);
   const clearPinned = useLabelStore((state) => state.clearAll);
   const reconcilePinned = useLabelStore((state) => state.reconcile);
@@ -118,6 +125,10 @@ export default function LookUpSky() {
       const stars = interactiveStars(rendered, camera);
       starsRef.current = stars;
       reconcilePinned(stars.map(({ star }) => star.id));
+      const previewStars = readConstellationPreview(new URLSearchParams(window.location.search).get('constellationPreview')) === null
+        ? [] : constellationHitTargets(rendered, camera);
+      previewStarsRef.current = previewStars;
+      visibleStarsRef.current = rendered.filter(({ point }) => point.x >= 0 && point.x <= camera.width && point.y >= 0 && point.y <= camera.height);
       setFrame({ camera, snapshot, rendered, stars });
 
       if (new URLSearchParams(window.location.search).has('skydebug')) {
@@ -173,7 +184,9 @@ export default function LookUpSky() {
     if (facingRef.current === facing) return;
     facingRef.current = facing;
     setHoveredId(null);
-    setTappedPreviewId(null);
+    setHoveredPreviewId(null);
+    pointerStarRef.current = null;
+    suppressedStarRef.current = null;
     pointerDown.current = null;
     clearPinned();
     const layer = directionLayerRef.current;
@@ -293,12 +306,51 @@ export default function LookUpSky() {
     };
   }, []);
 
-  const hit = (event: PointerEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    setHoveredId(null);
+    setHoveredPreviewId(null);
+    pointerStarRef.current = null;
+    suppressedStarRef.current = null;
+  }, [frame?.camera, frame?.snapshot]);
+
+  useEffect(() => {
+    if (previousPinCount.current > 0 && pinnedIds.length === 0) {
+      suppressedStarRef.current = pointerStarRef.current;
+      setHoveredId(null);
+      setHoveredPreviewId(null);
+    }
+    previousPinCount.current = pinnedIds.length;
+  }, [pinnedIds.length]);
+
+  useEffect(() => {
+    const clear = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      suppressedStarRef.current = pointerStarRef.current;
+      setHoveredId(null);
+      setHoveredPreviewId(null);
+      clearPinned();
+    };
+    document.addEventListener('keydown', clear);
+    return () => document.removeEventListener('keydown', clear);
+  }, [clearPinned]);
+
+  const hit = (event: PointerEvent<HTMLDivElement>, stars: readonly RenderedStar[] = starsRef.current) => {
     const bounds = sceneRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
     const radius = event.pointerType === 'mouse' ? LOOK_UP_HIT_RADIUS.mouse : LOOK_UP_HIT_RADIUS.touch;
-    return hitTestStar(starsRef.current, event.clientX - bounds.left, event.clientY - bounds.top, radius);
+    return hitTestStar(stars, event.clientX - bounds.left, event.clientY - bounds.top, radius);
   };
-  const previewStar = frame?.stars.find(({ star }) => star.id === (hoveredId ?? tappedPreviewId));
+  const hitNamed = (event: PointerEvent<HTMLDivElement>) => {
+    const nearest = hit(event, visibleStarsRef.current);
+    return starsRef.current.find(entry => entry.star.id === nearest?.star.id) ?? null;
+  };
+  const toggleNamedStar = (id: number) => {
+    if (pinnedIds.includes(id)) {
+      suppressedStarRef.current = id;
+      setHoveredId(null);
+      setHoveredPreviewId(null);
+    }
+    togglePinned(id);
+  };
   const activeStars = frame?.stars.filter(({ star }) => pinnedIds.includes(star.id)) ?? [];
   const hoverStar = frame?.stars.find(
     ({ star }) => star.id === hoveredId && !pinnedIds.includes(star.id)) ?? null;
@@ -312,13 +364,21 @@ export default function LookUpSky() {
       style={{ cursor: hoveredId !== null ? 'pointer' : 'default' }}
       onPointerMove={(event) => {
         if (event.pointerType === 'mouse') {
-          setTappedPreviewId(null);
-          setHoveredId(hit(event)?.star.id ?? null);
+          const namedId = hitNamed(event)?.star.id ?? null;
+          const previewId = hit(event, previewStarsRef.current)?.star.id ?? null;
+          const targetId = previewId ?? namedId;
+          pointerStarRef.current = targetId;
+          if (targetId !== suppressedStarRef.current) suppressedStarRef.current = null;
+          setHoveredId(namedId === suppressedStarRef.current ? null : namedId);
+          setHoveredPreviewId(previewId === suppressedStarRef.current ? null : previewId);
         }
       }}
       onPointerLeave={() => {
         pointerDown.current = null;
         setHoveredId(null);
+        setHoveredPreviewId(null);
+        pointerStarRef.current = null;
+        suppressedStarRef.current = null;
       }}
       onPointerDown={(event) => {
         if (event.button === 0 && event.isPrimary) pointerDown.current = { x: event.clientX, y: event.clientY };
@@ -328,23 +388,10 @@ export default function LookUpSky() {
         pointerDown.current = null;
         if (!start || event.button !== 0 || !event.isPrimary ||
             Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
-        const star = hit(event)?.star;
-        if (star) {
-          // Removing a pinned name also drops the hover preview, so the name
-          // visibly disappears instead of re-appearing under the resting pointer.
-          if (pinnedIds.includes(star.id)) setHoveredId(null);
-          if (event.pointerType !== 'mouse') setTappedPreviewId(pinnedIds.includes(star.id) ? null : star.id);
-          togglePinned(star.id);
-        }
+        const star = hitNamed(event)?.star;
+        if (star) toggleNamedStar(star.id);
       }}
       onPointerCancel={() => { pointerDown.current = null; }}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') {
-          setHoveredId(null);
-          setTappedPreviewId(null);
-          clearPinned();
-        }
-      }}
     >
       <Campfire />
       <CampfireLog skyHeight={frame?.camera.height} />
@@ -364,8 +411,9 @@ export default function LookUpSky() {
           onPointerMove={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation();
+            suppressedStarRef.current = pointerStarRef.current;
             setHoveredId(null);
-            setTappedPreviewId(null);
+            setHoveredPreviewId(null);
             clearPinned();
           }}
         >
@@ -378,7 +426,7 @@ export default function LookUpSky() {
       {frame && <Suspense fallback={null}>
         <ConstellationPreview
           key={`${facing}:${frame.camera.width}:${frame.camera.height}:${frame.snapshot.date.getTime()}:${frame.snapshot.observer.latitude}:${frame.snapshot.observer.longitude}:${frame.snapshot.pollution.limitingMagnitude}`}
-          hip={previewStar?.star.hip ?? null} selection={tappedPreviewId !== null}
+          starId={hoveredPreviewId} pinnedConstellations={pinnedConstellations}
           rendered={frame.rendered} camera={frame.camera} />
       </Suspense>}
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
@@ -391,15 +439,19 @@ export default function LookUpSky() {
           aria-label={`${name.chinese}, ${name.english}`}
           aria-pressed={pinnedIds.includes(star.id)}
           onFocus={(event) => {
-            if (event.currentTarget.matches(':focus-visible')) setHoveredId(star.id);
-          }}
-          onBlur={() => setHoveredId(null)}
-          onClick={(event) => {
-            if (event.detail === 0) {
-              if (pinnedIds.includes(star.id)) setHoveredId(null);
-              setTappedPreviewId(pinnedIds.includes(star.id) ? null : star.id);
-              togglePinned(star.id);
+            if (event.currentTarget.matches(':focus-visible')) {
+              pointerStarRef.current = star.id;
+              suppressedStarRef.current = null;
+              setHoveredId(star.id);
+              setHoveredPreviewId(star.id);
             }
+          }}
+          onBlur={() => {
+            setHoveredId(null); setHoveredPreviewId(null);
+            pointerStarRef.current = null; suppressedStarRef.current = null;
+          }}
+          onClick={(event) => {
+            if (event.detail === 0) toggleNamedStar(star.id);
           }}
         />
       ))}

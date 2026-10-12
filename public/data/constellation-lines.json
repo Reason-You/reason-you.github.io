@@ -4,12 +4,11 @@
   "license": "CC-BY-SA-4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
   "licenseDeclaration": "https://github.com/Stellarium/stellarium/blob/d4a1322b6a81bf15dc4ef65c267b2fc846c5f3ca/skycultures/modern/description.md#license",
-  "modifications": "Extracted five constellation figures; expanded HIP polylines into normalized undirected segment pairs.",
+  "modifications": "Expanded adjacent HIP vertices for all 88 Modern constellations; normalized and deduplicated undirected pairs.",
   "constellations": [
     {
       "id": "Ori",
       "name": "Orion",
-      "chinese": "猎户座",
       "sourceId": "CON modern Ori",
       "lines": [
         {
@@ -108,12 +107,12 @@
           "fromHip": 29426,
           "toHip": 29434
         }
-      ]
+      ],
+      "chinese": "猎户座"
     },
     {
       "id": "Sco",
       "name": "Scorpius",
-      "chinese": "天蝎座",
       "sourceId": "CON modern Sco",
       "lines": [
         {
@@ -164,12 +163,12 @@
           "fromHip": 86670,
           "toHip": 87073
         }
-      ]
+      ],
+      "chinese": "天蝎座"
     },
     {
       "id": "Cyg",
       "name": "Cygnus",
-      "chinese": "天鹅座",
       "sourceId": "CON modern Cyg",
       "lines": [
         {
@@ -208,12 +207,12 @@
           "fromHip": 104732,
           "toHip": 107310
         }
-      ]
+      ],
+      "chinese": "天鹅座"
     },
     {
       "id": "Cas",
       "name": "Cassiopeia",
-      "chinese": "仙后座",
       "sourceId": "CON modern Cas",
       "lines": [
         {
@@ -232,12 +231,12 @@
           "fromHip": 6686,
           "toHip": 8886
         }
-      ]
+      ],
+      "chinese": "仙后座"
     },
     {
       "id": "UMa",
       "name": "Ursa Major",
-      "chinese": "大熊座",
       "sourceId": "CON modern UMa",
       "lines": [
         {
@@ -315,6 +314,3096 @@
         {
           "fromHip": 65378,
           "toHip": 67301
+        }
+      ],
+      "chinese": "大熊座"
+    },
+    {
+      "id": "And",
+      "name": "Andromeda",
+      "sourceId": "CON modern And",
+      "lines": [
+        {
+          "fromHip": 677,
+          "toHip": 3092
+        },
+        {
+          "fromHip": 3092,
+          "toHip": 5447
+        },
+        {
+          "fromHip": 3881,
+          "toHip": 4436
+        },
+        {
+          "fromHip": 4436,
+          "toHip": 5447
+        },
+        {
+          "fromHip": 5447,
+          "toHip": 9640
+        }
+      ]
+    },
+    {
+      "id": "Ant",
+      "name": "Antlia",
+      "sourceId": "CON modern Ant",
+      "lines": [
+        {
+          "fromHip": 48926,
+          "toHip": 51172
+        }
+      ]
+    },
+    {
+      "id": "Aps",
+      "name": "Apus",
+      "sourceId": "CON modern Aps",
+      "lines": [
+        {
+          "fromHip": 72370,
+          "toHip": 81065
+        },
+        {
+          "fromHip": 81065,
+          "toHip": 81852
+        }
+      ]
+    },
+    {
+      "id": "Aql",
+      "name": "Aquila",
+      "sourceId": "CON modern Aql",
+      "lines": [
+        {
+          "fromHip": 93244,
+          "toHip": 93747
+        },
+        {
+          "fromHip": 93747,
+          "toHip": 95501
+        },
+        {
+          "fromHip": 93805,
+          "toHip": 95501
+        },
+        {
+          "fromHip": 95501,
+          "toHip": 97649
+        },
+        {
+          "fromHip": 95501,
+          "toHip": 97804
+        },
+        {
+          "fromHip": 97278,
+          "toHip": 97649
+        },
+        {
+          "fromHip": 97649,
+          "toHip": 98036
+        },
+        {
+          "fromHip": 97804,
+          "toHip": 99473
+        }
+      ]
+    },
+    {
+      "id": "Aqr",
+      "name": "Aquarius",
+      "sourceId": "CON modern Aqr",
+      "lines": [
+        {
+          "fromHip": 102618,
+          "toHip": 106278
+        },
+        {
+          "fromHip": 106278,
+          "toHip": 109074
+        },
+        {
+          "fromHip": 109074,
+          "toHip": 110003
+        },
+        {
+          "fromHip": 109074,
+          "toHip": 110395
+        },
+        {
+          "fromHip": 109139,
+          "toHip": 110003
+        },
+        {
+          "fromHip": 110003,
+          "toHip": 111123
+        },
+        {
+          "fromHip": 110395,
+          "toHip": 110960
+        },
+        {
+          "fromHip": 110960,
+          "toHip": 111497
+        },
+        {
+          "fromHip": 111123,
+          "toHip": 112716
+        },
+        {
+          "fromHip": 111497,
+          "toHip": 112961
+        },
+        {
+          "fromHip": 112716,
+          "toHip": 113136
+        },
+        {
+          "fromHip": 112961,
+          "toHip": 114855
+        },
+        {
+          "fromHip": 113136,
+          "toHip": 114341
+        },
+        {
+          "fromHip": 114855,
+          "toHip": 115438
+        }
+      ]
+    },
+    {
+      "id": "Ara",
+      "name": "Ara",
+      "sourceId": "CON modern Ara",
+      "lines": [
+        {
+          "fromHip": 82363,
+          "toHip": 83081
+        },
+        {
+          "fromHip": 82363,
+          "toHip": 85727
+        },
+        {
+          "fromHip": 83081,
+          "toHip": 85792
+        },
+        {
+          "fromHip": 85258,
+          "toHip": 85267
+        },
+        {
+          "fromHip": 85258,
+          "toHip": 88714
+        },
+        {
+          "fromHip": 85267,
+          "toHip": 85727
+        },
+        {
+          "fromHip": 85792,
+          "toHip": 88714
+        }
+      ]
+    },
+    {
+      "id": "Ari",
+      "name": "Aries",
+      "sourceId": "CON modern Ari",
+      "lines": [
+        {
+          "fromHip": 8832,
+          "toHip": 8903
+        },
+        {
+          "fromHip": 8903,
+          "toHip": 9884
+        },
+        {
+          "fromHip": 9884,
+          "toHip": 13209
+        }
+      ]
+    },
+    {
+      "id": "Aur",
+      "name": "Auriga",
+      "sourceId": "CON modern Aur",
+      "lines": [
+        {
+          "fromHip": 23015,
+          "toHip": 23453
+        },
+        {
+          "fromHip": 23015,
+          "toHip": 25428
+        },
+        {
+          "fromHip": 23453,
+          "toHip": 24608
+        },
+        {
+          "fromHip": 24608,
+          "toHip": 28360
+        },
+        {
+          "fromHip": 25428,
+          "toHip": 28380
+        },
+        {
+          "fromHip": 28360,
+          "toHip": 28380
+        }
+      ]
+    },
+    {
+      "id": "Boo",
+      "name": "Boötes",
+      "sourceId": "CON modern Boo",
+      "lines": [
+        {
+          "fromHip": 67459,
+          "toHip": 67927
+        },
+        {
+          "fromHip": 67927,
+          "toHip": 69673
+        },
+        {
+          "fromHip": 69673,
+          "toHip": 71053
+        },
+        {
+          "fromHip": 69673,
+          "toHip": 71795
+        },
+        {
+          "fromHip": 69673,
+          "toHip": 72105
+        },
+        {
+          "fromHip": 71053,
+          "toHip": 71075
+        },
+        {
+          "fromHip": 71075,
+          "toHip": 73555
+        },
+        {
+          "fromHip": 72105,
+          "toHip": 74666
+        },
+        {
+          "fromHip": 73555,
+          "toHip": 74666
+        }
+      ]
+    },
+    {
+      "id": "CMa",
+      "name": "Canis Major",
+      "sourceId": "CON modern CMa",
+      "lines": [
+        {
+          "fromHip": 30122,
+          "toHip": 33579
+        },
+        {
+          "fromHip": 30324,
+          "toHip": 31592
+        },
+        {
+          "fromHip": 31416,
+          "toHip": 31592
+        },
+        {
+          "fromHip": 31592,
+          "toHip": 32349
+        },
+        {
+          "fromHip": 31592,
+          "toHip": 33165
+        },
+        {
+          "fromHip": 32349,
+          "toHip": 33347
+        },
+        {
+          "fromHip": 32349,
+          "toHip": 33977
+        },
+        {
+          "fromHip": 32759,
+          "toHip": 33579
+        },
+        {
+          "fromHip": 33160,
+          "toHip": 33347
+        },
+        {
+          "fromHip": 33160,
+          "toHip": 34045
+        },
+        {
+          "fromHip": 33165,
+          "toHip": 33856
+        },
+        {
+          "fromHip": 33347,
+          "toHip": 34045
+        },
+        {
+          "fromHip": 33579,
+          "toHip": 33856
+        },
+        {
+          "fromHip": 33856,
+          "toHip": 34444
+        },
+        {
+          "fromHip": 33977,
+          "toHip": 34444
+        },
+        {
+          "fromHip": 34444,
+          "toHip": 35037
+        },
+        {
+          "fromHip": 35037,
+          "toHip": 35904
+        }
+      ]
+    },
+    {
+      "id": "CMi",
+      "name": "Canis Minor",
+      "sourceId": "CON modern CMi",
+      "lines": [
+        {
+          "fromHip": 36188,
+          "toHip": 37279
+        }
+      ]
+    },
+    {
+      "id": "CVn",
+      "name": "Canes Venatici",
+      "sourceId": "CON modern CVn",
+      "lines": [
+        {
+          "fromHip": 61317,
+          "toHip": 63125
+        }
+      ]
+    },
+    {
+      "id": "Cae",
+      "name": "Caelum",
+      "sourceId": "CON modern Cae",
+      "lines": [
+        {
+          "fromHip": 21060,
+          "toHip": 21770
+        },
+        {
+          "fromHip": 21770,
+          "toHip": 21861
+        }
+      ]
+    },
+    {
+      "id": "Cam",
+      "name": "Camelopardalis",
+      "sourceId": "CON modern Cam",
+      "lines": [
+        {
+          "fromHip": 16228,
+          "toHip": 17959
+        },
+        {
+          "fromHip": 16228,
+          "toHip": 18505
+        },
+        {
+          "fromHip": 17959,
+          "toHip": 22783
+        },
+        {
+          "fromHip": 17959,
+          "toHip": 25110
+        },
+        {
+          "fromHip": 18505,
+          "toHip": 22783
+        }
+      ]
+    },
+    {
+      "id": "Cap",
+      "name": "Capricornus",
+      "sourceId": "CON modern Cap",
+      "lines": [
+        {
+          "fromHip": 100064,
+          "toHip": 100345
+        },
+        {
+          "fromHip": 100345,
+          "toHip": 102485
+        },
+        {
+          "fromHip": 100345,
+          "toHip": 104139
+        },
+        {
+          "fromHip": 102978,
+          "toHip": 104139
+        },
+        {
+          "fromHip": 104139,
+          "toHip": 105515
+        },
+        {
+          "fromHip": 104139,
+          "toHip": 105881
+        },
+        {
+          "fromHip": 105515,
+          "toHip": 105881
+        },
+        {
+          "fromHip": 105515,
+          "toHip": 106985
+        },
+        {
+          "fromHip": 106985,
+          "toHip": 107556
+        }
+      ]
+    },
+    {
+      "id": "Car",
+      "name": "Carina",
+      "sourceId": "CON modern Car",
+      "lines": [
+        {
+          "fromHip": 30438,
+          "toHip": 31685
+        },
+        {
+          "fromHip": 30438,
+          "toHip": 41037
+        },
+        {
+          "fromHip": 39429,
+          "toHip": 41037
+        },
+        {
+          "fromHip": 41037,
+          "toHip": 42568
+        },
+        {
+          "fromHip": 42568,
+          "toHip": 45080
+        },
+        {
+          "fromHip": 45080,
+          "toHip": 45556
+        },
+        {
+          "fromHip": 45238,
+          "toHip": 50099
+        },
+        {
+          "fromHip": 45556,
+          "toHip": 50371
+        },
+        {
+          "fromHip": 50099,
+          "toHip": 52419
+        },
+        {
+          "fromHip": 50371,
+          "toHip": 51232
+        },
+        {
+          "fromHip": 51232,
+          "toHip": 53253
+        },
+        {
+          "fromHip": 52419,
+          "toHip": 52468
+        },
+        {
+          "fromHip": 52468,
+          "toHip": 54463
+        },
+        {
+          "fromHip": 53253,
+          "toHip": 54463
+        }
+      ]
+    },
+    {
+      "id": "Cen",
+      "name": "Centaurus",
+      "sourceId": "CON modern Cen",
+      "lines": [
+        {
+          "fromHip": 56480,
+          "toHip": 56561
+        },
+        {
+          "fromHip": 56480,
+          "toHip": 59196
+        },
+        {
+          "fromHip": 59196,
+          "toHip": 60823
+        },
+        {
+          "fromHip": 60823,
+          "toHip": 61932
+        },
+        {
+          "fromHip": 61932,
+          "toHip": 68002
+        },
+        {
+          "fromHip": 65109,
+          "toHip": 65936
+        },
+        {
+          "fromHip": 65936,
+          "toHip": 67464
+        },
+        {
+          "fromHip": 66657,
+          "toHip": 68002
+        },
+        {
+          "fromHip": 66657,
+          "toHip": 68702
+        },
+        {
+          "fromHip": 67464,
+          "toHip": 67472
+        },
+        {
+          "fromHip": 67464,
+          "toHip": 68933
+        },
+        {
+          "fromHip": 67472,
+          "toHip": 68282
+        },
+        {
+          "fromHip": 67472,
+          "toHip": 71352
+        },
+        {
+          "fromHip": 68002,
+          "toHip": 68282
+        },
+        {
+          "fromHip": 68702,
+          "toHip": 71683
+        },
+        {
+          "fromHip": 71352,
+          "toHip": 73334
+        }
+      ]
+    },
+    {
+      "id": "Cep",
+      "name": "Cepheus",
+      "sourceId": "CON modern Cep",
+      "lines": [
+        {
+          "fromHip": 105199,
+          "toHip": 106032
+        },
+        {
+          "fromHip": 105199,
+          "toHip": 109492
+        },
+        {
+          "fromHip": 106032,
+          "toHip": 112724
+        },
+        {
+          "fromHip": 106032,
+          "toHip": 116727
+        },
+        {
+          "fromHip": 109492,
+          "toHip": 112724
+        },
+        {
+          "fromHip": 112724,
+          "toHip": 116727
+        }
+      ]
+    },
+    {
+      "id": "Cet",
+      "name": "Cetus",
+      "sourceId": "CON modern Cet",
+      "lines": [
+        {
+          "fromHip": 1562,
+          "toHip": 3419
+        },
+        {
+          "fromHip": 3419,
+          "toHip": 5364
+        },
+        {
+          "fromHip": 3419,
+          "toHip": 8102
+        },
+        {
+          "fromHip": 5364,
+          "toHip": 6537
+        },
+        {
+          "fromHip": 6537,
+          "toHip": 8645
+        },
+        {
+          "fromHip": 8102,
+          "toHip": 11783
+        },
+        {
+          "fromHip": 8645,
+          "toHip": 11345
+        },
+        {
+          "fromHip": 10324,
+          "toHip": 11484
+        },
+        {
+          "fromHip": 10826,
+          "toHip": 12387
+        },
+        {
+          "fromHip": 10826,
+          "toHip": 12390
+        },
+        {
+          "fromHip": 11345,
+          "toHip": 12390
+        },
+        {
+          "fromHip": 11484,
+          "toHip": 12093
+        },
+        {
+          "fromHip": 11484,
+          "toHip": 12828
+        },
+        {
+          "fromHip": 11783,
+          "toHip": 12770
+        },
+        {
+          "fromHip": 12093,
+          "toHip": 12706
+        },
+        {
+          "fromHip": 12387,
+          "toHip": 12706
+        },
+        {
+          "fromHip": 12390,
+          "toHip": 12770
+        },
+        {
+          "fromHip": 12706,
+          "toHip": 14135
+        },
+        {
+          "fromHip": 12828,
+          "toHip": 13954
+        },
+        {
+          "fromHip": 13954,
+          "toHip": 14135
+        }
+      ]
+    },
+    {
+      "id": "Cha",
+      "name": "Chamaeleon",
+      "sourceId": "CON modern Cha",
+      "lines": [
+        {
+          "fromHip": 40702,
+          "toHip": 51839
+        },
+        {
+          "fromHip": 51839,
+          "toHip": 60000
+        }
+      ]
+    },
+    {
+      "id": "Cir",
+      "name": "Circinus",
+      "sourceId": "CON modern Cir",
+      "lines": [
+        {
+          "fromHip": 71908,
+          "toHip": 74824
+        },
+        {
+          "fromHip": 71908,
+          "toHip": 75323
+        }
+      ]
+    },
+    {
+      "id": "Cnc",
+      "name": "Cancer",
+      "sourceId": "CON modern Cnc",
+      "lines": [
+        {
+          "fromHip": 40526,
+          "toHip": 42911
+        },
+        {
+          "fromHip": 40843,
+          "toHip": 42806
+        },
+        {
+          "fromHip": 42806,
+          "toHip": 42911
+        },
+        {
+          "fromHip": 42806,
+          "toHip": 43103
+        },
+        {
+          "fromHip": 42911,
+          "toHip": 44066
+        }
+      ]
+    },
+    {
+      "id": "Col",
+      "name": "Columba",
+      "sourceId": "CON modern Col",
+      "lines": [
+        {
+          "fromHip": 25859,
+          "toHip": 26634
+        },
+        {
+          "fromHip": 26634,
+          "toHip": 27628
+        },
+        {
+          "fromHip": 27628,
+          "toHip": 28199
+        },
+        {
+          "fromHip": 27628,
+          "toHip": 28328
+        },
+        {
+          "fromHip": 28199,
+          "toHip": 29807
+        },
+        {
+          "fromHip": 29807,
+          "toHip": 30277
+        }
+      ]
+    },
+    {
+      "id": "Com",
+      "name": "Coma Berenices",
+      "sourceId": "CON modern Com",
+      "lines": [
+        {
+          "fromHip": 60742,
+          "toHip": 64394
+        },
+        {
+          "fromHip": 64241,
+          "toHip": 64394
+        }
+      ]
+    },
+    {
+      "id": "CrA",
+      "name": "Corona Australis",
+      "sourceId": "CON modern CrA",
+      "lines": [
+        {
+          "fromHip": 90887,
+          "toHip": 91875
+        },
+        {
+          "fromHip": 91875,
+          "toHip": 92989
+        },
+        {
+          "fromHip": 92953,
+          "toHip": 93542
+        },
+        {
+          "fromHip": 92989,
+          "toHip": 93174
+        },
+        {
+          "fromHip": 93174,
+          "toHip": 93825
+        },
+        {
+          "fromHip": 93542,
+          "toHip": 94005
+        },
+        {
+          "fromHip": 93825,
+          "toHip": 94114
+        },
+        {
+          "fromHip": 94005,
+          "toHip": 94160
+        },
+        {
+          "fromHip": 94114,
+          "toHip": 94160
+        }
+      ]
+    },
+    {
+      "id": "CrB",
+      "name": "Corona Borealis",
+      "sourceId": "CON modern CrB",
+      "lines": [
+        {
+          "fromHip": 75695,
+          "toHip": 76127
+        },
+        {
+          "fromHip": 75695,
+          "toHip": 76267
+        },
+        {
+          "fromHip": 76267,
+          "toHip": 76952
+        },
+        {
+          "fromHip": 76952,
+          "toHip": 77512
+        },
+        {
+          "fromHip": 77512,
+          "toHip": 78159
+        },
+        {
+          "fromHip": 78159,
+          "toHip": 78493
+        }
+      ]
+    },
+    {
+      "id": "Crt",
+      "name": "Crater",
+      "sourceId": "CON modern Crt",
+      "lines": [
+        {
+          "fromHip": 53740,
+          "toHip": 54682
+        },
+        {
+          "fromHip": 53740,
+          "toHip": 55282
+        },
+        {
+          "fromHip": 54682,
+          "toHip": 55705
+        },
+        {
+          "fromHip": 55282,
+          "toHip": 55687
+        },
+        {
+          "fromHip": 55282,
+          "toHip": 55705
+        },
+        {
+          "fromHip": 55687,
+          "toHip": 56633
+        },
+        {
+          "fromHip": 55705,
+          "toHip": 57283
+        },
+        {
+          "fromHip": 56633,
+          "toHip": 58188
+        },
+        {
+          "fromHip": 57283,
+          "toHip": 58188
+        }
+      ]
+    },
+    {
+      "id": "Cru",
+      "name": "Crux",
+      "sourceId": "CON modern Cru",
+      "lines": [
+        {
+          "fromHip": 59747,
+          "toHip": 62434
+        },
+        {
+          "fromHip": 60718,
+          "toHip": 61084
+        }
+      ]
+    },
+    {
+      "id": "Crv",
+      "name": "Corvus",
+      "sourceId": "CON modern Crv",
+      "lines": [
+        {
+          "fromHip": 59199,
+          "toHip": 59316
+        },
+        {
+          "fromHip": 59316,
+          "toHip": 59803
+        },
+        {
+          "fromHip": 59316,
+          "toHip": 61359
+        },
+        {
+          "fromHip": 59803,
+          "toHip": 60965
+        },
+        {
+          "fromHip": 60965,
+          "toHip": 61174
+        },
+        {
+          "fromHip": 60965,
+          "toHip": 61359
+        }
+      ]
+    },
+    {
+      "id": "Del",
+      "name": "Delphinus",
+      "sourceId": "CON modern Del",
+      "lines": [
+        {
+          "fromHip": 101421,
+          "toHip": 101769
+        },
+        {
+          "fromHip": 101769,
+          "toHip": 101958
+        },
+        {
+          "fromHip": 101769,
+          "toHip": 102281
+        },
+        {
+          "fromHip": 101958,
+          "toHip": 102532
+        },
+        {
+          "fromHip": 102281,
+          "toHip": 102532
+        }
+      ]
+    },
+    {
+      "id": "Dor",
+      "name": "Dorado",
+      "sourceId": "CON modern Dor",
+      "lines": [
+        {
+          "fromHip": 19893,
+          "toHip": 21281
+        },
+        {
+          "fromHip": 21281,
+          "toHip": 26069
+        },
+        {
+          "fromHip": 26069,
+          "toHip": 27100
+        },
+        {
+          "fromHip": 26069,
+          "toHip": 27890
+        },
+        {
+          "fromHip": 27100,
+          "toHip": 27890
+        }
+      ]
+    },
+    {
+      "id": "Dra",
+      "name": "Draco",
+      "sourceId": "CON modern Dra",
+      "lines": [
+        {
+          "fromHip": 56211,
+          "toHip": 61281
+        },
+        {
+          "fromHip": 61281,
+          "toHip": 68756
+        },
+        {
+          "fromHip": 68756,
+          "toHip": 75458
+        },
+        {
+          "fromHip": 75458,
+          "toHip": 78527
+        },
+        {
+          "fromHip": 78527,
+          "toHip": 80331
+        },
+        {
+          "fromHip": 80331,
+          "toHip": 83895
+        },
+        {
+          "fromHip": 83895,
+          "toHip": 89937
+        },
+        {
+          "fromHip": 85670,
+          "toHip": 85829
+        },
+        {
+          "fromHip": 85670,
+          "toHip": 87833
+        },
+        {
+          "fromHip": 85829,
+          "toHip": 87585
+        },
+        {
+          "fromHip": 87585,
+          "toHip": 87833
+        },
+        {
+          "fromHip": 87585,
+          "toHip": 94376
+        },
+        {
+          "fromHip": 89937,
+          "toHip": 94648
+        },
+        {
+          "fromHip": 94376,
+          "toHip": 97433
+        },
+        {
+          "fromHip": 94648,
+          "toHip": 97433
+        }
+      ]
+    },
+    {
+      "id": "Equ",
+      "name": "Equuleus",
+      "sourceId": "CON modern Equ",
+      "lines": [
+        {
+          "fromHip": 104521,
+          "toHip": 104858
+        },
+        {
+          "fromHip": 104521,
+          "toHip": 104987
+        },
+        {
+          "fromHip": 104858,
+          "toHip": 105570
+        },
+        {
+          "fromHip": 104987,
+          "toHip": 105570
+        }
+      ]
+    },
+    {
+      "id": "Eri",
+      "name": "Eridanus",
+      "sourceId": "CON modern Eri",
+      "lines": [
+        {
+          "fromHip": 7588,
+          "toHip": 9007
+        },
+        {
+          "fromHip": 9007,
+          "toHip": 10602
+        },
+        {
+          "fromHip": 10602,
+          "toHip": 11407
+        },
+        {
+          "fromHip": 11407,
+          "toHip": 12413
+        },
+        {
+          "fromHip": 12413,
+          "toHip": 12486
+        },
+        {
+          "fromHip": 12486,
+          "toHip": 13847
+        },
+        {
+          "fromHip": 12843,
+          "toHip": 13701
+        },
+        {
+          "fromHip": 12843,
+          "toHip": 14146
+        },
+        {
+          "fromHip": 13701,
+          "toHip": 15197
+        },
+        {
+          "fromHip": 13847,
+          "toHip": 15510
+        },
+        {
+          "fromHip": 14146,
+          "toHip": 15474
+        },
+        {
+          "fromHip": 15197,
+          "toHip": 16537
+        },
+        {
+          "fromHip": 15474,
+          "toHip": 16611
+        },
+        {
+          "fromHip": 15510,
+          "toHip": 17797
+        },
+        {
+          "fromHip": 16537,
+          "toHip": 17378
+        },
+        {
+          "fromHip": 16611,
+          "toHip": 17651
+        },
+        {
+          "fromHip": 17378,
+          "toHip": 21444
+        },
+        {
+          "fromHip": 17651,
+          "toHip": 21393
+        },
+        {
+          "fromHip": 17797,
+          "toHip": 17874
+        },
+        {
+          "fromHip": 17874,
+          "toHip": 20042
+        },
+        {
+          "fromHip": 20042,
+          "toHip": 20535
+        },
+        {
+          "fromHip": 20535,
+          "toHip": 21393
+        },
+        {
+          "fromHip": 21444,
+          "toHip": 22109
+        },
+        {
+          "fromHip": 21594,
+          "toHip": 23972
+        },
+        {
+          "fromHip": 22109,
+          "toHip": 22701
+        },
+        {
+          "fromHip": 22701,
+          "toHip": 23875
+        },
+        {
+          "fromHip": 23875,
+          "toHip": 23972
+        }
+      ]
+    },
+    {
+      "id": "For",
+      "name": "Fornax",
+      "sourceId": "CON modern For",
+      "lines": [
+        {
+          "fromHip": 13147,
+          "toHip": 14879
+        }
+      ]
+    },
+    {
+      "id": "Gem",
+      "name": "Gemini",
+      "sourceId": "CON modern Gem",
+      "lines": [
+        {
+          "fromHip": 28734,
+          "toHip": 29655
+        },
+        {
+          "fromHip": 29655,
+          "toHip": 30343
+        },
+        {
+          "fromHip": 30343,
+          "toHip": 32246
+        },
+        {
+          "fromHip": 30883,
+          "toHip": 32246
+        },
+        {
+          "fromHip": 31681,
+          "toHip": 34088
+        },
+        {
+          "fromHip": 32246,
+          "toHip": 34693
+        },
+        {
+          "fromHip": 32362,
+          "toHip": 35350
+        },
+        {
+          "fromHip": 33018,
+          "toHip": 34693
+        },
+        {
+          "fromHip": 34088,
+          "toHip": 35550
+        },
+        {
+          "fromHip": 34693,
+          "toHip": 36046
+        },
+        {
+          "fromHip": 34693,
+          "toHip": 36850
+        },
+        {
+          "fromHip": 35350,
+          "toHip": 35550
+        },
+        {
+          "fromHip": 35550,
+          "toHip": 36962
+        },
+        {
+          "fromHip": 36046,
+          "toHip": 36962
+        },
+        {
+          "fromHip": 36962,
+          "toHip": 37740
+        },
+        {
+          "fromHip": 36962,
+          "toHip": 37826
+        }
+      ]
+    },
+    {
+      "id": "Gru",
+      "name": "Grus",
+      "sourceId": "CON modern Gru",
+      "lines": [
+        {
+          "fromHip": 108085,
+          "toHip": 109111
+        },
+        {
+          "fromHip": 109111,
+          "toHip": 109268
+        },
+        {
+          "fromHip": 109268,
+          "toHip": 110997
+        },
+        {
+          "fromHip": 109268,
+          "toHip": 112122
+        },
+        {
+          "fromHip": 110997,
+          "toHip": 114131
+        },
+        {
+          "fromHip": 112122,
+          "toHip": 112623
+        },
+        {
+          "fromHip": 112122,
+          "toHip": 113638
+        },
+        {
+          "fromHip": 112122,
+          "toHip": 114421
+        },
+        {
+          "fromHip": 114131,
+          "toHip": 114421
+        }
+      ]
+    },
+    {
+      "id": "Her",
+      "name": "Hercules",
+      "sourceId": "CON modern Her",
+      "lines": [
+        {
+          "fromHip": 77760,
+          "toHip": 79992
+        },
+        {
+          "fromHip": 79992,
+          "toHip": 81126
+        },
+        {
+          "fromHip": 80170,
+          "toHip": 80816
+        },
+        {
+          "fromHip": 80816,
+          "toHip": 81693
+        },
+        {
+          "fromHip": 81126,
+          "toHip": 81833
+        },
+        {
+          "fromHip": 81693,
+          "toHip": 81833
+        },
+        {
+          "fromHip": 81693,
+          "toHip": 83207
+        },
+        {
+          "fromHip": 81833,
+          "toHip": 84380
+        },
+        {
+          "fromHip": 83207,
+          "toHip": 84380
+        },
+        {
+          "fromHip": 83207,
+          "toHip": 85693
+        },
+        {
+          "fromHip": 84379,
+          "toHip": 85693
+        },
+        {
+          "fromHip": 84380,
+          "toHip": 84606
+        },
+        {
+          "fromHip": 84606,
+          "toHip": 85112
+        },
+        {
+          "fromHip": 85112,
+          "toHip": 87808
+        },
+        {
+          "fromHip": 85693,
+          "toHip": 86974
+        },
+        {
+          "fromHip": 86414,
+          "toHip": 87808
+        },
+        {
+          "fromHip": 86974,
+          "toHip": 87933
+        },
+        {
+          "fromHip": 87933,
+          "toHip": 88794
+        }
+      ]
+    },
+    {
+      "id": "Hor",
+      "name": "Horologium",
+      "sourceId": "CON modern Hor",
+      "lines": [
+        {
+          "fromHip": 12484,
+          "toHip": 14240
+        },
+        {
+          "fromHip": 12484,
+          "toHip": 19747
+        }
+      ]
+    },
+    {
+      "id": "Hya",
+      "name": "Hydra",
+      "sourceId": "CON modern Hya",
+      "lines": [
+        {
+          "fromHip": 42313,
+          "toHip": 42402
+        },
+        {
+          "fromHip": 42313,
+          "toHip": 43109
+        },
+        {
+          "fromHip": 42402,
+          "toHip": 42799
+        },
+        {
+          "fromHip": 42799,
+          "toHip": 43234
+        },
+        {
+          "fromHip": 43109,
+          "toHip": 43234
+        },
+        {
+          "fromHip": 43234,
+          "toHip": 43813
+        },
+        {
+          "fromHip": 43813,
+          "toHip": 45336
+        },
+        {
+          "fromHip": 45336,
+          "toHip": 46776
+        },
+        {
+          "fromHip": 45751,
+          "toHip": 46390
+        },
+        {
+          "fromHip": 45751,
+          "toHip": 47452
+        },
+        {
+          "fromHip": 46390,
+          "toHip": 46509
+        },
+        {
+          "fromHip": 46509,
+          "toHip": 46776
+        },
+        {
+          "fromHip": 47452,
+          "toHip": 48356
+        },
+        {
+          "fromHip": 48356,
+          "toHip": 49841
+        },
+        {
+          "fromHip": 49841,
+          "toHip": 51069
+        },
+        {
+          "fromHip": 51069,
+          "toHip": 52943
+        },
+        {
+          "fromHip": 52943,
+          "toHip": 54204
+        },
+        {
+          "fromHip": 54204,
+          "toHip": 56343
+        },
+        {
+          "fromHip": 56343,
+          "toHip": 57936
+        },
+        {
+          "fromHip": 57936,
+          "toHip": 64166
+        },
+        {
+          "fromHip": 64166,
+          "toHip": 64962
+        },
+        {
+          "fromHip": 64962,
+          "toHip": 68895
+        },
+        {
+          "fromHip": 68895,
+          "toHip": 69415
+        },
+        {
+          "fromHip": 69415,
+          "toHip": 70306
+        },
+        {
+          "fromHip": 70306,
+          "toHip": 72571
+        }
+      ]
+    },
+    {
+      "id": "Hyi",
+      "name": "Hydrus",
+      "sourceId": "CON modern Hyi",
+      "lines": [
+        {
+          "fromHip": 2021,
+          "toHip": 17678
+        },
+        {
+          "fromHip": 9236,
+          "toHip": 11001
+        },
+        {
+          "fromHip": 11001,
+          "toHip": 12394
+        },
+        {
+          "fromHip": 12394,
+          "toHip": 17678
+        }
+      ]
+    },
+    {
+      "id": "Ind",
+      "name": "Indus",
+      "sourceId": "CON modern Ind",
+      "lines": [
+        {
+          "fromHip": 101772,
+          "toHip": 103227
+        },
+        {
+          "fromHip": 101772,
+          "toHip": 105319
+        },
+        {
+          "fromHip": 103227,
+          "toHip": 105319
+        }
+      ]
+    },
+    {
+      "id": "LMi",
+      "name": "Leo Minor",
+      "sourceId": "CON modern LMi",
+      "lines": [
+        {
+          "fromHip": 46952,
+          "toHip": 49593
+        },
+        {
+          "fromHip": 49593,
+          "toHip": 51233
+        },
+        {
+          "fromHip": 49593,
+          "toHip": 53229
+        },
+        {
+          "fromHip": 51233,
+          "toHip": 53229
+        }
+      ]
+    },
+    {
+      "id": "Lac",
+      "name": "Lacerta",
+      "sourceId": "CON modern Lac",
+      "lines": [
+        {
+          "fromHip": 109937,
+          "toHip": 111104
+        },
+        {
+          "fromHip": 110538,
+          "toHip": 110609
+        },
+        {
+          "fromHip": 110538,
+          "toHip": 111169
+        },
+        {
+          "fromHip": 110609,
+          "toHip": 111022
+        },
+        {
+          "fromHip": 111022,
+          "toHip": 111104
+        },
+        {
+          "fromHip": 111022,
+          "toHip": 111169
+        }
+      ]
+    },
+    {
+      "id": "Leo",
+      "name": "Leo",
+      "sourceId": "CON modern Leo",
+      "lines": [
+        {
+          "fromHip": 47908,
+          "toHip": 48455
+        },
+        {
+          "fromHip": 48455,
+          "toHip": 50335
+        },
+        {
+          "fromHip": 49583,
+          "toHip": 49669
+        },
+        {
+          "fromHip": 49583,
+          "toHip": 50583
+        },
+        {
+          "fromHip": 49669,
+          "toHip": 54879
+        },
+        {
+          "fromHip": 50335,
+          "toHip": 50583
+        },
+        {
+          "fromHip": 50583,
+          "toHip": 54872
+        },
+        {
+          "fromHip": 54872,
+          "toHip": 54879
+        },
+        {
+          "fromHip": 54872,
+          "toHip": 57632
+        },
+        {
+          "fromHip": 54879,
+          "toHip": 57632
+        }
+      ]
+    },
+    {
+      "id": "Lep",
+      "name": "Lepus",
+      "sourceId": "CON modern Lep",
+      "lines": [
+        {
+          "fromHip": 23685,
+          "toHip": 24305
+        },
+        {
+          "fromHip": 23685,
+          "toHip": 25606
+        },
+        {
+          "fromHip": 24244,
+          "toHip": 24327
+        },
+        {
+          "fromHip": 24305,
+          "toHip": 24327
+        },
+        {
+          "fromHip": 24305,
+          "toHip": 24845
+        },
+        {
+          "fromHip": 24305,
+          "toHip": 25985
+        },
+        {
+          "fromHip": 24845,
+          "toHip": 24873
+        },
+        {
+          "fromHip": 25606,
+          "toHip": 25985
+        },
+        {
+          "fromHip": 25606,
+          "toHip": 27072
+        },
+        {
+          "fromHip": 25985,
+          "toHip": 27288
+        },
+        {
+          "fromHip": 25985,
+          "toHip": 27654
+        },
+        {
+          "fromHip": 27072,
+          "toHip": 27654
+        },
+        {
+          "fromHip": 27288,
+          "toHip": 28103
+        },
+        {
+          "fromHip": 28103,
+          "toHip": 28910
+        }
+      ]
+    },
+    {
+      "id": "Lib",
+      "name": "Libra",
+      "sourceId": "CON modern Lib",
+      "lines": [
+        {
+          "fromHip": 72622,
+          "toHip": 73714
+        },
+        {
+          "fromHip": 72622,
+          "toHip": 74785
+        },
+        {
+          "fromHip": 73714,
+          "toHip": 76333
+        },
+        {
+          "fromHip": 74785,
+          "toHip": 76333
+        },
+        {
+          "fromHip": 76333,
+          "toHip": 77853
+        }
+      ]
+    },
+    {
+      "id": "Lup",
+      "name": "Lupus",
+      "sourceId": "CON modern Lup",
+      "lines": [
+        {
+          "fromHip": 70576,
+          "toHip": 71860
+        },
+        {
+          "fromHip": 71536,
+          "toHip": 74395
+        },
+        {
+          "fromHip": 71860,
+          "toHip": 73273
+        },
+        {
+          "fromHip": 71860,
+          "toHip": 74395
+        },
+        {
+          "fromHip": 73273,
+          "toHip": 75141
+        },
+        {
+          "fromHip": 74395,
+          "toHip": 76552
+        },
+        {
+          "fromHip": 75141,
+          "toHip": 75177
+        },
+        {
+          "fromHip": 75141,
+          "toHip": 76297
+        },
+        {
+          "fromHip": 76297,
+          "toHip": 76552
+        },
+        {
+          "fromHip": 76297,
+          "toHip": 78384
+        },
+        {
+          "fromHip": 77634,
+          "toHip": 78384
+        },
+        {
+          "fromHip": 77634,
+          "toHip": 78970
+        },
+        {
+          "fromHip": 78384,
+          "toHip": 78970
+        }
+      ]
+    },
+    {
+      "id": "Lyn",
+      "name": "Lynx",
+      "sourceId": "CON modern Lyn",
+      "lines": [
+        {
+          "fromHip": 30060,
+          "toHip": 33449
+        },
+        {
+          "fromHip": 33449,
+          "toHip": 36145
+        },
+        {
+          "fromHip": 36145,
+          "toHip": 41075
+        },
+        {
+          "fromHip": 41075,
+          "toHip": 44248
+        },
+        {
+          "fromHip": 44248,
+          "toHip": 44700
+        },
+        {
+          "fromHip": 44700,
+          "toHip": 45688
+        },
+        {
+          "fromHip": 45688,
+          "toHip": 45860
+        }
+      ]
+    },
+    {
+      "id": "Lyr",
+      "name": "Lyra",
+      "sourceId": "CON modern Lyr",
+      "lines": [
+        {
+          "fromHip": 91262,
+          "toHip": 91971
+        },
+        {
+          "fromHip": 91971,
+          "toHip": 92420
+        },
+        {
+          "fromHip": 91971,
+          "toHip": 92791
+        },
+        {
+          "fromHip": 92420,
+          "toHip": 93194
+        },
+        {
+          "fromHip": 92791,
+          "toHip": 93194
+        }
+      ]
+    },
+    {
+      "id": "Men",
+      "name": "Mensa",
+      "sourceId": "CON modern Men",
+      "lines": [
+        {
+          "fromHip": 21949,
+          "toHip": 25918
+        }
+      ]
+    },
+    {
+      "id": "Mic",
+      "name": "Microscopium",
+      "sourceId": "CON modern Mic",
+      "lines": [
+        {
+          "fromHip": 102831,
+          "toHip": 103738
+        },
+        {
+          "fromHip": 103738,
+          "toHip": 105140
+        }
+      ]
+    },
+    {
+      "id": "Mon",
+      "name": "Monoceros",
+      "sourceId": "CON modern Mon",
+      "lines": [
+        {
+          "fromHip": 29651,
+          "toHip": 34769
+        },
+        {
+          "fromHip": 30419,
+          "toHip": 31216
+        },
+        {
+          "fromHip": 30419,
+          "toHip": 32533
+        },
+        {
+          "fromHip": 30665,
+          "toHip": 31978
+        },
+        {
+          "fromHip": 30867,
+          "toHip": 34769
+        },
+        {
+          "fromHip": 31216,
+          "toHip": 31978
+        },
+        {
+          "fromHip": 31978,
+          "toHip": 32533
+        },
+        {
+          "fromHip": 32533,
+          "toHip": 34769
+        },
+        {
+          "fromHip": 34769,
+          "toHip": 39211
+        },
+        {
+          "fromHip": 37447,
+          "toHip": 39211
+        },
+        {
+          "fromHip": 39211,
+          "toHip": 39863
+        }
+      ]
+    },
+    {
+      "id": "Mus",
+      "name": "Musca",
+      "sourceId": "CON modern Mus",
+      "lines": [
+        {
+          "fromHip": 57363,
+          "toHip": 61199
+        },
+        {
+          "fromHip": 57363,
+          "toHip": 62322
+        },
+        {
+          "fromHip": 61199,
+          "toHip": 61585
+        },
+        {
+          "fromHip": 61585,
+          "toHip": 62322
+        }
+      ]
+    },
+    {
+      "id": "Nor",
+      "name": "Norma",
+      "sourceId": "CON modern Nor",
+      "lines": [
+        {
+          "fromHip": 78639,
+          "toHip": 79509
+        },
+        {
+          "fromHip": 78639,
+          "toHip": 80000
+        },
+        {
+          "fromHip": 78639,
+          "toHip": 80582
+        },
+        {
+          "fromHip": 79509,
+          "toHip": 80000
+        },
+        {
+          "fromHip": 80000,
+          "toHip": 80582
+        }
+      ]
+    },
+    {
+      "id": "Oct",
+      "name": "Octans",
+      "sourceId": "CON modern Oct",
+      "lines": [
+        {
+          "fromHip": 70638,
+          "toHip": 107089
+        },
+        {
+          "fromHip": 70638,
+          "toHip": 112405
+        },
+        {
+          "fromHip": 107089,
+          "toHip": 112405
+        }
+      ]
+    },
+    {
+      "id": "Oph",
+      "name": "Ophiuchus",
+      "sourceId": "CON modern Oph",
+      "lines": [
+        {
+          "fromHip": 79882,
+          "toHip": 81377
+        },
+        {
+          "fromHip": 79882,
+          "toHip": 83000
+        },
+        {
+          "fromHip": 81377,
+          "toHip": 84012
+        },
+        {
+          "fromHip": 83000,
+          "toHip": 86032
+        },
+        {
+          "fromHip": 84012,
+          "toHip": 85755
+        },
+        {
+          "fromHip": 84012,
+          "toHip": 86742
+        },
+        {
+          "fromHip": 86032,
+          "toHip": 86742
+        }
+      ]
+    },
+    {
+      "id": "Pav",
+      "name": "Pavo",
+      "sourceId": "CON modern Pav",
+      "lines": [
+        {
+          "fromHip": 86929,
+          "toHip": 88866
+        },
+        {
+          "fromHip": 88866,
+          "toHip": 90098
+        },
+        {
+          "fromHip": 88866,
+          "toHip": 92609
+        },
+        {
+          "fromHip": 90098,
+          "toHip": 92609
+        },
+        {
+          "fromHip": 91792,
+          "toHip": 93015
+        },
+        {
+          "fromHip": 91792,
+          "toHip": 98495
+        },
+        {
+          "fromHip": 92609,
+          "toHip": 93015
+        },
+        {
+          "fromHip": 93015,
+          "toHip": 99240
+        },
+        {
+          "fromHip": 98495,
+          "toHip": 99240
+        },
+        {
+          "fromHip": 99240,
+          "toHip": 100751
+        },
+        {
+          "fromHip": 99240,
+          "toHip": 102395
+        },
+        {
+          "fromHip": 100751,
+          "toHip": 105858
+        },
+        {
+          "fromHip": 102395,
+          "toHip": 105858
+        }
+      ]
+    },
+    {
+      "id": "Peg",
+      "name": "Pegasus",
+      "sourceId": "CON modern Peg",
+      "lines": [
+        {
+          "fromHip": 677,
+          "toHip": 1067
+        },
+        {
+          "fromHip": 677,
+          "toHip": 113881
+        },
+        {
+          "fromHip": 1067,
+          "toHip": 113963
+        },
+        {
+          "fromHip": 107315,
+          "toHip": 109427
+        },
+        {
+          "fromHip": 107354,
+          "toHip": 109176
+        },
+        {
+          "fromHip": 109176,
+          "toHip": 112440
+        },
+        {
+          "fromHip": 109352,
+          "toHip": 112158
+        },
+        {
+          "fromHip": 109427,
+          "toHip": 112029
+        },
+        {
+          "fromHip": 112029,
+          "toHip": 112447
+        },
+        {
+          "fromHip": 112158,
+          "toHip": 113881
+        },
+        {
+          "fromHip": 112440,
+          "toHip": 112748
+        },
+        {
+          "fromHip": 112447,
+          "toHip": 113963
+        },
+        {
+          "fromHip": 112748,
+          "toHip": 113881
+        },
+        {
+          "fromHip": 113881,
+          "toHip": 113963
+        }
+      ]
+    },
+    {
+      "id": "Per",
+      "name": "Perseus",
+      "sourceId": "CON modern Per",
+      "lines": [
+        {
+          "fromHip": 13254,
+          "toHip": 14354
+        },
+        {
+          "fromHip": 13268,
+          "toHip": 14328
+        },
+        {
+          "fromHip": 14328,
+          "toHip": 15863
+        },
+        {
+          "fromHip": 14354,
+          "toHip": 14576
+        },
+        {
+          "fromHip": 14576,
+          "toHip": 15863
+        },
+        {
+          "fromHip": 15863,
+          "toHip": 17358
+        },
+        {
+          "fromHip": 17358,
+          "toHip": 18532
+        },
+        {
+          "fromHip": 17448,
+          "toHip": 18246
+        },
+        {
+          "fromHip": 18246,
+          "toHip": 18614
+        },
+        {
+          "fromHip": 18532,
+          "toHip": 18614
+        }
+      ]
+    },
+    {
+      "id": "Phe",
+      "name": "Phoenix",
+      "sourceId": "CON modern Phe",
+      "lines": [
+        {
+          "fromHip": 765,
+          "toHip": 2072
+        },
+        {
+          "fromHip": 765,
+          "toHip": 2081
+        },
+        {
+          "fromHip": 2072,
+          "toHip": 2081
+        },
+        {
+          "fromHip": 2072,
+          "toHip": 5165
+        },
+        {
+          "fromHip": 2072,
+          "toHip": 5348
+        },
+        {
+          "fromHip": 2072,
+          "toHip": 6867
+        },
+        {
+          "fromHip": 5165,
+          "toHip": 5348
+        },
+        {
+          "fromHip": 5165,
+          "toHip": 6867
+        },
+        {
+          "fromHip": 5165,
+          "toHip": 7083
+        },
+        {
+          "fromHip": 5165,
+          "toHip": 8837
+        },
+        {
+          "fromHip": 7083,
+          "toHip": 8837
+        }
+      ]
+    },
+    {
+      "id": "Pic",
+      "name": "Pictor",
+      "sourceId": "CON modern Pic",
+      "lines": [
+        {
+          "fromHip": 27321,
+          "toHip": 27530
+        },
+        {
+          "fromHip": 27530,
+          "toHip": 32607
+        }
+      ]
+    },
+    {
+      "id": "PsA",
+      "name": "Piscis Austrinus",
+      "sourceId": "CON modern PsA",
+      "lines": [
+        {
+          "fromHip": 107608,
+          "toHip": 108661
+        },
+        {
+          "fromHip": 107608,
+          "toHip": 109422
+        },
+        {
+          "fromHip": 108661,
+          "toHip": 111954
+        },
+        {
+          "fromHip": 109422,
+          "toHip": 111188
+        },
+        {
+          "fromHip": 111188,
+          "toHip": 113246
+        },
+        {
+          "fromHip": 111954,
+          "toHip": 113368
+        }
+      ]
+    },
+    {
+      "id": "Psc",
+      "name": "Pisces",
+      "sourceId": "CON modern Psc",
+      "lines": [
+        {
+          "fromHip": 1645,
+          "toHip": 3760
+        },
+        {
+          "fromHip": 1645,
+          "toHip": 118268
+        },
+        {
+          "fromHip": 3760,
+          "toHip": 4906
+        },
+        {
+          "fromHip": 4889,
+          "toHip": 5742
+        },
+        {
+          "fromHip": 4889,
+          "toHip": 6193
+        },
+        {
+          "fromHip": 4906,
+          "toHip": 7007
+        },
+        {
+          "fromHip": 5742,
+          "toHip": 6193
+        },
+        {
+          "fromHip": 5742,
+          "toHip": 7097
+        },
+        {
+          "fromHip": 7007,
+          "toHip": 7884
+        },
+        {
+          "fromHip": 7097,
+          "toHip": 8198
+        },
+        {
+          "fromHip": 7884,
+          "toHip": 8833
+        },
+        {
+          "fromHip": 8198,
+          "toHip": 9487
+        },
+        {
+          "fromHip": 8833,
+          "toHip": 9487
+        },
+        {
+          "fromHip": 114971,
+          "toHip": 115227
+        },
+        {
+          "fromHip": 114971,
+          "toHip": 115738
+        },
+        {
+          "fromHip": 115227,
+          "toHip": 115830
+        },
+        {
+          "fromHip": 115738,
+          "toHip": 116928
+        },
+        {
+          "fromHip": 115830,
+          "toHip": 116771
+        },
+        {
+          "fromHip": 116771,
+          "toHip": 117245
+        },
+        {
+          "fromHip": 116771,
+          "toHip": 118268
+        },
+        {
+          "fromHip": 116928,
+          "toHip": 117245
+        }
+      ]
+    },
+    {
+      "id": "Pup",
+      "name": "Puppis",
+      "sourceId": "CON modern Pup",
+      "lines": [
+        {
+          "fromHip": 31685,
+          "toHip": 32768
+        },
+        {
+          "fromHip": 31685,
+          "toHip": 35264
+        },
+        {
+          "fromHip": 32768,
+          "toHip": 36377
+        },
+        {
+          "fromHip": 35264,
+          "toHip": 38146
+        },
+        {
+          "fromHip": 36377,
+          "toHip": 39429
+        },
+        {
+          "fromHip": 38146,
+          "toHip": 39757
+        },
+        {
+          "fromHip": 39429,
+          "toHip": 39757
+        }
+      ]
+    },
+    {
+      "id": "Pyx",
+      "name": "Pyxis",
+      "sourceId": "CON modern Pyx",
+      "lines": [
+        {
+          "fromHip": 42515,
+          "toHip": 42828
+        },
+        {
+          "fromHip": 42828,
+          "toHip": 43409
+        }
+      ]
+    },
+    {
+      "id": "Ret",
+      "name": "Reticulum",
+      "sourceId": "CON modern Ret",
+      "lines": [
+        {
+          "fromHip": 17440,
+          "toHip": 18597
+        },
+        {
+          "fromHip": 17440,
+          "toHip": 19780
+        },
+        {
+          "fromHip": 18597,
+          "toHip": 19921
+        },
+        {
+          "fromHip": 19780,
+          "toHip": 19921
+        }
+      ]
+    },
+    {
+      "id": "Scl",
+      "name": "Sculptor",
+      "sourceId": "CON modern Scl",
+      "lines": [
+        {
+          "fromHip": 4577,
+          "toHip": 115102
+        },
+        {
+          "fromHip": 4577,
+          "toHip": 116231
+        },
+        {
+          "fromHip": 115102,
+          "toHip": 116231
+        }
+      ]
+    },
+    {
+      "id": "Sct",
+      "name": "Scutum",
+      "sourceId": "CON modern Sct",
+      "lines": [
+        {
+          "fromHip": 90595,
+          "toHip": 91117
+        },
+        {
+          "fromHip": 90595,
+          "toHip": 92814
+        },
+        {
+          "fromHip": 91117,
+          "toHip": 92175
+        },
+        {
+          "fromHip": 92175,
+          "toHip": 92202
+        },
+        {
+          "fromHip": 92202,
+          "toHip": 92814
+        }
+      ]
+    },
+    {
+      "id": "Ser",
+      "name": "Serpens",
+      "sourceId": "CON modern Ser",
+      "lines": [
+        {
+          "fromHip": 76276,
+          "toHip": 77070
+        },
+        {
+          "fromHip": 76276,
+          "toHip": 77233
+        },
+        {
+          "fromHip": 77070,
+          "toHip": 77622
+        },
+        {
+          "fromHip": 77233,
+          "toHip": 77450
+        },
+        {
+          "fromHip": 77233,
+          "toHip": 78072
+        },
+        {
+          "fromHip": 77450,
+          "toHip": 78072
+        },
+        {
+          "fromHip": 77516,
+          "toHip": 77622
+        },
+        {
+          "fromHip": 77516,
+          "toHip": 79593
+        },
+        {
+          "fromHip": 84880,
+          "toHip": 86263
+        },
+        {
+          "fromHip": 86263,
+          "toHip": 86565
+        },
+        {
+          "fromHip": 86565,
+          "toHip": 88048
+        },
+        {
+          "fromHip": 88048,
+          "toHip": 88670
+        },
+        {
+          "fromHip": 88670,
+          "toHip": 89962
+        },
+        {
+          "fromHip": 89962,
+          "toHip": 90441
+        },
+        {
+          "fromHip": 90441,
+          "toHip": 92946
+        }
+      ]
+    },
+    {
+      "id": "Sex",
+      "name": "Sextans",
+      "sourceId": "CON modern Sex",
+      "lines": [
+        {
+          "fromHip": 49641,
+          "toHip": 51437
+        }
+      ]
+    },
+    {
+      "id": "Sge",
+      "name": "Sagitta",
+      "sourceId": "CON modern Sge",
+      "lines": [
+        {
+          "fromHip": 96757,
+          "toHip": 97365
+        },
+        {
+          "fromHip": 96837,
+          "toHip": 97365
+        },
+        {
+          "fromHip": 97365,
+          "toHip": 98337
+        },
+        {
+          "fromHip": 98337,
+          "toHip": 98920
+        }
+      ]
+    },
+    {
+      "id": "Sgr",
+      "name": "Sagittarius",
+      "sourceId": "CON modern Sgr",
+      "lines": [
+        {
+          "fromHip": 87072,
+          "toHip": 88635
+        },
+        {
+          "fromHip": 88635,
+          "toHip": 89931
+        },
+        {
+          "fromHip": 88635,
+          "toHip": 90185
+        },
+        {
+          "fromHip": 89341,
+          "toHip": 90496
+        },
+        {
+          "fromHip": 89642,
+          "toHip": 90185
+        },
+        {
+          "fromHip": 89931,
+          "toHip": 90185
+        },
+        {
+          "fromHip": 89931,
+          "toHip": 90496
+        },
+        {
+          "fromHip": 89931,
+          "toHip": 92041
+        },
+        {
+          "fromHip": 90185,
+          "toHip": 93506
+        },
+        {
+          "fromHip": 90496,
+          "toHip": 92041
+        },
+        {
+          "fromHip": 92041,
+          "toHip": 92855
+        },
+        {
+          "fromHip": 92041,
+          "toHip": 93506
+        },
+        {
+          "fromHip": 92855,
+          "toHip": 93085
+        },
+        {
+          "fromHip": 92855,
+          "toHip": 93864
+        },
+        {
+          "fromHip": 93085,
+          "toHip": 93683
+        },
+        {
+          "fromHip": 93506,
+          "toHip": 93864
+        },
+        {
+          "fromHip": 93683,
+          "toHip": 94820
+        },
+        {
+          "fromHip": 93864,
+          "toHip": 96406
+        },
+        {
+          "fromHip": 94820,
+          "toHip": 95168
+        },
+        {
+          "fromHip": 95294,
+          "toHip": 98032
+        },
+        {
+          "fromHip": 95347,
+          "toHip": 98032
+        },
+        {
+          "fromHip": 96406,
+          "toHip": 98688
+        },
+        {
+          "fromHip": 98032,
+          "toHip": 98412
+        },
+        {
+          "fromHip": 98412,
+          "toHip": 98688
+        }
+      ]
+    },
+    {
+      "id": "Tau",
+      "name": "Taurus",
+      "sourceId": "CON modern Tau",
+      "lines": [
+        {
+          "fromHip": 15900,
+          "toHip": 18724
+        },
+        {
+          "fromHip": 17847,
+          "toHip": 20455
+        },
+        {
+          "fromHip": 18724,
+          "toHip": 20205
+        },
+        {
+          "fromHip": 20205,
+          "toHip": 20455
+        },
+        {
+          "fromHip": 20205,
+          "toHip": 20894
+        },
+        {
+          "fromHip": 20455,
+          "toHip": 20648
+        },
+        {
+          "fromHip": 20648,
+          "toHip": 20889
+        },
+        {
+          "fromHip": 20889,
+          "toHip": 21421
+        },
+        {
+          "fromHip": 20889,
+          "toHip": 21881
+        },
+        {
+          "fromHip": 20894,
+          "toHip": 21421
+        },
+        {
+          "fromHip": 21421,
+          "toHip": 26451
+        },
+        {
+          "fromHip": 21881,
+          "toHip": 25428
+        }
+      ]
+    },
+    {
+      "id": "Tel",
+      "name": "Telescopium",
+      "sourceId": "CON modern Tel",
+      "lines": [
+        {
+          "fromHip": 90422,
+          "toHip": 90568
+        }
+      ]
+    },
+    {
+      "id": "TrA",
+      "name": "Triangulum Australe",
+      "sourceId": "CON modern TrA",
+      "lines": [
+        {
+          "fromHip": 74946,
+          "toHip": 77952
+        },
+        {
+          "fromHip": 74946,
+          "toHip": 82273
+        },
+        {
+          "fromHip": 77952,
+          "toHip": 82273
+        }
+      ]
+    },
+    {
+      "id": "Tri",
+      "name": "Triangulum",
+      "sourceId": "CON modern Tri",
+      "lines": [
+        {
+          "fromHip": 8796,
+          "toHip": 10064
+        },
+        {
+          "fromHip": 8796,
+          "toHip": 10670
+        },
+        {
+          "fromHip": 10064,
+          "toHip": 10670
+        }
+      ]
+    },
+    {
+      "id": "Tuc",
+      "name": "Tucana",
+      "sourceId": "CON modern Tuc",
+      "lines": [
+        {
+          "fromHip": 1599,
+          "toHip": 114996
+        },
+        {
+          "fromHip": 2484,
+          "toHip": 114996
+        },
+        {
+          "fromHip": 110130,
+          "toHip": 114996
+        }
+      ]
+    },
+    {
+      "id": "UMi",
+      "name": "Ursa Minor",
+      "sourceId": "CON modern UMi",
+      "lines": [
+        {
+          "fromHip": 11767,
+          "toHip": 85822
+        },
+        {
+          "fromHip": 72607,
+          "toHip": 75097
+        },
+        {
+          "fromHip": 72607,
+          "toHip": 77055
+        },
+        {
+          "fromHip": 75097,
+          "toHip": 79822
+        },
+        {
+          "fromHip": 77055,
+          "toHip": 79822
+        },
+        {
+          "fromHip": 77055,
+          "toHip": 82080
+        },
+        {
+          "fromHip": 82080,
+          "toHip": 85822
+        }
+      ]
+    },
+    {
+      "id": "Vel",
+      "name": "Vela",
+      "sourceId": "CON modern Vel",
+      "lines": [
+        {
+          "fromHip": 39953,
+          "toHip": 42536
+        },
+        {
+          "fromHip": 39953,
+          "toHip": 44816
+        },
+        {
+          "fromHip": 42536,
+          "toHip": 42913
+        },
+        {
+          "fromHip": 42913,
+          "toHip": 45941
+        },
+        {
+          "fromHip": 44816,
+          "toHip": 46651
+        },
+        {
+          "fromHip": 45941,
+          "toHip": 48774
+        },
+        {
+          "fromHip": 46651,
+          "toHip": 50191
+        },
+        {
+          "fromHip": 48774,
+          "toHip": 52727
+        },
+        {
+          "fromHip": 50191,
+          "toHip": 51986
+        },
+        {
+          "fromHip": 51986,
+          "toHip": 52727
+        }
+      ]
+    },
+    {
+      "id": "Vir",
+      "name": "Virgo",
+      "sourceId": "CON modern Vir",
+      "lines": [
+        {
+          "fromHip": 57380,
+          "toHip": 60129
+        },
+        {
+          "fromHip": 60129,
+          "toHip": 61941
+        },
+        {
+          "fromHip": 61941,
+          "toHip": 63090
+        },
+        {
+          "fromHip": 61941,
+          "toHip": 65474
+        },
+        {
+          "fromHip": 63090,
+          "toHip": 63608
+        },
+        {
+          "fromHip": 63090,
+          "toHip": 66249
+        },
+        {
+          "fromHip": 65474,
+          "toHip": 66249
+        },
+        {
+          "fromHip": 65474,
+          "toHip": 69427
+        },
+        {
+          "fromHip": 66249,
+          "toHip": 68520
+        },
+        {
+          "fromHip": 68520,
+          "toHip": 72220
+        },
+        {
+          "fromHip": 69427,
+          "toHip": 69701
+        },
+        {
+          "fromHip": 69701,
+          "toHip": 71957
+        }
+      ]
+    },
+    {
+      "id": "Vol",
+      "name": "Volans",
+      "sourceId": "CON modern Vol",
+      "lines": [
+        {
+          "fromHip": 34481,
+          "toHip": 37504
+        },
+        {
+          "fromHip": 34481,
+          "toHip": 39794
+        },
+        {
+          "fromHip": 35228,
+          "toHip": 39794
+        },
+        {
+          "fromHip": 37504,
+          "toHip": 39794
+        },
+        {
+          "fromHip": 39794,
+          "toHip": 41312
+        },
+        {
+          "fromHip": 39794,
+          "toHip": 44382
+        },
+        {
+          "fromHip": 41312,
+          "toHip": 44382
+        }
+      ]
+    },
+    {
+      "id": "Vul",
+      "name": "Vulpecula",
+      "sourceId": "CON modern Vul",
+      "lines": [
+        {
+          "fromHip": 95771,
+          "toHip": 98543
         }
       ]
     }
