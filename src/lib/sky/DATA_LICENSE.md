@@ -23,6 +23,15 @@ visual magnitude, B-V colour index, and proper name.
 
 Regenerate with `python3 scripts/update_star_catalog.py path/to/hygdata_v41.csv`.
 
+`public/data/constellation-vertices.json` contains the 710 HYG v4.1 entries used
+by the Stellarium Modern connecting figures. It retains HYG/HIP identifiers,
+J2000 coordinates at the same precision as the bright-star catalog, and visual
+magnitude. All connecting vertices are included, with the brightest HYG entry
+selected for each HIP. Regenerate it with
+`python3 scripts/update_constellation_data.py path/to/stellarium-modern-index.json path/to/hygdata_v41.csv`.
+This HYG-derived data is also licensed under CC BY-SA 4.0 and attributed to
+David Nash / Astronexus.
+
 Because the data is CC BY-SA 4.0, this derived catalog remains under
 **CC BY-SA 4.0**. Attribution: "Star data from the HYG Database by David Nash /
 Astronexus (CC BY-SA 4.0), reduced to magnitude ≤ 6.5."

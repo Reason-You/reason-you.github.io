@@ -67,6 +67,16 @@ the camera frame. All other visible entries continue to render normally.
 Desktop and mobile use the same magnitude limit. Labels use DOM text in the
 website's auxiliary color, with only Chinese and English names.
 
+Visible names share a measured layout with 10 CSS px between text boxes and
+12px of viewport padding. Placement avoids other selected star centres and
+sky controls, preserves suitable existing positions, and uses a short leader
+when a name moves away from its usual position. Font and container size changes
+update the layout through ResizeObserver. Pinned and hovered names participate
+in the same layout.
+Crowded names can use free space elsewhere in the viewport. Names temporarily
+yield to an open panel when its occupied area leaves no placement; selections
+remain pinned, and layout resumes as the panel or exiting names are removed.
+
 The camera faces azimuth 180°, centred at altitude 47.5°. Desktop horizontal FOV
 is 100°; below 640 CSS px the vertical FOV is 75°, with horizontal FOV derived
 from the container's aspect ratio. Both axes share one perspective scale.

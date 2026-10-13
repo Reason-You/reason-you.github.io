@@ -326,6 +326,7 @@ body {
 }
 
 .look-up-label {
+  visibility: hidden;
   width: max-content;
   max-width: calc(100% - 24px);
   white-space: nowrap;

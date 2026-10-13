@@ -20,8 +20,18 @@ async page => {
     const canvas=document.querySelector('.look-up-stars'),g=document.querySelector('.constellation-preview g');
     const lines=[...document.querySelectorAll('.constellation-preview line')].map(l=>({fromHip:Number(l.dataset.fromHip),toHip:Number(l.dataset.toHip),x1:Number(l.getAttribute('x1')),y1:Number(l.getAttribute('y1')),x2:Number(l.getAttribute('x2')),y2:Number(l.getAttribute('y2'))}));
     const camera=window.__sky.camera,visible=window.__sky.rendered;
+    const vertices=new Map(window.__sky.snapshot.constellationStars.map(s=>[s.hip,s]));
+    const validEndpoint=([hip,x,y])=>{
+      const star=vertices.get(hip);if(!star||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>camera.width||y<0||y>camera.height)return false;
+      const dx=(x-camera.width/2)/camera.scale,dy=(camera.height*camera.centerYFraction-y)/camera.scale;
+      const up=camera.forward[2]+dx*camera.right[2]+dy*camera.up[2];if(up<-1e-9)return false;
+      if(Math.min(x,y,camera.width-x,camera.height-y)<1e-8||Math.abs(up)<1e-8)return true;
+      const alt=star.altitude*Math.PI/180,az=star.azimuth*Math.PI/180,v=[Math.cos(alt)*Math.sin(az),Math.cos(alt)*Math.cos(az),Math.sin(alt)];
+      const dot=a=>v.reduce((sum,n,i)=>sum+n*a[i],0),depth=dot(camera.forward);
+      return depth>.02&&Math.abs(x-camera.width/2-dot(camera.right)/depth*camera.scale)<1e-8&&Math.abs(y-camera.height*camera.centerYFraction+dot(camera.up)/depth*camera.scale)<1e-8;
+    };
     return {constellation:g?.dataset.constellation,opacity:g?Number(getComputedStyle(g).opacity):null,width:g?.getAttribute('stroke-width'),pointerEvents:getComputedStyle(document.querySelector('.constellation-preview')??canvas).pointerEvents,
-      lines,valid:lines.every(l=>[[l.fromHip,l.x1,l.y1],[l.toHip,l.x2,l.y2]].every(([hip,x,y])=>visible.some(e=>e.star.hip===hip&&e.star.altitude>=0&&e.star.mag<=window.__sky.lightPollution.limitingMagnitude&&Math.abs(e.point.x-x)<1e-9&&Math.abs(e.point.y-y)<1e-9&&x>=0&&x<=camera.width&&y>=0&&y<=camera.height))),sameSky:window.__sky===window.__beforePreviewSky,starCount:visible.length};
+      lines,valid:lines.every(l=>[[l.fromHip,l.x1,l.y1],[l.toHip,l.x2,l.y2]].every(validEndpoint)),sameSky:window.__sky===window.__beforePreviewSky,starCount:visible.length};
   });
   for(const scene of scenarios)for(const width of [1440,390])for(const alpha of [null,.08,.12]){
     const name=`${scene.id}-${width}-${alpha===null?'original':alpha}`;
@@ -42,7 +52,7 @@ async page => {
       if(alpha!==null)await p.waitForFunction(({id,alpha})=>{const g=document.querySelector('.constellation-preview g');return g?.dataset.constellation===id&&Math.abs(Number(getComputedStyle(g).opacity)-alpha)<.00001},{id:scene.id,alpha});
       else assert(await p.locator('.constellation-preview').count()===0,'explicit comparison layer disabled');
       const state=await inspect(p);assert(state.valid&&state.sameSky,'real endpoints, no sky redraw');
-      if(alpha!==null){assert(state.lines.length>0&&state.width==='0.6'&&state.pointerEvents==='none','thin auxiliary layer');const graph=source.constellations.find(c=>c.id===scene.id);assert(state.lines.every(l=>graph.lines.some(e=>e.fromHip===l.fromHip&&e.toHip===l.toHip)),'source HIP graph');}
+      if(alpha!==null){assert(state.lines.length>0&&state.width===(width<640?'0.9':'0.6')&&state.pointerEvents==='none','thin auxiliary layer');const graph=source.constellations.find(c=>c.id===scene.id);assert(state.lines.every(l=>graph.lines.some(e=>e.fromHip===l.fromHip&&e.toHip===l.toHip)),'source HIP graph');}
       await shot(p,`constellation-${name}`);
       if(width===390)await p.getByRole('button',{name:'Clear names',exact:true}).tap();else await p.mouse.move(0,0);
       await p.waitForFunction(()=>!document.querySelector('.constellation-preview g'));

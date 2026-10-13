@@ -18,7 +18,7 @@ const { DEFAULT_OBSERVER, SKY_DAYTIME_VISIBILITY } = require('../src/lib/sky/con
 const { createCamera, project } = require('../src/lib/sky/projection.ts');
 const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
 const {
-  createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel,
+  createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel, positionStarLabels,
   readFacing, SKY_DIRECTIONS,
 } = require('../src/lib/sky/look-up.ts');
 const names = require('../src/lib/sky/star-names-data.json');
@@ -280,4 +280,43 @@ test('measured labels stay inside the sky at all four edges', () => {
       assert.ok(top >= 12 && top + 44 <= height - 12);
     }
   }
+});
+
+test('nearby bilingual names keep ten-pixel clearance, all names and stable positions', () => {
+  for (const [width,height] of [[360,665],[390,709],[412,780],[1280,755]]) {
+    const labels=[{id:85665,x:60,y:height-130,width:42,height:44},{id:85436,x:66,y:height-129,width:42,height:44}];
+    const positions=positionStarLabels(labels,width,height);
+    assert.equal(positions.size,2);
+    const [a,b]=labels.map(label=>({...positions.get(label.id),width:label.width,height:label.height}));
+    assert.ok(a.left+a.width<=b.left-9.99||b.left+b.width<=a.left-9.99||a.top+a.height<=b.top-9.99||b.top+b.height<=a.top-9.99);
+    assert.deepEqual(positionStarLabels(labels,width,height,[],positions),positions);
+  }
+});
+
+test('measured star names avoid controls and the selected star centres in crowded mobile layouts', () => {
+  const labels=Array.from({length:12},(_,i)=>({id:i,x:100+i%3*12,y:220+Math.floor(i/3)*22,width:i%3===0?115:56,height:44}));
+  const obstacles=[{x:12,y:80,width:200,height:60},{x:220,y:550,width:150,height:60}];
+  const positions=positionStarLabels(labels,390,709,obstacles);assert.equal(positions.size,labels.length);
+  const rectangles=labels.map(label=>({...positions.get(label.id),width:label.width,height:label.height}));
+  for(let i=0;i<rectangles.length;i++){
+    const a=rectangles[i];assert.ok(a.left>=12&&a.top>=12&&a.left+a.width<=378&&a.top+a.height<=697);
+    for(const b of [...rectangles.slice(i+1),...obstacles.map(r=>({left:r.x,top:r.y,width:r.width,height:r.height}))]){
+      assert.ok(a.left+a.width<=b.left-9.99||b.left+b.width<=a.left-9.99||a.top+a.height<=b.top-9.99||b.top+b.height<=a.top-9.99);
+    }
+  }
+});
+
+test('fractional text widths retain the twelve-pixel mobile margin', () => {
+  const label={id:74556,x:304.4,y:322.2,width:93.171875,height:44};
+  const position=positionStarLabels([label],360,665).get(label.id);assert.ok(position);
+  assert.ok(position.left>=12&&position.left+label.width<=348);
+});
+
+test('landscape names use available space across the viewport after a dense portrait selection', () => {
+  const snapshot=computeSky(new Date('2026-10-13T06:50:00Z'),DEFAULT_OBSERVER,{...city,limitingMagnitude:4.146324479884627});
+  const camera=createLookUpCamera(844,255);
+  const stars=interactiveStars(projectSkyStars(snapshot,camera,{isDark:true,mobile:false,presentation:'look-up'}),camera);
+  const labels=stars.map(({star,name,point})=>({id:star.id,x:point.x,y:point.y,width:Math.max(name.chinese.length*14,name.english.length*7),height:44}));
+  const positions=positionStarLabels(labels,camera.width,camera.height);
+  assert.ok(labels.length>=10);assert.equal(positions.size,labels.length);
 });

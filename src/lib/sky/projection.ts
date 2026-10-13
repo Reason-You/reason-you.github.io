@@ -95,3 +95,51 @@ export function project(
     depth,
   };
 }
+
+/** Clip a sky arc to the horizon and camera frustum before perspective division. */
+export function projectSkySegment(
+  from: { altitude: number; azimuth: number },
+  to: { altitude: number; azimuth: number },
+  camera: Camera,
+): { from: ProjectedPoint; to: ProjectedPoint } | null {
+  const coordinates = (star: typeof from) => {
+    const [east, north, up] = horizonToVector(star.altitude, star.azimuth);
+    return {
+      x: east * camera.right[0] + north * camera.right[1] + up * camera.right[2],
+      y: east * camera.up[0] + north * camera.up[1] + up * camera.up[2],
+      depth: east * camera.forward[0] + north * camera.forward[1] + up * camera.forward[2],
+      altitude: up,
+    };
+  };
+  const a = coordinates(from), b = coordinates(to);
+  const planes = (point: typeof a) => [
+    point.altitude,
+    point.depth - 0.02,
+    camera.width / 2 * point.depth + camera.scale * point.x,
+    camera.width / 2 * point.depth - camera.scale * point.x,
+    camera.height * camera.centerYFraction * point.depth - camera.scale * point.y,
+    camera.height * (1 - camera.centerYFraction) * point.depth + camera.scale * point.y,
+  ];
+  const starts = planes(a), ends = planes(b);
+  let low = 0, high = 1;
+  for (let i = 0; i < starts.length; i++) {
+    const start = starts[i], end = ends[i];
+    if (start < 0 && end < 0) return null;
+    if (start < 0) low = Math.max(low, start / (start - end));
+    if (end < 0) high = Math.min(high, start / (start - end));
+    if (low >= high) return null;
+  }
+  const pointAt = (t: number): ProjectedPoint => {
+    const point = t === 0 ? a : t === 1 ? b : {
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+      depth: a.depth + (b.depth - a.depth) * t,
+    };
+    return {
+      x: Math.max(0, Math.min(camera.width, camera.width / 2 + point.x / point.depth * camera.scale)),
+      y: Math.max(0, Math.min(camera.height, camera.height * camera.centerYFraction - point.y / point.depth * camera.scale)),
+      depth: point.depth,
+    };
+  };
+  return { from: pointAt(low), to: pointAt(high) };
+}

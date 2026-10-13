@@ -35,7 +35,8 @@ def main():
             'constellations': constellations}
     (ROOT / 'public/data/constellation-lines.json').write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
     with args.hyg.open(newline='', encoding='utf-8') as file:
-        rows = [row for row in csv.DictReader(file) if row['id'] != '0' and row['mag'] and float(row['mag']) <= 6.5]
+        catalog = [row for row in csv.DictReader(file) if row['id'] != '0' and row['mag']]
+    rows = [row for row in catalog if float(row['mag']) <= 6.5]
     groups = {c['id']: [] for c in sorted(constellations, key=lambda c: c['id'])}
     for row in rows:
         groups[row['con']].append(int(row['id']))
@@ -44,7 +45,32 @@ def main():
                   'modifications': 'Grouped HYG ids with magnitude <= 6.5, excluding the Sun, by their catalogued constellation abbreviation.',
                   'constellations': groups}
     (ROOT / 'public/data/constellation-membership.json').write_text(json.dumps(membership, ensure_ascii=False, separators=(',', ':')) + '\n')
+    write_vertices(constellations, catalog)
     print(f'{len(constellations)} constellation figures; {len(rows)} HYG members')
+
+
+def write_vertices(constellations, catalog):
+    hips = {line[key] for figure in constellations for line in figure['lines'] for key in ('fromHip', 'toHip')}
+    by_hip = {}
+    for row in catalog:
+        if not row['hip'] or int(row['hip']) not in hips:
+            continue
+        hip = int(row['hip'])
+        if hip not in by_hip or float(row['mag']) < float(by_hip[hip]['mag']):
+            by_hip[hip] = row
+    missing = hips - by_hip.keys()
+    if missing:
+        raise ValueError(f'HYG coordinates missing for HIP vertices: {sorted(missing)}')
+    data = {
+        'source': 'https://github.com/astronexus/HYG-Database/blob/main/hyg/CURRENT/hygdata_v41.csv',
+        'version': '4.1', 'author': 'David Nash / Astronexus',
+        'license': 'CC-BY-SA-4.0', 'licenseUrl': 'https://creativecommons.org/licenses/by-sa/4.0/',
+        'modifications': 'Selected all Stellarium Modern HIP vertices, retaining the brightest HYG entry per HIP; rounded J2000 coordinates to the bright-star catalog precision.',
+        'vertices': [{'id': int(row['id']), 'hip': hip, 'ra': round(float(row['ra']), 5),
+                      'dec': round(float(row['dec']), 4), 'mag': float(row['mag'])}
+                     for hip, row in sorted(by_hip.items())],
+    }
+    (ROOT / 'public/data/constellation-vertices.json').write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')) + '\n')
 
 
 if __name__ == '__main__':

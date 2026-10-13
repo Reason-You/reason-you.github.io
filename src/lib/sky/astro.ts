@@ -2,6 +2,7 @@ import { Body, Equator, Horizon, Observer, Rotation_EQJ_EQD, RotationMatrix } fr
 import { getCatalog, Star } from "./catalog";
 import { ObserverSpec, SKY_DAYTIME_VISIBILITY } from "./constants";
 import { LightPollution } from "./lightPollution";
+import { CONSTELLATION_VERTICES } from "./constellations";
 
 export interface SkyStar extends Star {
   /** Degrees clockwise from north, as seen by the observer. */
@@ -32,6 +33,8 @@ export interface SkySnapshot {
   visibility: number;
   /** Stars that pass the light-pollution magnitude cut and are above the horizon. */
   stars: SkyStar[];
+  /** Complete constellation vertices, including faint stars and points beyond the horizon. */
+  constellationStars: SkyStar[];
 }
 
 const DEG = Math.PI / 180;
@@ -101,20 +104,23 @@ export function computeSky(
   const visibility = Math.max(SKY_DAYTIME_VISIBILITY, twilight);
 
   const rotation = Rotation_EQJ_EQD(date);
+  const positions = new Map<number, SkyStar>();
+  const atHorizon = (star: Star): SkyStar => {
+    const existing = positions.get(star.id);
+    if (existing) return existing;
+    const ofDate = equatorOfDate(star.ra, star.dec, rotation);
+    const horizon = Horizon(date, geoObserver, ofDate.ra, ofDate.dec, "normal");
+    const position = { ...star, azimuth: horizon.azimuth, altitude: horizon.altitude };
+    positions.set(star.id, position);
+    return position;
+  };
   const stars: SkyStar[] = [];
   for (const star of getCatalog()) {
     if (star.mag > pollution.limitingMagnitude) continue;
-
-    const ofDate = equatorOfDate(star.ra, star.dec, rotation);
-    const horizon = Horizon(date, geoObserver, ofDate.ra, ofDate.dec, "normal");
-    if (horizon.altitude < -2) continue;
-
-    stars.push({
-      ...star,
-      azimuth: horizon.azimuth,
-      altitude: horizon.altitude,
-    });
+    const position = atHorizon(star);
+    if (position.altitude >= -2) stars.push(position);
   }
+  const constellationStars = CONSTELLATION_VERTICES.map(atHorizon);
 
   return {
     date,
@@ -124,5 +130,6 @@ export function computeSky(
     twilight,
     visibility,
     stars,
+    constellationStars,
   };
 }

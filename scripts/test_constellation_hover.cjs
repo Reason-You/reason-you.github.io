@@ -26,12 +26,22 @@ async page => {
     return JSON.stringify(ids)===JSON.stringify([...expected].sort());
    },expected);await p.waitForTimeout(260);
    const state=await p.evaluate(()=>{
-    const gs=[...document.querySelectorAll('.constellation-preview g')],{rendered,camera}=window.__sky;
+    const gs=[...document.querySelectorAll('.constellation-preview g')],{snapshot,camera}=window.__sky;
+    const vertices=new Map(snapshot.constellationStars.map(s=>[s.hip,s]));
+    const validEndpoint=([hip,x,y])=>{
+     const star=vertices.get(hip);if(!star||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>camera.width||y<0||y>camera.height)return false;
+     const dx=(x-camera.width/2)/camera.scale,dy=(camera.height*camera.centerYFraction-y)/camera.scale;
+     const up=camera.forward[2]+dx*camera.right[2]+dy*camera.up[2];if(up<-1e-9)return false;
+     if(Math.min(x,y,camera.width-x,camera.height-y)<1e-8||Math.abs(up)<1e-8)return true;
+     const alt=star.altitude*Math.PI/180,az=star.azimuth*Math.PI/180,v=[Math.cos(alt)*Math.sin(az),Math.cos(alt)*Math.cos(az),Math.sin(alt)];
+     const dot=a=>v.reduce((sum,n,i)=>sum+n*a[i],0),depth=dot(camera.forward);
+     return depth>.02&&Math.abs(x-camera.width/2-dot(camera.right)/depth*camera.scale)<1e-8&&Math.abs(y-camera.height*camera.centerYFraction+dot(camera.up)/depth*camera.scale)<1e-8;
+    };
     const names=[...document.querySelectorAll('.constellation-label')].filter(e=>getComputedStyle(e).visibility==='visible'&&+getComputedStyle(e).opacity>.001);
     const controls=[...document.querySelectorAll('.look-up-sky .look-up-label, .look-up-sky button:not(.look-up-star-focus), .look-up-sky [role="dialog"], .campfire-art, .campfire-hint, .campfire-count, .campfire-notifications, .look-up-star-hint')].filter(e=>getComputedStyle(e).visibility!=='hidden'&&+getComputedStyle(e).opacity>0);
     const namesClear=names.length<=1&&names.every(name=>{const a=name.getBoundingClientRect();return controls.every(control=>{const b=control.getBoundingClientRect();return !b.width||!b.height||a.right<=b.left-10||a.left>=b.right+10||a.bottom<=b.top-10||a.top>=b.bottom+10})});
     return {namesClear, constellationNames:names.map(n=>n.dataset.constellation), ids:gs.map(g=>g.dataset.constellation),labels:document.querySelectorAll('.look-up-label').length,sameSky:window.__sky===window.__beforeConstellation,
-     valid:gs.every(g=>Math.abs(+getComputedStyle(g).opacity-.12)<1e-5&&g.getAttribute('stroke-width')==='0.6'&&getComputedStyle(g.closest('svg')).pointerEvents==='none'&&[...g.querySelectorAll('line')].every(l=>[[+l.dataset.fromHip,+l.getAttribute('x1'),+l.getAttribute('y1')],[+l.dataset.toHip,+l.getAttribute('x2'),+l.getAttribute('y2')]].every(([hip,x,y])=>rendered.some(e=>e.star.hip===hip&&e.star.altitude>=0&&e.star.mag<=window.__sky.lightPollution.limitingMagnitude&&e.point.x===x&&e.point.y===y)&&x>=0&&x<=camera.width&&y>=0&&y<=camera.height)))};
+     valid:gs.every(g=>Math.abs(+getComputedStyle(g).opacity-(camera.width<640?.2:.12))<1e-5&&g.getAttribute('stroke-width')===(camera.width<640?'0.9':'0.6')&&getComputedStyle(g.closest('svg')).pointerEvents==='none'&&[...g.querySelectorAll('line')].every(l=>[[+l.dataset.fromHip,+l.getAttribute('x1'),+l.getAttribute('y1')],[+l.dataset.toHip,+l.getAttribute('x2'),+l.getAttribute('y2')]].every(validEndpoint)))};
    });assert(state.valid&&state.sameSky&&state.namesClear,JSON.stringify({width,reducedMotion,expected,state}));return state;
   }
   try{

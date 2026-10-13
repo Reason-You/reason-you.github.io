@@ -1,13 +1,13 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import MeteorBackground from '@/components/ui/MeteorBackground';
 import { useSkyStore } from '@/lib/stores/skyStore';
 import { useLabelStore } from '@/lib/stores/labelStore';
 import Campfire from './Campfire';
 import CampfireLog from './CampfireLog';
 import ConstellationPreview from './ConstellationPreview';
+import StarLabels from './StarLabels';
 import { useSkyDirection } from './SkyDirection';
 import { resolveTheme, useThemeStore } from '@/lib/stores/themeStore';
 import { computeSky, type SkySnapshot } from '@/lib/sky/astro';
@@ -17,7 +17,7 @@ import { MOBILE_BREAKPOINT_PX, SKY_CENTER_Y, SKY_UPDATE_INTERVAL_MS, SKY_VIEW } 
 import { constellationHitTargets, readConstellationPreview } from '@/lib/sky/constellations';
 import {
   createLookUpCamera, hitTestStar, interactiveStars, LOOK_UP_HIT_RADIUS,
-  positionStarLabel, SKY_DIRECTIONS, type InteractiveStar,
+  SKY_DIRECTIONS, type InteractiveStar,
 } from '@/lib/sky/look-up';
 
 interface SkyFrame {
@@ -25,44 +25,6 @@ interface SkyFrame {
   snapshot: SkySnapshot;
   rendered: RenderedStar[];
   stars: InteractiveStar[];
-}
-
-function StarLabel({ star, camera, onDisplay }: {
-  star: InteractiveStar; camera: Camera; onDisplay: () => void;
-}) {
-  const labelRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
-  const [position, setPosition] = useState({ left: star.point.x + 18, top: star.point.y });
-
-  useLayoutEffect(() => {
-    const label = labelRef.current;
-    if (!label) return;
-    setPosition(positionStarLabel(star.point.x, star.point.y, camera.width, camera.height,
-      label.offsetWidth, label.offsetHeight));
-  }, [star, camera]);
-
-  useLayoutEffect(() => {
-    labelRef.current?.dispatchEvent(new Event('sky-label-layout', { bubbles: true }));
-  }, [position]);
-
-  return (
-    <motion.div
-      ref={labelRef}
-      role="status"
-      className="look-up-label absolute pointer-events-none select-none text-neutral-500"
-      style={position}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
-      onAnimationComplete={(definition) => {
-        if (typeof definition === 'object' && 'opacity' in definition && definition.opacity === 1) onDisplay();
-      }}
-    >
-      <div lang="zh-CN" className="text-sm leading-6">{star.name.chinese}</div>
-      <div className="text-xs leading-5">{star.name.english}</div>
-    </motion.div>
-  );
 }
 
 export default function LookUpSky() {
@@ -130,7 +92,7 @@ export default function LookUpSky() {
       starsRef.current = stars;
       reconcilePinned(stars.map(({ star }) => star.id));
       const previewStars = readConstellationPreview(new URLSearchParams(window.location.search).get('constellationPreview')) === null
-        ? [] : constellationHitTargets(rendered, camera);
+        ? [] : constellationHitTargets(rendered, snapshot.constellationStars, camera);
       previewStarsRef.current = previewStars;
       visibleStarsRef.current = rendered.filter(({ point }) => point.x >= 0 && point.x <= camera.width && point.y >= 0 && point.y <= camera.height);
       setFrame({ camera, snapshot, rendered, stars });
@@ -431,7 +393,8 @@ export default function LookUpSky() {
         <ConstellationPreview
           key={`${facing}:${frame.camera.width}:${frame.camera.height}:${frame.snapshot.date.getTime()}:${frame.snapshot.observer.latitude}:${frame.snapshot.observer.longitude}:${frame.snapshot.pollution.limitingMagnitude}`}
           starId={hoveredPreviewId} selectedStarIds={pinnedIds} pinnedConstellations={pinnedConstellations}
-          rendered={frame.rendered} camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} />
+          rendered={frame.rendered} constellationStars={frame.snapshot.constellationStars}
+          camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} />
       </Suspense>}
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
       {frame?.stars.map(({ star, name, point }) => (
@@ -459,12 +422,8 @@ export default function LookUpSky() {
           }}
         />
       ))}
-      <AnimatePresence>
-        {frame && activeStars.map((entry) => (
-          <StarLabel key={entry.star.id} star={entry} camera={frame.camera} onDisplay={acknowledgeStar} />
-        ))}
-        {frame && hoverStar && <StarLabel key={`hover-${hoverStar.star.id}`} star={hoverStar} camera={frame.camera} onDisplay={acknowledgeStar} />}
-      </AnimatePresence>
+      {frame && <StarLabels stars={hoverStar ? [...activeStars, hoverStar] : activeStars}
+        camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} onDisplay={acknowledgeStar} />}
       </div>
       <div ref={previousLayerRef} aria-hidden="true" className="look-up-previous absolute inset-0 pointer-events-none" />
       </div>

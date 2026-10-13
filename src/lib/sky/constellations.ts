@@ -1,10 +1,14 @@
 import data from '../../../public/data/constellation-lines.json';
 import membership from '../../../public/data/constellation-membership.json';
+import vertices from '../../../public/data/constellation-vertices.json';
 import type { Camera, ProjectedPoint } from './projection';
+import { projectSkySegment } from './projection';
 import type { RenderedStar } from './renderer';
+import type { SkyStar } from './astro';
 
 export const CONSTELLATIONS = data.constellations;
-export const CONSTELLATION_ATTRIBUTION = `${data.author}; Stellarium Modern; ${data.license}; ${data.source}; ${data.licenseUrl}; ${data.modifications}`;
+export const CONSTELLATION_VERTICES = vertices.vertices;
+export const CONSTELLATION_ATTRIBUTION = `${data.author}; Stellarium Modern; ${data.license}; ${data.source}; ${data.licenseUrl}; ${data.modifications}; Vertex coordinates: ${vertices.author}; HYG ${vertices.version}; ${vertices.license}; ${vertices.source}`;
 export interface ConstellationSegment {
   fromHip: number;
   toHip: number;
@@ -55,8 +59,8 @@ export function toggleConstellationSelection(pinnedIds: number[], constellationI
   };
 }
 
-export function constellationHitTargets(rendered: readonly RenderedStar[], camera: Camera): RenderedStar[] {
-  const available = new Set(CONSTELLATIONS.filter(c => projectConstellation(c, rendered, camera).length > 0).map(c => c.id));
+export function constellationHitTargets(rendered: readonly RenderedStar[], stars: readonly SkyStar[], camera: Camera): RenderedStar[] {
+  const available = new Set(CONSTELLATIONS.filter(c => projectConstellation(c, stars, camera).length > 0).map(c => c.id));
   return rendered.filter(({ star, point }) => {
     const constellation = constellationForStarId(star.id);
     return constellation && available.has(constellation.id) && star.altitude >= 0 &&
@@ -65,20 +69,14 @@ export function constellationHitTargets(rendered: readonly RenderedStar[], camer
   });
 }
 
-/** Endpoints reuse the stars actually drawn by the current snapshot and camera. */
+/** Complete source vertices share the star camera; visible portions survive clipping. */
 export function projectConstellation(
-  constellation: typeof CONSTELLATIONS[number], rendered: readonly RenderedStar[], camera: Camera,
+  constellation: typeof CONSTELLATIONS[number], stars: readonly SkyStar[], camera: Camera,
 ): ConstellationSegment[] {
-  const visible = new Map<number, RenderedStar>();
-  for (const entry of rendered) {
-    const { star, point } = entry;
-    if (star.hip === null || star.altitude < 0 || !Number.isFinite(point.x) || !Number.isFinite(point.y) ||
-        point.x < 0 || point.x > camera.width || point.y < 0 || point.y > camera.height) continue;
-    const previous = visible.get(star.hip);
-    if (!previous || star.mag < previous.star.mag) visible.set(star.hip, entry);
-  }
+  const byHip = new Map(stars.map(star => [star.hip, star]));
   return constellation.lines.flatMap(line => {
-    const from = visible.get(line.fromHip), to = visible.get(line.toHip);
-    return from && to ? [{ ...line, from: from.point, to: to.point }] : [];
+    const from = byHip.get(line.fromHip), to = byHip.get(line.toHip);
+    const segment = from && to ? projectSkySegment(from, to, camera) : null;
+    return segment ? [{ ...line, ...segment }] : [];
   });
 }
