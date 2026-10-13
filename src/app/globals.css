@@ -444,12 +444,6 @@ html.dark .marshmallow-link:focus-visible {
   grid-column: 1 / -1;
 }
 
-.sky-controls-inline {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 @media (max-width: 639px) {
   .sky-controls-layout {
     column-gap: 8px;

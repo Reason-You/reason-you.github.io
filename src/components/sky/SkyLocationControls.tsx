@@ -12,7 +12,10 @@ function coordinate(value: number, positive: string, negative: string): string {
 
 const actionClass = 'sky-footer-action inline-flex min-h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded text-xs text-neutral-500 hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60';
 
-export default function SkyLocationControls({ observation }: { observation?: ReactNode }) {
+export default function SkyLocationControls({ observation, attribution }: {
+  observation: ReactNode;
+  attribution?: ReactNode;
+}) {
   const detailsId = useId();
   const scrollRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -64,7 +67,7 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
   return (
     <div className="sky-location relative w-full min-w-0 max-w-full"
       data-destination-id={destination?.id ?? observer.source}>
-      <div className={observation ? 'sky-controls-layout' : 'sky-controls-inline'}>
+      <div className="sky-controls-layout">
         {observation}
         <div className="sky-controls-primary">
           {observer.source !== 'geolocation' && (
@@ -95,6 +98,7 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
             </div>
             {country && <span className="text-xs text-neutral-500">{country}</span>}
             <span className="text-xs tabular-nums text-neutral-500">{coordinates}</span>
+            {attribution}
           </div>
         </div>
       </div>
