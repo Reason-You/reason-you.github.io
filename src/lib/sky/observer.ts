@@ -36,9 +36,9 @@ function queryDate(value: string | null): Date | undefined {
  *   ?bortle=3  or  ?mag=6.0          (custom light pollution, highest priority)
  * Everything is optional and harmless in production.
  */
-export function readOverrides(): SkyOverrides {
-  if (typeof window === "undefined") return {};
-  const params = new URLSearchParams(window.location.search);
+export function readOverrides(query?: string): SkyOverrides {
+  if (query === undefined && typeof window === "undefined") return {};
+  const params = new URLSearchParams(query ?? window.location.search);
   const overrides: SkyOverrides = {};
 
   // ?skyUtc has priority over ?sky when both are present.

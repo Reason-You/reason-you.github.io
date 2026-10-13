@@ -6,6 +6,10 @@ import {
   getLightPollution,
 } from "@/lib/sky/lightPollution";
 import { defaultObserver, readOverrides, requestUserLocation } from "@/lib/sky/observer";
+import type { DarkSkyDestination } from "@/lib/sky/destinations";
+import {
+  destinationObserver, destinationPollution, findNightPreviewTime, readSkyPreview, selectRandomSky,
+} from "@/lib/sky/random-sky";
 
 export type SkyPreference = "fudan" | "local";
 export type SkyStatus = "default" | "locating" | "resetting" | "custom" | "error";
@@ -20,6 +24,12 @@ interface SkyStore {
   dateOverride: number | null;
   /** Instant of the frame actually drawn on Look Up, published after rendering. */
   snapshotDate: number | null;
+  destination: DarkSkyDestination | null;
+  nightPreview: boolean;
+  detailsOpen: boolean;
+  notice: string | null;
+  toggleDetails: () => void;
+  randomSky: () => void;
   setSnapshotDate: (timestamp: number) => void;
   preference: SkyPreference;
   status: SkyStatus;
@@ -55,6 +65,24 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
   pollutionOverride: null,
   dateOverride: null,
   snapshotDate: null,
+  destination: null,
+  nightPreview: false,
+  detailsOpen: false,
+  notice: null,
+  toggleDetails: () => set(state => ({ detailsOpen: !state.detailsOpen })),
+  randomSky: () => {
+    const selected = selectRandomSky(new Date(), get().destination?.id);
+    if (!selected) {
+      set({ notice: 'No destinations are in astronomical night right now. Try again later.' });
+      return;
+    }
+    ++requestSeq;
+    set({
+      observer: destinationObserver(selected.destination), pollution: destinationPollution(),
+      pollutionOverride: null, dateOverride: null, destination: selected.destination,
+      nightPreview: false, detailsOpen: false, notice: null, status: 'custom', preference: 'fudan',
+    });
+  },
   setSnapshotDate: (timestamp) => {
     if (get().snapshotDate !== timestamp) set({ snapshotDate: timestamp });
   },
@@ -64,9 +92,39 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
   initialize: async (query) => {
     if (lastQuery === query) return;
     const firstVisit = lastQuery === null;
+    const leavingPreview = lastQuery !== null && readSkyPreview(lastQuery) !== null;
     lastQuery = query;
-    const overrides = readOverrides();
-    const locationChanged = firstVisit ||
+    const overrides = readOverrides(query);
+    const preview = readSkyPreview(query);
+    if (preview?.kind === 'random') {
+      get().randomSky();
+      set({ detailsOpen: preview.details });
+      return;
+    }
+    if (preview?.kind === 'destination') {
+      const date = preview.night ? findNightPreviewTime(preview.destination, new Date()) : overrides.date;
+      if (preview.night && !date) {
+        set({ notice: 'A night preview is unavailable for this date.' });
+        return;
+      }
+      ++requestSeq;
+      set({ observer: destinationObserver(preview.destination), pollution: destinationPollution(),
+        pollutionOverride: null, dateOverride: date?.getTime() ?? null,
+        destination: preview.destination, nightPreview: preview.night,
+        detailsOpen: preview.details, notice: null, preference: 'fudan', status: 'custom' });
+      return;
+    }
+    if (preview?.kind === 'fudan') {
+      const seq = ++requestSeq;
+      const observer = defaultObserver();
+      set({ observer, pollution: { ...FUDAN_FALLBACK }, pollutionOverride: null, dateOverride: null,
+        destination: null, nightPreview: false, detailsOpen: preview.details,
+        notice: null, preference: 'fudan', status: 'default' });
+      const pollution = await getLightPollution(observer.latitude, observer.longitude);
+      if (seq === requestSeq) set({ pollution });
+      return;
+    }
+    const locationChanged = firstVisit || leavingPreview ||
       lastUrlObserver?.latitude !== overrides.observer?.latitude ||
       lastUrlObserver?.longitude !== overrides.observer?.longitude;
     lastUrlObserver = overrides.observer;
@@ -86,10 +144,12 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
       dateOverride: overrides.date?.getTime() ?? null,
       ...(firstVisit ? { observer, pollution: pollutionOverride ?? { ...FUDAN_FALLBACK } } : {}),
       ...(locationChanged ? { status: observer.source === "geolocation" ? "custom" : "default" } : {}),
+      ...(locationChanged ? { destination: null, nightPreview: false, detailsOpen: false, notice: null } : {}),
     });
 
     const pollution = pollutionOverride ??
-      await getLightPollution(observer.latitude, observer.longitude);
+      (observer.source === 'random' ? destinationPollution() :
+        await getLightPollution(observer.latitude, observer.longitude));
     if (seq !== requestSeq) return;
     if (!locationChanged && get().observer !== observer) return;
     set({ observer, pollution: get().pollutionOverride ?? pollution });
@@ -123,19 +183,25 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
         await getLightPollution(observer.latitude, observer.longitude);
       if (seq !== requestSeq) return;
       set({ observer, pollution: get().pollutionOverride ?? pollution,
-        status: "custom", preference: "local" });
+        status: "custom", preference: "local", destination: null,
+        dateOverride: get().destination ? null : get().dateOverride,
+        nightPreview: false, detailsOpen: false, notice: null });
       savePreference("local");
     } catch {
-      if (seq === requestSeq) set({ status: "error" });
+      if (seq === requestSeq) set({ status: "error",
+        notice: 'Location unavailable. Allow location access and try Use my sky again.' });
     }
   },
 
   resetSky: async () => {
     if (get().status === "resetting") return;
     const seq = ++requestSeq;
-    set({ preference: "fudan", status: "resetting" });
     savePreference("fudan");
     const observer = defaultObserver();
+    set({ observer, preference: "fudan", status: "resetting",
+      pollution: get().pollutionOverride ?? { ...FUDAN_FALLBACK },
+      dateOverride: get().destination ? null : get().dateOverride,
+      destination: null, nightPreview: false, detailsOpen: false, notice: null });
     const pollution = get().pollutionOverride ??
       await getLightPollution(observer.latitude, observer.longitude);
     if (seq !== requestSeq) return;

@@ -40,6 +40,15 @@ export interface SkySnapshot {
 const DEG = Math.PI / 180;
 const HOUR = Math.PI / 12;
 
+/** Apparent altitude using the same observer, epoch and refraction as the star renderer. */
+export function getBodyAltitude(
+  body: Body, date: Date, observer: Pick<ObserverSpec, 'latitude' | 'longitude'>,
+): number {
+  const location = new Observer(observer.latitude, observer.longitude, 10);
+  const equator = Equator(body, date, location, true, true);
+  return Horizon(date, location, equator.ra, equator.dec, 'normal').altitude;
+}
+
 /** Convert HYG's J2000 coordinates to the true equator and equinox of date. */
 function equatorOfDate(ra: number, dec: number, rotation: RotationMatrix): { ra: number; dec: number } {
   const decRad = dec * DEG;
@@ -96,9 +105,7 @@ export function computeSky(
 ): SkySnapshot {
   const geoObserver = new Observer(observer.latitude, observer.longitude, 10);
 
-  const sunEquator = Equator(Body.Sun, date, geoObserver, true, true);
-  const sunHorizon = Horizon(date, geoObserver, sunEquator.ra, sunEquator.dec, "normal");
-  const sunAltitude = sunHorizon.altitude;
+  const sunAltitude = getBodyAltitude(Body.Sun, date, observer);
   const twilight = twilightFactor(sunAltitude);
   // Daylight keeps a floor so the easter egg is discoverable at any hour.
   const visibility = Math.max(SKY_DAYTIME_VISIBILITY, twilight);

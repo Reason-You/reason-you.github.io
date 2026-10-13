@@ -1,6 +1,6 @@
 import { LIGHT_POLLUTION_META } from "./light-pollution-meta";
 
-export type LightPollutionSource = "viirs" | "fallback" | "override";
+export type LightPollutionSource = "viirs" | "fallback" | "override" | "atlas-2025";
 
 export interface LightPollution {
   /** Continuous value the renderer actually uses to filter stars. */

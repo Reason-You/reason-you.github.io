@@ -49,6 +49,7 @@ export default function LookUpSky() {
   const isDark = resolveTheme(theme) === 'dark';
   const isDarkRef = useRef(isDark);
   const observer = useSkyStore((state) => state.observer);
+  const previousObserverRef = useRef(observer);
   const pollution = useSkyStore((state) => state.pollution);
   const dateOverride = useSkyStore((state) => state.dateOverride);
   const setSnapshotDate = useSkyStore((state) => state.setSnapshotDate);
@@ -147,7 +148,9 @@ export default function LookUpSky() {
   }, [observer, pollution, dateOverride, setSnapshotDate, reconcilePinned]);
 
   useLayoutEffect(() => {
-    if (facingRef.current === facing) return;
+    const locationChanged = previousObserverRef.current !== observer;
+    if (facingRef.current === facing && !locationChanged) return;
+    previousObserverRef.current = observer;
     facingRef.current = facing;
     setHoveredId(null);
     setHoveredPreviewId(null);
@@ -167,17 +170,21 @@ export default function LookUpSky() {
       copy.getContext('2d')?.drawImage(canvas, 0, 0);
       previous.replaceChildren(copy);
     }
-    reprojectRef.current();
+    if (!locationChanged) reprojectRef.current();
     if (!layer || !previous || reduced) return;
-    const incoming = layer.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease-in-out' });
-    const outgoing = previous.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-in-out' });
+    const duration = locationChanged ? 420 : 300;
+    const incoming = layer.animate([
+      { opacity: 0, transform: locationChanged ? 'scale(0.985)' : 'none' },
+      { opacity: 1, transform: 'none' },
+    ], { duration, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' });
+    const outgoing = previous.animate([{ opacity: 1 }, { opacity: 0 }], { duration, easing: 'ease-out' });
     outgoing.onfinish = () => previous.replaceChildren();
     return () => {
       incoming.cancel();
       outgoing.cancel();
       previous.replaceChildren();
     };
-  }, [facing, clearPinned]);
+  }, [facing, observer, clearPinned]);
 
   useEffect(() => {
     isDarkRef.current = isDark;

@@ -6,7 +6,7 @@
  * `lightPollution.ts`.
  */
 
-export type ObserverSource = "default" | "geolocation" | "override";
+export type ObserverSource = "default" | "geolocation" | "override" | "random";
 
 export interface ObserverSpec {
   /** Human readable label, only used for debugging and the "Use my sky" toggle. */

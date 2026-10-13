@@ -410,10 +410,92 @@ html.dark .marshmallow-link:focus-visible {
   inset: -6px -3px;
 }
 
-.sky-location-trigger::after {
+.sky-footer-action::after {
   content: '';
   position: absolute;
-  inset: -14px -6px;
+  inset: -6px 0;
+}
+
+.sky-footer-action {
+  position: relative;
+}
+
+.sky-controls-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.sky-controls-primary {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 16px;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.sky-controls-layout .sky-controls-primary .sky-footer-action::after {
+  inset: 0;
+}
+
+.sky-controls-layout > .sky-location-scroll {
+  grid-column: 1 / -1;
+}
+
+.sky-controls-inline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 1280px) {
+  .sky-controls-layout {
+    grid-template-columns: max-content auto minmax(0, 1fr);
+    column-gap: 24px;
+  }
+
+  .sky-controls-layout > .sky-location-scroll {
+    grid-column: auto;
+  }
+}
+
+.sky-location-scroll {
+  height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: none;
+  scroll-padding-inline: 2px;
+}
+
+.sky-location-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.sky-location-scroll button {
+  flex-shrink: 0;
+}
+
+.sky-location-details {
+  display: grid;
+  grid-template-columns: 0fr;
+  opacity: 0;
+  transition: grid-template-columns 220ms ease-out, opacity 180ms ease-out;
+}
+
+.sky-location-details.is-open {
+  grid-template-columns: 1fr;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-location-details {
+    transition: none;
+  }
 }
 
 @media (pointer: coarse) {
