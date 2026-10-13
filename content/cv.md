@@ -77,6 +77,8 @@
 ## Academic & Interdisciplinary Engagement
 
 - **Chair**, Fudan Liberal Arts Society, a student society promoting interdisciplinary exchange and discussion of public issues through lectures, reading groups, and roundtable discussions, *2026.09 - Present*
+- **Discussant**, *Workshop on Artificial Intelligence and Historical Research*, Department of History, Fudan University, *2026.10.18 (upcoming)*
+- **Moderator**, From Data to Stories: Visualization, Visual Analytics, and Understanding the World, jointly organized by Fudan University Student Union, FDU-VIS Lab, and Fudan Liberal Arts Society, *2026.10.13*
 - **Moderator**, Data Science Distinguished Doctoral Student Forum, Fudan University 121st Anniversary, *2026.05.29*
-- **Moderator**, Lecture: Humanities and Social Sciences Meet Artificial Intelligence: An Introduction to Computational Social Science, Fudan General Education Center / Fudan Liberal Arts Society, *2025.04.15*
-- **Moderator**, Lecture: ChatGPT Technology and Development, Fudan General Education Center / Fudan Liberal Arts Society, *2023.03.02*
+- **Moderator**, Lecture: Humanities and Social Sciences Meet Artificial Intelligence: An Introduction to Computational Social Science, Fudan General Education Center and Fudan Liberal Arts Society, *2025.04.15*
+- **Moderator**, Lecture: ChatGPT Technology and Development, Fudan General Education Center and Fudan Liberal Arts Society, *2023.03.02*

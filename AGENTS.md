@@ -16,6 +16,12 @@
 
 改网站日期时不动 PDF 日期，反之亦然。
 
+## 未来活动
+
+- 未来活动在网站 CV 与各版简历中正常列出，日期后标注状态：中文 `（即将举行）`，英文 `(upcoming)`。
+- 状态标注与日期使用相同字体和格式，网页将两者放进同一组斜体标记。
+- 活动举行后移除该状态标注。
+
 ## 三版 LaTeX 简历同步
 
 - 内容改动需同步三个文件：`cv/cv.tex`、`cv/cv_cn.tex`、`不上传-私人简历/cv_cn_phone.tex`。
@@ -26,3 +32,4 @@
 - 本机没有 latexmk，`cv/Makefile` 不可用；用 tectonic 编译：`cd cv && tectonic cv.tex && tectonic cv_cn.tex`。
 - 编译后手动复制：`cv.pdf` → `public/files/You_Li_CV.pdf`，`cv_cn.pdf` → `public/files/You_Li_CV_CN.pdf`；私人版 PDF 只留本地。
 - 发布：`npm run build` 生成 `out/`；push main 后 GitHub Actions（`deploy.yml`）自动部署。
+- 每次发布前须获得用户明确授权。
