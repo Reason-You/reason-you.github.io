@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, type ReactNode } from 'react';
-import { ChevronDown, Shuffle } from 'lucide-react';
+import { ChevronDown, School, Shuffle } from 'lucide-react';
 import UseMySkyButton from '@/components/ui/UseMySkyButton';
 import { useSkyStore } from '@/lib/stores/skyStore';
 
@@ -25,11 +25,13 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
   const status = useSkyStore(state => state.status);
   const notice = useSkyStore(state => state.notice);
   const busy = status === 'locating' || status === 'resetting';
+  const isFudan = observer.source === 'default';
   const label = destination?.englishName ?? (observer.source === 'geolocation' ? 'Your sky' :
-    observer.source === 'override' ? 'Custom sky' : 'Fudan sky');
+    observer.source === 'override' ? 'Custom sky' : 'Fudan University');
+  const country = destination?.country ?? (isFudan ? 'China' : null);
   const chineseName = destination?.chineseName ?? (observer.source === 'default' ? '复旦大学 · 上海' :
     observer.source === 'geolocation' ? '您的位置' : '自定义观测位置');
-  const description = destination?.chineseDescription ?? (observer.source === 'default' ? '' :
+  const description = destination?.chineseDescription ?? (observer.source === 'default' ? '复旦的百年星空' :
     observer.source === 'geolocation' ? '按浏览器定位计算的星空。' : '按链接中的经纬度计算的星空。');
   const coordinates = `${coordinate(observer.latitude, 'N', 'S')}, ${coordinate(observer.longitude, 'E', 'W')}`;
 
@@ -48,7 +50,6 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
     return () => cancelAnimationFrame(frame);
   }, [detailsOpen]);
 
-  const isFudan = observer.source === 'default';
   const nameButton = (
     <button type="button" className={`${actionClass} sky-location-trigger`}
       aria-expanded={detailsOpen} aria-controls={detailsId}
@@ -66,8 +67,12 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
       <div className={observation ? 'sky-controls-layout' : 'sky-controls-inline'}>
         {observation}
         <div className="sky-controls-primary">
-          {isFudan ? nameButton : observer.source !== 'geolocation' && (
-            <button type="button" disabled={busy} onClick={() => void resetSky()} className={actionClass}>
+          {observer.source !== 'geolocation' && (
+            <button type="button" disabled={busy} className={actionClass}
+              aria-expanded={isFudan ? detailsOpen : undefined}
+              aria-controls={isFudan ? detailsId : undefined}
+              onClick={() => { if (isFudan) toggleDetails(); else void resetSky(); }}>
+              <School size={12} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
               Fudan sky
             </button>
           )}
@@ -79,7 +84,7 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
               <Shuffle size={12} strokeWidth={1.5} aria-hidden="true" />
               {destination ? 'Another sky' : 'Random sky'}
             </button>
-            {!isFudan && nameButton}
+            {nameButton}
             <div ref={detailsRef} id={detailsId} className={`sky-location-details ${detailsOpen ? 'is-open' : ''}`}
               aria-hidden={!detailsOpen}>
               <div className="min-w-0 overflow-hidden">
@@ -88,8 +93,8 @@ export default function SkyLocationControls({ observation }: { observation?: Rea
                 </span>
               </div>
             </div>
-            {destination && <span className="text-xs text-neutral-500">{destination.country}</span>}
-            {!isFudan && <span className="text-xs tabular-nums text-neutral-500">{coordinates}</span>}
+            {country && <span className="text-xs text-neutral-500">{country}</span>}
+            <span className="text-xs tabular-nums text-neutral-500">{coordinates}</span>
           </div>
         </div>
       </div>

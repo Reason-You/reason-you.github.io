@@ -450,6 +450,20 @@ html.dark .marshmallow-link:focus-visible {
   gap: 16px;
 }
 
+@media (max-width: 639px) {
+  .sky-controls-layout {
+    column-gap: 8px;
+  }
+
+  .sky-controls-layout .sky-controls-primary {
+    gap: 8px;
+  }
+
+  .sky-controls-layout .sky-observation {
+    gap: 4px;
+  }
+}
+
 @media (min-width: 1280px) {
   .sky-controls-layout {
     grid-template-columns: max-content auto minmax(0, 1fr);
