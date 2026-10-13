@@ -20,7 +20,7 @@ export default function Footer({ lastUpdated }: FooterProps) {
   const updatedDate = lastUpdated || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const observation = isLookUp ? (
-    <p className="sky-observation h-5 min-w-0 flex flex-nowrap whitespace-nowrap items-center gap-1.5 text-xs text-neutral-500">
+    <p className="sky-observation h-4 min-w-0 flex flex-nowrap whitespace-nowrap items-center gap-1.5 text-xs text-neutral-500">
       {snapshotDate !== null && <>
         <time className="min-w-0 truncate" title={formatSkyTime(snapshotDate)} dateTime={new Date(snapshotDate).toISOString()}>
           <span className="hidden xl:inline">{formatSkyTime(snapshotDate)}</span>
@@ -41,7 +41,7 @@ export default function Footer({ lastUpdated }: FooterProps) {
       {nightPreview && <span data-night-preview="" className="hidden sm:inline shrink-0 whitespace-nowrap" title="Astronomical-night preview at the displayed time">· Preview</span>}
     </p>
   ) : (
-    <p className="sky-observation h-5 min-w-0 truncate whitespace-nowrap text-xs text-neutral-500" title={`Last updated: ${updatedDate}`}>
+    <p className="sky-observation h-4 min-w-0 truncate whitespace-nowrap text-xs text-neutral-500" title={`Last updated: ${updatedDate}`}>
       <span className="sr-only sm:not-sr-only">Last updated: </span>{updatedDate}
     </p>
   );

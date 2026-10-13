@@ -90,8 +90,8 @@ export default function SkyLocationControls({ observation, attribution }: {
             {nameButton}
             <div ref={detailsRef} id={detailsId} className={`sky-location-details ${detailsOpen ? 'is-open' : ''}`}
               aria-hidden={!detailsOpen}>
-              <div className="min-w-0 overflow-hidden">
-                <span className="text-xs text-neutral-600" lang="zh-CN">
+              <div className="min-w-0 overflow-hidden text-xs">
+                <span className="text-neutral-600" lang="zh-CN">
                   {chineseName}{description && ` · ${description}`}
                 </span>
               </div>
