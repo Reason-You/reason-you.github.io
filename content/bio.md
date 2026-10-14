@@ -1,4 +1,4 @@
-Hello! I am a Ph.D. student in the [FDU-VIS Lab](https://fduvis.net), [School of Data Science](https://sds.fudan.edu.cn) at Fudan University, under the supervision of [Prof. Siming Chen](https://simingchen.me).
+Hello! I am a Ph.D. student in AI at the [School of Data Science](https://sds.fudan.edu.cn), Fudan University, under the supervision of [Prof. Siming Chen](http://simingchen.me) in the [FDU-VIS Lab](https://fduvis.net).
 
 My current research interests focus on visual analytics, LLM-based multi-agent systems, and social simulation, with a core belief in ***simulating humans with agents and letting humans gain insight from the simulation.***
 

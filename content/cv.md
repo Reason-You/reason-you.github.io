@@ -4,9 +4,9 @@
 
 ## Education
 
-**Fudan University**, Ph.D. in Electronic Information Engineering - AI Track, *2026.09 - 2030.06 (Expected)*
+**Fudan University**, Ph.D. in Artificial Intelligence, *2026.09 - 2030.06 (Expected)*
 - Research on LLM-based multi-agent systems, social simulation, and visual analytics.
-- Supervisor: [Prof. Siming Chen](https://simingchen.me)
+- Supervisor: [Prof. Siming Chen](http://simingchen.me)
 
 **Fudan University**, M.Eng. in Computer Technology, *2022.09 - 2025.06*
 
