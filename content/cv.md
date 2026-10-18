@@ -71,13 +71,13 @@
 - **English:** CET-6: 584 (Reading: 243/249)
 - **LLM Technologies:** Transformers, LangChain, LLM deployment and optimization
 - **Programming:** Python, C++, LLM API integration and optimization
-- **Deep Learning:** PyTorch, NumPy, Pandas, OpenCV
-- **Tools:** Git, Shell, Linux, LaTeX, Figma
+- **Data & Vision:** NumPy, Pandas, OpenCV
+- **Tools:** Git, Shell, Linux, LaTeX, Figma, Canva
 
 ## Academic & Interdisciplinary Engagement
 
 - **Chair**, Fudan Liberal Arts Society, a student society promoting interdisciplinary exchange and discussion of public issues through lectures, reading groups, and roundtable discussions, *2026.09 - Present*
-- **Moderator**, From Data to Stories: Visualization, Visual Analytics, and Understanding the World, jointly organized by Fudan University Student Union, FDU-VIS Lab, and Fudan Liberal Arts Society, *2026.10.13*
+- **Moderator**, From Data to Stories: Visualization, Visual Analytics, and Understanding the World (speakers: [Siming Chen](http://simingchen.me/) and [Xingyu Lan](https://olivialan.github.io/)), jointly organized by Fudan University Student Union, FDU-VIS Lab, and Fudan Liberal Arts Society, *2026.10.13*
 - **Moderator**, Data Science Distinguished Doctoral Student Forum, Fudan University 121st Anniversary, *2026.05.29*
-- **Moderator**, Lecture: Humanities and Social Sciences Meet Artificial Intelligence: An Introduction to Computational Social Science, Fudan General Education Center and Fudan Liberal Arts Society, *2025.04.15*
-- **Moderator**, Lecture: ChatGPT Technology and Development, Fudan General Education Center and Fudan Liberal Arts Society, *2023.03.02*
+- **Moderator**, Lecture: Humanities and Social Sciences Meet Artificial Intelligence: An Introduction to Computational Social Science (speakers included [Siming Chen](http://simingchen.me/) and [Zhongyu Wei](https://labndig.fudan.edu.cn/people/wei-zhongyu/)), Fudan General Education Center and Fudan Liberal Arts Society, *2025.04.15*
+- **Moderator**, Lecture: ChatGPT Technology and Development (speaker: [Xuanjing Huang](https://xuanjing-huang.github.io/chinese/)), Fudan General Education Center and Fudan Liberal Arts Society, *2023.03.02*
