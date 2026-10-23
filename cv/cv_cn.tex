@@ -22,10 +22,19 @@
 
 \setCJKmainfont{FandolSong-Regular.otf}[BoldFont=FandolSong-Bold.otf]
 
-\definecolor{CVGray}{gray}{0.32}
-\definecolor{CVRule}{gray}{0.78}
+\definecolor{CVGray}{gray}{0}
+\definecolor{CVRule}{gray}{0}
 
-\pagestyle{empty}
+\setlength{\footskip}{4pt}
+\makeatletter
+\def\ps@cv{%
+  \def\@oddhead{}%
+  \def\@evenhead{}%
+  \def\@oddfoot{\hfil\raisebox{7mm}[0pt][0pt]{\fontsize{9pt}{11pt}\selectfont\color{black}李由\hspace{1em}\thepage\,/\,\pageref*{cvlastpage}}}%
+  \let\@evenfoot\@oddfoot
+}
+\makeatother
+\pagestyle{cv}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
 \raggedbottom
@@ -148,7 +157,7 @@
 \vspace{6pt}
 {\fontsize{9.95pt}{11.45pt}\selectfont 博士生，FDU-VIS实验室，复旦大学大数据学院}\par
 \vspace{3pt}
-{\fontsize{9.25pt}{10.9pt}\selectfont \href{mailto:youli@alu.fudan.edu.cn}{youli@alu.fudan.edu.cn} \textperiodcentered\ \href{mailto:youli26@m.fudan.edu.cn}{youli26@m.fudan.edu.cn} \textperiodcentered\ \href{https://reason-you.github.io}{reason-you.github.io}\hfill{\fontsize{8pt}{9pt}\selectfont\color{CVGray}最后更新：2026年10月}}\par
+{\fontsize{9.25pt}{10.9pt}\selectfont \href{mailto:youli@alu.fudan.edu.cn}{youli@alu.fudan.edu.cn} \hspace{1em}\href{mailto:youli26@m.fudan.edu.cn}{youli26@m.fudan.edu.cn} \hspace{1em}\href{https://reason-you.github.io}{reason-you.github.io}\hfill{\fontsize{8pt}{9pt}\selectfont\color{CVGray}最后更新：2026年10月}}\par
 \vspace{-0.8pt}
 
 \cvsectionfirst{教育经历}
@@ -225,4 +234,5 @@
 \skillline{编程：}{Python、C++。}
 \skillline{工具：}{Git、Shell、Linux、\LaTeX、Figma、Canva。}
 
+\label{cvlastpage}
 \end{document}
