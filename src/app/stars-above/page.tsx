@@ -3,7 +3,7 @@ import LookUpSky from '@/components/sky/LookUpSky';
 
 export const metadata: Metadata = {
   title: 'Stars Above',
-  description: 'A quiet window onto the real southern sky.',
+  description: 'A quiet window onto the real night sky.',
 };
 
 export default function LookUpPage() {

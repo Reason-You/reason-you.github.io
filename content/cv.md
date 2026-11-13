@@ -62,7 +62,7 @@
 ## Academic Service
 
 - **Teaching Assistant**, STAT50027: Data Visualization: Applications and Implementation (Graduate Course), Fudan University, 2026
-- **Organizing Team Member**, [UbiComp/ISWC 2026 Workshop: *Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures*](https://vischi.org/ubicomp-workshop-home), 2026
+- **Organizing Team Member**, [UbiComp/ISWC 2026 Workshop: *Visual Storytelling in Everyday Ubiquity: Human-AI Co-Creation, Wearable Media, and Plural Futures*](https://www.ubicomp.org/ubicomp-iswc-2026/workshops-and-tutorials-2026/), 2026
 - **Reviewer**, International Conference on Computer-Aided Design and Computer Graphics (CAD/Graphics), 2026
 - **Reviewer**, IEEE International Conference on Multimedia and Expo (ICME), 2025
 

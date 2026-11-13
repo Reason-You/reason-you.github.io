@@ -46,12 +46,20 @@ export async function generateMetadata(): Promise<Metadata> {
       shortcut: [{ url: `/favicon-32.png?v=${iconVersion}` }],
       apple: [{ url: `/apple-touch-icon.png?v=${iconVersion}`, sizes: "180x180" }],
     },
+    metadataBase: new URL("https://reason-you.github.io"),
     openGraph: {
       type: "website",
       locale: "en_US",
+      url: "https://reason-you.github.io",
       title: seoTitle,
       description: config.site.description,
       siteName: `${config.author.name}'s Academic Website`,
+      images: [
+        {
+          url: config.author.avatar,
+          alt: config.author.name,
+        },
+      ],
     },
   };
 }
