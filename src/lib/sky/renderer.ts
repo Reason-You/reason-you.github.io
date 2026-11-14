@@ -8,6 +8,12 @@ export interface RenderStyle {
   mobile: boolean;
   /** The homepage fades its window; Look Up uses the whole camera frame. */
   presentation?: "background" | "look-up";
+  /** Blend from normal star discs to trail-width heads without halos. */
+  trailBlend?: number;
+  /** Blend from the normal projection to the last trail endpoints. */
+  trailPositionBlend?: number;
+  /** Last trail endpoints used while star heads return to the normal projection. */
+  trailHeadPositions?: ReadonlyMap<number, { x: number; y: number }>;
 }
 
 const MIN_MAGNITUDE = -1.5;
@@ -26,6 +32,17 @@ function smooth01(x: number): number {
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
+}
+
+/** Draw and record the same star-head position while retaining projection depth. */
+export function trailHeadPoint(
+  point: ProjectedPoint,
+  anchor: { x: number; y: number } | undefined,
+  blend: number,
+): ProjectedPoint {
+  if (!anchor) return point;
+  const t = clamp(blend, 0, 1);
+  return { ...point, x: lerp(point.x, anchor.x, t), y: lerp(point.y, anchor.y, t) };
 }
 
 /**
@@ -74,6 +91,11 @@ export function verticalLimitingMagnitude(
 export function magnitudeToRadius(magnitude: number): number {
   const base = clamp(2.6 - (magnitude - MIN_MAGNITUDE) * 0.22, 0.8, 2.6);
   return base + 0.3 * smooth01((0.6 - magnitude) / (0.6 - MIN_MAGNITUDE));
+}
+
+/** Trail stroke width in CSS pixels. */
+export function trailWidthForMagnitude(magnitude: number): number {
+  return magnitude < 0.8 ? 2.2 : magnitude < 2.2 ? 1.4 : 0.9;
 }
 
 /** Continuous, monotonic alpha driven by the real visual magnitude. */
@@ -215,27 +237,31 @@ export function drawSky(
   }
   const rendered = projectSkyStars(snapshot, camera, style);
   ctx.globalCompositeOperation = "source-over";
+  const trailBlend = clamp(style.trailBlend ?? 0, 0, 1);
 
   for (const { star, point, alpha } of rendered) {
-    const radius = magnitudeToRadius(star.mag);
+    const anchor = style.trailHeadPositions?.get(star.id);
+    const { x, y } = trailHeadPoint(point, anchor, style.trailPositionBlend ?? 0);
+    const normalRadius = magnitudeToRadius(star.mag);
+    const radius = lerp(normalRadius, trailWidthForMagnitude(star.mag) / 2, trailBlend);
     const [r, g, b] = colorIndexToRgb(star.colorIndex);
     const color = `${r}, ${g}, ${b}`;
 
     // Subtle halo for the brightest stars only.
-    if (star.mag < 0.6) {
-      const halo = radius * 3.8;
-      const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, halo);
-      gradient.addColorStop(0, `rgba(${color}, ${(alpha * 0.42).toFixed(3)})`);
+    if (star.mag < 0.6 && trailBlend < 1) {
+      const halo = normalRadius * 3.8;
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, halo);
+      gradient.addColorStop(0, `rgba(${color}, ${(alpha * 0.42 * (1 - trailBlend)).toFixed(3)})`);
       gradient.addColorStop(1, `rgba(${color}, 0)`);
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, halo, 0, Math.PI * 2);
+      ctx.arc(x, y, halo, 0, Math.PI * 2);
       ctx.fill();
     }
 
     ctx.fillStyle = `rgba(${color}, ${alpha.toFixed(3)})`;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
   return rendered;

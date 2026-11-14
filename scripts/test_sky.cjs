@@ -16,7 +16,7 @@ const { getCatalog } = require('../src/lib/sky/catalog.ts');
 const { computeSky, twilightFactor } = require('../src/lib/sky/astro.ts');
 const { DEFAULT_OBSERVER, SKY_DAYTIME_VISIBILITY } = require('../src/lib/sky/constants.ts');
 const { createCamera, project } = require('../src/lib/sky/projection.ts');
-const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
+const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb, trailHeadPoint } = require('../src/lib/sky/renderer.ts');
 const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel, positionStarLabels,
   readFacing, SKY_DIRECTIONS,
@@ -225,6 +225,117 @@ test('both sky presentations share soft bright-star halos without changing proje
       }
     }
   }
+});
+
+test('trail heads blend through half size to the stroke radius while preserving stars and alpha', () => {
+  const camera = createLookUpCamera(1440, 720);
+  const seed = getCatalog().find(star => star.name === 'Betelgeuse');
+  const stars = [0.2, 0.8, 2.2].map((mag, index) => ({
+    ...seed, id: index + 1, mag, altitude: 47.5, azimuth: 170 + index * 10,
+  }));
+  const snapshot = { stars, visibility: 1, twilight: 1, pollution: city };
+  const capture = (visibility, trailBlend) => {
+    const circles = [], gradients = [];
+    let arc;
+    const ctx = {
+      clearRect() {}, beginPath() {},
+      arc(x, y, radius) { arc = { x, y, radius }; },
+      fill() { circles.push({ ...arc, style: this.fillStyle }); },
+      createRadialGradient(x, y, inner, endX, endY, radius) {
+        const gradient = { radius, stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } };
+        gradients.push(gradient);
+        return gradient;
+      },
+    };
+    const rendered = drawSky(ctx, { ...snapshot, visibility }, camera,
+      { isDark: true, mobile: false, presentation: 'look-up', trailBlend });
+    return { rendered, points: circles.filter(circle => typeof circle.style === 'string'), gradients };
+  };
+
+  const night = capture(1, 0);
+  for (const visibility of [1, SKY_DAYTIME_VISIBILITY]) {
+    const normal = capture(visibility, 0);
+    const half = capture(visibility, 0.5);
+    const trail = capture(visibility, 1);
+    assert.equal(normal.rendered.length, 3);
+    assert.deepEqual(half.rendered, normal.rendered, 'halfway restoration preserves star positions and alpha');
+    assert.deepEqual(trail.rendered, normal.rendered, 'trail heads preserve star positions and alpha');
+    assert.deepEqual(half.points.map(point => point.style), normal.points.map(point => point.style));
+    assert.deepEqual(trail.points.map(point => point.style), normal.points.map(point => point.style));
+    for (const [index, expectedRadius] of [1.1, 0.7, 0.45].entries()) {
+      near(trail.points[index].radius, expectedRadius);
+      near(half.points[index].radius, (normal.points[index].radius + expectedRadius) / 2);
+      near(normal.rendered[index].alpha / night.rendered[index].alpha, visibility);
+    }
+    assert.equal(normal.gradients.length, 1);
+    assert.equal(half.gradients.length, 1);
+    assert.equal(trail.gradients.length, 0, 'full trail heads have no halo');
+    near(half.gradients[0].radius, normal.gradients[0].radius);
+    const haloAlpha = gradient => Number(gradient.stops[0][1].match(/, ([\d.]+)\)$/)[1]);
+    near(haloAlpha(half.gradients[0]), haloAlpha(normal.gradients[0]) / 2, 0.001);
+  }
+});
+
+test('trail heads return from their endpoints while reported projections stay unchanged', () => {
+  const camera = createLookUpCamera(1440, 720);
+  const seed = getCatalog().find(star => star.name === 'Betelgeuse');
+  const snapshot = {
+    visibility: 1, twilight: 1, pollution: city,
+    stars: [
+      { ...seed, id: 1, mag: 0.2, altitude: 47.5, azimuth: 180 },
+      { ...seed, id: 2, mag: 1.5, altitude: 47.5, azimuth: 190 },
+    ],
+  };
+  const style = { isDark: true, mobile: false, presentation: 'look-up' };
+  const projected = projectSkyStars(snapshot, camera, style);
+  const point = projected[0].point;
+  const trailHeadPositions = new Map([[1, { x: point.x + 12, y: point.y - 8 }]]);
+  const normalRadius = magnitudeToRadius(0.2);
+  const cases = [
+    [0, 0, 0, 0, normalRadius],
+    [0.5, 0.5, 6, -4, (normalRadius + 1.1) / 2],
+    [1, 1, 12, -8, 1.1],
+    [0, 1, 12, -8, normalRadius],
+    [1, 0, 0, 0, 1.1],
+    [1, undefined, 0, 0, 1.1],
+  ];
+  for (const [trailBlend, trailPositionBlend, offsetX, offsetY, expectedRadius] of cases) {
+    const circles = [], halos = [];
+    let arc;
+    const ctx = {
+      clearRect() {}, beginPath() {},
+      arc(x, y, radius) { arc = { x, y, radius }; },
+      fill() { circles.push({ ...arc, style: this.fillStyle }); },
+      createRadialGradient(x, y) {
+        const gradient = { x, y, addColorStop() {} };
+        halos.push(gradient);
+        return gradient;
+      },
+    };
+    const rendered = drawSky(ctx, snapshot, camera, { ...style, trailBlend, trailPositionBlend, trailHeadPositions });
+    assert.deepEqual(rendered, projected, 'drawing anchors preserve the projected star records');
+    const points = circles.filter(circle => typeof circle.style === 'string');
+    near(points[0].x, point.x + offsetX);
+    near(points[0].y, point.y + offsetY);
+    near(points[0].radius, expectedRadius);
+    near(points[1].x, projected[1].point.x);
+    near(points[1].y, projected[1].point.y);
+    assert.equal(halos.length, trailBlend === 1 ? 0 : 1, 'size blend controls the halo independently of position');
+    for (const halo of halos) {
+      near(halo.x, points[0].x);
+      near(halo.y, points[0].y);
+    }
+  }
+});
+
+test('shared trail-head coordinates retain depth and leave unanchored points intact', () => {
+  const point = { x: 10, y: 20, depth: 0.75 };
+  const anchor = { x: 30, y: 8 };
+  assert.strictEqual(trailHeadPoint(point, undefined, 1), point);
+  assert.deepEqual(trailHeadPoint(point, anchor, 0), point);
+  assert.deepEqual(trailHeadPoint(point, anchor, 0.5), { x: 20, y: 14, depth: 0.75 });
+  assert.deepEqual(trailHeadPoint(point, anchor, 1), { x: 30, y: 8, depth: 0.75 });
+  assert.deepEqual(point, { x: 10, y: 20, depth: 0.75 });
 });
 
 test('nearest pointer hit, mouse/touch radii, and brightness tie-break for unresolved components', () => {

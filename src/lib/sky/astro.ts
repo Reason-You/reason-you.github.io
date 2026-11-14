@@ -33,6 +33,8 @@ export interface SkySnapshot {
   visibility: number;
   /** Stars that pass the light-pollution magnitude cut and are above the horizon. */
   stars: SkyStar[];
+  /** All catalog stars that pass the magnitude cut across the full celestial sphere. */
+  celestialStars: SkyStar[];
   /** Complete constellation vertices, including faint stars and points beyond the horizon. */
   constellationStars: SkyStar[];
 }
@@ -91,6 +93,17 @@ export function twilightFactor(sunAltitude: number): number {
   return Math.min(1, civil + nautical + astronomical);
 }
 
+/** Solar altitude, twilight factor and star visibility for an instant and observer. */
+export function solarSkyState(
+  date: Date,
+  observer: Pick<ObserverSpec, "latitude" | "longitude">
+): { sunAltitude: number; twilight: number; visibility: number } {
+  const sunAltitude = getBodyAltitude(Body.Sun, date, observer);
+  const twilight = twilightFactor(sunAltitude);
+  const visibility = Math.max(SKY_DAYTIME_VISIBILITY, twilight);
+  return { sunAltitude, twilight, visibility };
+}
+
 /**
  * Compute one static snapshot of the sky: sun altitude plus the horizontal
  * coordinates of every catalog star worth drawing.
@@ -104,11 +117,7 @@ export function computeSky(
   pollution: LightPollution
 ): SkySnapshot {
   const geoObserver = new Observer(observer.latitude, observer.longitude, 10);
-
-  const sunAltitude = getBodyAltitude(Body.Sun, date, observer);
-  const twilight = twilightFactor(sunAltitude);
-  // Daylight keeps a floor so the easter egg is discoverable at any hour.
-  const visibility = Math.max(SKY_DAYTIME_VISIBILITY, twilight);
+  const { sunAltitude, twilight, visibility } = solarSkyState(date, observer);
 
   const rotation = Rotation_EQJ_EQD(date);
   const positions = new Map<number, SkyStar>();
@@ -122,9 +131,11 @@ export function computeSky(
     return position;
   };
   const stars: SkyStar[] = [];
+  const celestialStars: SkyStar[] = [];
   for (const star of getCatalog()) {
     if (star.mag > pollution.limitingMagnitude) continue;
     const position = atHorizon(star);
+    celestialStars.push(position);
     if (position.altitude >= -2) stars.push(position);
   }
   const constellationStars = CONSTELLATION_VERTICES.map(atHorizon);
@@ -137,6 +148,7 @@ export function computeSky(
     twilight,
     visibility,
     stars,
+    celestialStars,
     constellationStars,
   };
 }
