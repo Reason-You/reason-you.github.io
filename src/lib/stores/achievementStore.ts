@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { evaluateAchievements, type ConfirmedMarshmallow } from '../achievements/evaluate';
+import { evaluateAchievements, type AchievementEvent } from '../achievements/evaluate';
 import { emptyAchievementRecord, loadAchievementRecord, saveAchievementRecord, type AchievementRecord } from '../achievements/persistence';
 import type { AchievementId } from '../achievements/definitions';
 
@@ -7,7 +7,7 @@ interface AchievementState {
   record: AchievementRecord;
   hydrated: boolean;
   hydrate: () => void;
-  discover: (event: ConfirmedMarshmallow) => AchievementId[];
+  discover: (event: AchievementEvent) => AchievementId[];
 }
 
 /** Permanent discoveries only. The current fire and its count stay in Campfire. */

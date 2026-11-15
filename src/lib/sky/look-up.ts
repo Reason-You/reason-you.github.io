@@ -3,6 +3,7 @@ import { Camera, createCamera } from './projection';
 import { RenderedStar } from './renderer';
 import { VERIFIED_STAR_NAMES, VerifiedStarName } from './star-names';
 import { rectsOverlap, type LabelRect } from './constellation-label';
+import { LOOK_UP_DEFAULT_ALTITUDE } from './ground';
 
 const DEG = Math.PI / 180;
 export const LOOK_UP_VERTICAL_FOV = 75;
@@ -15,16 +16,54 @@ export const SKY_DIRECTIONS = {
   east: { name: 'East', azimuth: 90, next: 'south' },
 } as const;
 export type SkyFacing = keyof typeof SKY_DIRECTIONS;
+export interface SkyView {
+  /** Degrees clockwise from north. */
+  azimuth: number;
+  /** Degrees above the horizon. */
+  altitude: number;
+}
+
 export function readFacing(value: string | null): SkyFacing {
-  return value === 'north' || value === 'east' || value === 'west' ? value : 'south';
+  return value === 'south' || value === 'east' || value === 'west' ? value : 'north';
+}
+
+export function viewForFacing(facing: SkyFacing, altitude = LOOK_UP_DEFAULT_ALTITUDE): SkyView {
+  return { azimuth: SKY_DIRECTIONS[facing].azimuth, altitude };
+}
+
+export function normalizeSkyView(view: SkyView): SkyView {
+  return {
+    azimuth: ((view.azimuth % 360) + 360) % 360,
+    altitude: Math.max(0, Math.min(90, view.altitude)),
+  };
+}
+
+export function directionName(azimuth: number): string {
+  const names = ['North', 'NE', 'East', 'SE', 'South', 'SW', 'West', 'NW'];
+  return names[Math.round((((azimuth % 360) + 360) % 360) / 45) % names.length];
+}
+
+export function cardinalFacing(azimuth: number): SkyFacing {
+  const facings: SkyFacing[] = ['north', 'east', 'south', 'west'];
+  return facings[Math.round((((azimuth % 360) + 360) % 360) / 90) % facings.length];
+}
+
+/** Pixel motion follows the perspective scale, with bounded yaw gain near the zenith. */
+export function dragSkyView(start: SkyView, dx: number, dy: number, camera: Camera): SkyView {
+  const yawGain = 1 / Math.max(1 / 3, Math.cos(start.altitude * DEG));
+  return normalizeSkyView({
+    azimuth: start.azimuth - Math.atan(dx / camera.scale) / DEG * yawGain,
+    altitude: start.altitude + Math.atan(dy / camera.scale) / DEG,
+  });
 }
 
 /** A square-pixel perspective: portrait screens set vertical rather than horizontal FOV. */
-export function createLookUpCamera(width: number, height: number, facing: SkyFacing = 'south'): Camera {
+export function createLookUpCamera(width: number, height: number, facingOrView: SkyFacing | SkyView = 'north'): Camera {
+  const view = typeof facingOrView === 'string' ? viewForFacing(facingOrView) : normalizeSkyView(facingOrView);
   const horizontalFov = width < MOBILE_BREAKPOINT_PX
     ? 2 * Math.atan(Math.tan(LOOK_UP_VERTICAL_FOV * DEG / 2) * width / height) / DEG
     : SKY_VIEW.horizontalFov;
-  return createCamera(width, height, { ...SKY_VIEW, azimuth: SKY_DIRECTIONS[facing].azimuth, horizontalFov });
+  return createCamera(width, height, { azimuth: view.azimuth, centerAltitude: view.altitude, horizontalFov });
 }
 
 export interface InteractiveStar extends RenderedStar {

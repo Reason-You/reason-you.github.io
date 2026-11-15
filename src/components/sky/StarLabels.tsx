@@ -6,14 +6,13 @@ import { positionStarLabel, positionStarLabels, type InteractiveStar, type StarL
 import type { Camera } from '@/lib/sky/projection';
 import type { LabelRect } from '@/lib/sky/constellation-label';
 
-const OBSTACLES = '.campfire-art, .campfire-hint, .campfire-count, .campfire-notifications, .look-up-star-hint, button:not(.look-up-star-focus), a, input, select, textarea, [role="dialog"]';
+const OBSTACLES = '.campfire-art, .campfire-hint, .campfire-count, .campfire-notifications, button:not(.look-up-star-focus), a, input, select, textarea, [role="dialog"]';
 
-export default function StarLabels({ stars, camera, skyRef, sceneRef, onDisplay }: {
+export default function StarLabels({ stars, camera, skyRef, sceneRef }: {
   stars: readonly InteractiveStar[];
   camera: Camera;
   skyRef: RefObject<HTMLDivElement | null>;
   sceneRef: RefObject<HTMLDivElement | null>;
-  onDisplay: () => void;
 }) {
   const labels = useRef(new Map<number, HTMLDivElement>());
   const previous = useRef(new Map<number, StarLabelPosition>());
@@ -95,9 +94,6 @@ export default function StarLabels({ stars, camera, skyRef, sceneRef, onDisplay 
       className="look-up-label absolute pointer-events-none select-none text-neutral-500"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: reduced ? 0 : 0.18, ease: 'easeOut' }}
-      onAnimationComplete={definition => {
-        if (typeof definition === 'object' && 'opacity' in definition && definition.opacity === 1) onDisplay();
-      }}
     >
       <svg className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
         <line stroke="currentColor" strokeWidth="0.75" opacity="0.4" style={{ visibility: 'hidden' }} />

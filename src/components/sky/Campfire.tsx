@@ -1,14 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useId, useReducer, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useId, useReducer, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { useSkyDirection } from './SkyDirection';
-import { campfireReducer, INITIAL_CAMPFIRE } from '@/lib/achievements/session';
+import { campfireReducer, INITIAL_CAMPFIRE, observationFacing, OBSERVATION_DWELL_MS } from '@/lib/achievements/session';
 import { canHaveSpecialOutcome, isStarlit, roastTimings } from '@/lib/achievements/marshmallow';
 import { createMarshmallowMeteor, type MarshmallowMeteorFlight } from '@/lib/sky/marshmallow-meteor';
+import type { Camera } from '@/lib/sky/projection';
+import { projectCampfire } from '@/lib/sky/ground';
 import MarshmallowMeteor from './MarshmallowMeteor';
 import { useAchievementStore } from '@/lib/stores/achievementStore';
 import AchievementToast, { type CampfireMessage } from './AchievementToast';
+import { SkyHint, useSkyHints } from './SkyHints';
 import './campfire.css';
 
 const EMBER_PATHS = [
@@ -31,17 +34,27 @@ interface Ember {
   path: number;
 }
 
-export default function Campfire() {
+export default function Campfire({ camera, dragging, skyRef }: {
+  camera: Camera | null;
+  dragging: boolean;
+  skyRef: RefObject<HTMLDivElement | null>;
+}) {
   const [session, dispatch] = useReducer(campfireReducer, INITIAL_CAMPFIRE);
-  const { fireOn, phase, round, eaten, outcome, timings, completion } = session;
+  const { fireOn, phase, round, eaten, outcome, timings, completion, directions } = session;
   const burnt = outcome === 'burnt';
-  const decoration = useRef<HTMLDivElement>(null);
   const marshmallow = useRef<HTMLDivElement>(null);
   const [flights, setFlights] = useState<MarshmallowMeteorFlight[]>([]);
   const finishFlight = useCallback((id: number) => setFlights(current => current.filter(flight => flight.id !== id)), []);
   const sessionRef = useRef(session);
   sessionRef.current = session;
-  const { facing } = useSkyDirection();
+  const { view } = useSkyDirection();
+  const placement = camera ? projectCampfire(camera) : null;
+  const visible = placement?.visible ?? false;
+  const interactive = visible && !dragging;
+  const frameRef = useRef({ camera, dragging, visible });
+  frameRef.current = { camera, dragging, visible };
+  const biteCameraRef = useRef<Camera | null>(null);
+  const [pageVisible, setPageVisible] = useState(true);
   const [messages, setMessages] = useState<CampfireMessage[]>([]);
   const lastCompletion = useRef(completion);
   const hintedRound = useRef(-1);
@@ -50,12 +63,47 @@ export default function Campfire() {
   const emberId = useRef(0);
   const reducedMotion = useReducedMotion();
   const id = useId();
+  const { touch, campfireChanged, fireClicked, tasteClicked, tasteCompleted } = useSkyHints();
+  const firstReady = phase === 'ready' && eaten === 0;
 
   useEffect(() => {
-    const resize = () => setFlights([]);
+    campfireChanged({ visible: visible && pageVisible, fireOn, ready: firstReady });
+  }, [visible, pageVisible, fireOn, firstReady, campfireChanged]);
+
+  useEffect(() => {
+    const resize = () => setFlights(current => current.length ? [] : current);
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, []);
+
+  useEffect(() => {
+    setFlights(current => current.length ? [] : current);
+  }, [camera, dragging]);
+
+  useEffect(() => {
+    const update = () => {
+      setPageVisible(!document.hidden);
+      if (document.hidden) setFlights(current => current.length ? [] : current);
+    };
+    update();
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+
+  useEffect(() => {
+    const facing = observationFacing(view);
+    if (!fireOn || dragging || !pageVisible || !camera || !facing || directions.includes(facing)) return;
+    const timer = window.setTimeout(() => dispatch({ type: 'look', facing }), OBSERVATION_DWELL_MS);
+    return () => window.clearTimeout(timer);
+  }, [fireOn, dragging, pageVisible, camera, view, directions]);
+
+  useEffect(() => {
+    if (!directions.length) return;
+    const ids = useAchievementStore.getState().discover({ type: 'look', directions });
+    if (!ids.length) return;
+    const discoveries = ids.map(id => ({ key: id, type: 'achievement' as const, id }));
+    setMessages(current => sessionRef.current.eaten === 40 ? [...discoveries, ...current] : [...current, ...discoveries]);
+  }, [directions]);
 
   useEffect(() => {
     const timers: number[] = [];
@@ -82,15 +130,20 @@ export default function Campfire() {
   useEffect(() => {
     if (!completion || completion === lastCompletion.current) return;
     lastCompletion.current = completion;
-    const sky = decoration.current?.getBoundingClientRect();
-    const flight = sky ? createMarshmallowMeteor(round, completion.outcome, completion.origin, sky.width, sky.height) : null;
+    tasteCompleted();
+    const sky = skyRef.current?.getBoundingClientRect();
+    const currentFrame = frameRef.current;
+    const canRelease = currentFrame.camera === biteCameraRef.current && !currentFrame.dragging && currentFrame.visible && !document.hidden;
+    const flight = sky && canRelease
+      ? createMarshmallowMeteor(round, completion.outcome, completion.origin, sky.width, sky.height)
+      : null;
     if (flight) setFlights(current => [...current, flight]);
     const ids = useAchievementStore.getState().discover({ ...completion, meteorReleased: flight !== null });
     setMessages(current => [
       ...(completion.eaten === 40 ? current.filter(message => message.type === 'achievement') : current),
       ...ids.map(id => ({ key: id, type: 'achievement' as const, id })),
     ]);
-  }, [completion, round]);
+  }, [completion, round, skyRef, tasteCompleted]);
 
   useEffect(() => {
     if (phase !== 'ready' || !burnt || hintedRound.current === round) return;
@@ -114,27 +167,47 @@ export default function Campfire() {
   // Only a rested, fully roasted marshmallow counts; clicks during any other
   // phase (or a second bite mid-animation) are ignored.
   const eatMarshmallow = () => {
-    if (sessionRef.current.phase !== 'ready') return;
+    if (sessionRef.current.phase !== 'ready' || !interactive) return;
+    tasteClicked();
     const star = marshmallow.current?.querySelector<SVGCircleElement>('[data-launch-star]');
     const matrix = star?.getScreenCTM();
-    const sky = decoration.current?.getBoundingClientRect();
+    const sky = skyRef.current?.getBoundingClientRect();
     const point = star && matrix ? new DOMPoint(star.cx.baseVal.value, star.cy.baseVal.value).matrixTransform(matrix) : null;
     const origin = point && sky ? { x: point.x - sky.left, y: point.y - sky.top } : null;
-    dispatch({ type: 'eat', facing, origin });
+    biteCameraRef.current = camera;
+    dispatch({ type: 'eat', origin });
   };
 
   const stopPropagation = (event: { stopPropagation(): void }) => event.stopPropagation();
 
   return (
     <>
-      <AchievementToast message={messages[0]} quiet={eaten === 40} onDismiss={dismissMessage} />
+      <AchievementToast message={messages[0]}
+        quiet={eaten === 40 && !(messages[0]?.type === 'achievement' && messages[0].id === 'four-skies-one-campfire')}
+        onDismiss={dismissMessage} />
       {flights.map(flight => <MarshmallowMeteor key={flight.id} flight={flight} onFinish={finishFlight} />)}
-      <div ref={decoration} className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
+      {visible && !dragging && placement && <>
+        <SkyHint kind="fire" className="campfire-discovery-hint"
+          style={{ left: placement.x, top: placement.y - 46 * placement.scale }}>
+          {`${touch ? 'Tap' : 'Click'} to roast`}
+        </SkyHint>
+        <SkyHint kind="taste" className="campfire-discovery-hint"
+          style={{ left: placement.x + 24 * placement.scale, top: placement.y - 88 * placement.scale }}>
+          {`${touch ? 'Tap' : 'Click'} to taste`}
+        </SkyHint>
+      </>}
+      <div className="campfire-world" data-visible={visible} data-interactive={interactive}
+        aria-hidden={!interactive}
+        style={{ left: placement?.x ?? 0, top: placement?.y ?? 0,
+          transform: `translate(-50%, -100%) scale(${placement?.scale ?? 1})`,
+          visibility: visible ? 'visible' : 'hidden' }}>
+      <div className="campfire-decoration" data-fire-on={fireOn} aria-hidden="true">
+        <div className="campfire-shadow" />
         <div className="campfire-glow"><div className="campfire-glow-breathe" /></div>
         <div className="campfire-hint" />
         {eaten > 0 && (
-          <div className="campfire-count">
-            {`Marshmallow${eaten > 1 ? 's' : ''} · ${eaten}`}
+          <div className="campfire-count" style={{ fontSize: 11 / (placement?.scale ?? 1) }}>
+            {`Marshmallow${eaten > 1 ? 's' : ''} ${eaten}`}
           </div>
         )}
         <div className="campfire-body">
@@ -248,7 +321,7 @@ export default function Campfire() {
           type="button"
           className="campfire-eat"
           aria-label="Eat roasted marshmallow"
-          disabled={phase === 'eating'}
+          disabled={phase === 'eating' || !interactive}
           onPointerDown={stopPropagation}
           onPointerUp={stopPropagation}
           onPointerMove={stopPropagation}
@@ -264,16 +337,19 @@ export default function Campfire() {
         className="campfire-toggle"
         aria-label={fireOn ? 'Extinguish campfire' : 'Light campfire'}
         aria-pressed={fireOn}
+        disabled={!interactive}
         onPointerDown={(event) => event.stopPropagation()}
         onPointerUp={(event) => event.stopPropagation()}
         onPointerMove={(event) => event.stopPropagation()}
         onPointerLeave={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.stopPropagation();
+          fireClicked(!sessionRef.current.fireOn);
           setMessages(current => current.filter(message => message.type === 'achievement'));
           dispatch({ type: 'toggle' });
         }}
       />
+      </div>
     </>
   );
 }

@@ -22,6 +22,8 @@ interface SkyStore {
   /** ?bortle= / ?mag= wins over the real data. */
   pollutionOverride: LightPollution | null;
   dateOverride: number | null;
+  /** Added once to the live clock or fixed preview epoch. */
+  timeOffsetMs: number;
   /** Instant of the frame actually drawn on Look Up, published after rendering. */
   snapshotDate: number | null;
   destination: DarkSkyDestination | null;
@@ -30,7 +32,8 @@ interface SkyStore {
   notice: string | null;
   toggleDetails: () => void;
   randomSky: () => void;
-  setSnapshotDate: (timestamp: number) => void;
+  setSnapshotDate: (timestamp: number, timeOffsetMs?: number) => void;
+  setTimeOffset: (timeOffsetMs: number) => void;
   preference: SkyPreference;
   status: SkyStatus;
   /** Initialise once, then apply changed URL parameters on client navigation. */
@@ -64,6 +67,7 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
   pollution: { ...FUDAN_FALLBACK },
   pollutionOverride: null,
   dateOverride: null,
+  timeOffsetMs: 0,
   snapshotDate: null,
   destination: null,
   nightPreview: false,
@@ -71,21 +75,27 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
   notice: null,
   toggleDetails: () => set(state => ({ detailsOpen: !state.detailsOpen })),
   randomSky: () => {
-    const selected = selectRandomSky(new Date(), get().destination?.id);
+    const state = get();
+    const date = new Date((state.dateOverride ?? Date.now()) + state.timeOffsetMs);
+    const selected = selectRandomSky(date, state.destination?.id);
     if (!selected) {
-      set({ notice: 'No destinations are in astronomical night right now. Try again later.' });
+      set({ notice: 'No destinations are in astronomical night at the displayed time. Try another time.' });
       return;
     }
     ++requestSeq;
     set({
       observer: destinationObserver(selected.destination), pollution: destinationPollution(),
-      pollutionOverride: null, dateOverride: null, destination: selected.destination,
+      pollutionOverride: null, destination: selected.destination,
       nightPreview: false, detailsOpen: false, notice: null, status: 'custom', preference: 'fudan',
     });
   },
-  setSnapshotDate: (timestamp) => {
-    if (get().snapshotDate !== timestamp) set({ snapshotDate: timestamp });
+  setSnapshotDate: (timestamp, timeOffsetMs) => {
+    const state = get();
+    if (state.snapshotDate !== timestamp || (timeOffsetMs !== undefined && state.timeOffsetMs !== timeOffsetMs)) {
+      set({ snapshotDate: timestamp, ...(timeOffsetMs !== undefined ? { timeOffsetMs } : {}) });
+    }
   },
+  setTimeOffset: (timeOffsetMs) => set({ timeOffsetMs }),
   preference: "fudan",
   status: "default",
 
@@ -97,19 +107,24 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
     const overrides = readOverrides(query);
     const preview = readSkyPreview(query);
     if (preview?.kind === 'random') {
+      set({ dateOverride: overrides.date?.getTime() ?? null });
       get().randomSky();
       set({ detailsOpen: preview.details });
       return;
     }
     if (preview?.kind === 'destination') {
-      const date = preview.night ? findNightPreviewTime(preview.destination, new Date()) : overrides.date;
+      const offset = get().timeOffsetMs;
+      const date = preview.night
+        ? findNightPreviewTime(preview.destination, new Date((overrides.date?.getTime() ?? Date.now()) + offset))
+        : overrides.date;
       if (preview.night && !date) {
         set({ notice: 'A night preview is unavailable for this date.' });
         return;
       }
       ++requestSeq;
       set({ observer: destinationObserver(preview.destination), pollution: destinationPollution(),
-        pollutionOverride: null, dateOverride: date?.getTime() ?? null,
+        pollutionOverride: null,
+        dateOverride: date ? date.getTime() - (preview.night ? offset : 0) : null,
         destination: preview.destination, nightPreview: preview.night,
         detailsOpen: preview.details, notice: null, preference: 'fudan', status: 'custom' });
       return;
@@ -184,7 +199,6 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
       if (seq !== requestSeq) return;
       set({ observer, pollution: get().pollutionOverride ?? pollution,
         status: "custom", preference: "local", destination: null,
-        dateOverride: get().destination ? null : get().dateOverride,
         nightPreview: false, detailsOpen: false, notice: null });
       savePreference("local");
     } catch {
@@ -200,7 +214,6 @@ export const useSkyStore = create<SkyStore>((set, get) => ({
     const observer = defaultObserver();
     set({ observer, preference: "fudan", status: "resetting",
       pollution: get().pollutionOverride ?? { ...FUDAN_FALLBACK },
-      dateOverride: get().destination ? null : get().dateOverride,
       destination: null, nightPreview: false, detailsOpen: false, notice: null });
     const pollution = get().pollutionOverride ??
       await getLightPollution(observer.latitude, observer.longitude);

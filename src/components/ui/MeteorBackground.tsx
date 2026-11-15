@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { useThemeStore, resolveTheme } from '@/lib/stores/themeStore';
 import { BACKGROUND_METEOR } from '@/lib/sky/meteor-appearance';
+import { projectSkyDirection, projectSkyDirectionSegment, unprojectSkyPoint, type Camera } from '@/lib/sky/projection';
 
 type Meteor = {
   x: number;
@@ -11,13 +12,14 @@ type Meteor = {
   vy: number;
   length: number;
   width: number;
+  birthCamera: Camera | null;
 };
 
 function randomBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
-function createMeteor(width: number, height: number): Meteor {
+function createMeteor(width: number, height: number, birthCamera: Camera | null = null): Meteor {
   const angle = randomBetween(0.3, 0.55);
   const speed = randomBetween(38, 68);
   const startX = randomBetween(-width * 0.15, width * 0.95);
@@ -31,11 +33,18 @@ function createMeteor(width: number, height: number): Meteor {
     vy: Math.sin(angle) * speed,
     length: randomBetween(90, 160),
     width: randomBetween(1.1, 2.1),
+    birthCamera,
   };
 }
 
-export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction?: number }) {
+export default function MeteorBackground({ maxYFraction = 0.55, paused = false, skyCameraRef }: {
+  maxYFraction?: number;
+  paused?: boolean;
+  skyCameraRef?: RefObject<Camera | null>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pausedRef = useRef(paused);
+  const resumeRef = useRef<(() => void) | null>(null);
   const theme = useThemeStore((state) => state.theme);
   const effectiveTheme = resolveTheme(theme);
   const themeRef = useRef<'light' | 'dark'>(effectiveTheme);
@@ -45,17 +54,19 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
   }, [effectiveTheme]);
 
   useEffect(() => {
+    pausedRef.current = paused;
+    resumeRef.current?.();
+  }, [paused]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Respect reduced-motion: keep the sky static and skip the meteor animation.
-    const prefersReducedMotion =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    const motionQuery = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
     let rafId = 0;
     let lastTs = 0;
@@ -76,17 +87,24 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
     };
 
     const resetMeteor = (index: number) => {
-      meteors[index] = createMeteor(width, height);
+      const camera = skyCameraRef?.current ?? null;
+      if (skyCameraRef && !camera) return;
+      meteors[index] = createMeteor(camera?.width ?? width, camera?.height ?? height, camera);
     };
 
     resize();
-    for (let i = 0; i < meteorCount; i += 1) {
-      meteors.push(createMeteor(width, height));
-    }
+    for (let i = 0; i < meteorCount; i += 1) resetMeteor(i);
 
     const draw = (ts: number) => {
+      if (pausedRef.current || motionQuery?.matches) { rafId = 0; return; }
       const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 1 / 60;
       lastTs = ts;
+      const camera = skyCameraRef?.current ?? null;
+      if (skyCameraRef && !camera) {
+        rafId = window.requestAnimationFrame(draw);
+        return;
+      }
+      for (let i = meteors.length; i < meteorCount; i += 1) resetMeteor(i);
 
       const isDark = themeRef.current === 'dark';
       const { color: meteorColor, opacity: layerOpacity } = isDark ? BACKGROUND_METEOR.dark : BACKGROUND_METEOR.light;
@@ -103,28 +121,53 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
         const speed = Math.hypot(meteor.vx, meteor.vy) || 1;
         const tailX = meteor.x - (meteor.vx / speed) * meteor.length;
         const tailY = meteor.y - (meteor.vy / speed) * meteor.length;
+        let from = { x: tailX, y: tailY }, to = { x: meteor.x, y: meteor.y };
+        let gradientFrom = from, gradientTo = to;
+        let head: { x: number; y: number } | null = to;
+        let visible = true;
+        if (meteor.birthCamera && camera) {
+          const tailDirection = unprojectSkyPoint(from, meteor.birthCamera);
+          const headDirection = unprojectSkyPoint(to, meteor.birthCamera);
+          const segment = projectSkyDirectionSegment(tailDirection, headDirection, camera);
+          visible = segment !== null;
+          if (segment) {
+            const projectedTail = projectSkyDirection(tailDirection, camera);
+            const projectedHead = projectSkyDirection(headDirection, camera);
+            from = segment.from;
+            to = segment.to;
+            gradientFrom = projectedTail ?? from;
+            gradientTo = projectedHead ?? to;
+            head = headDirection[2] >= 0 ? projectedHead : null;
+          }
+        }
 
-        const gradient = ctx.createLinearGradient(tailX, tailY, meteor.x, meteor.y);
-        gradient.addColorStop(0, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0)`);
-        gradient.addColorStop(0.75, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.midAlpha})`);
-        gradient.addColorStop(1, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.tipAlpha})`);
+        if (visible) {
+          const gradient = ctx.createLinearGradient(gradientFrom.x, gradientFrom.y, gradientTo.x, gradientTo.y);
+          gradient.addColorStop(0, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, 0)`);
+          gradient.addColorStop(0.75, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.midAlpha})`);
+          gradient.addColorStop(1, `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.tipAlpha})`);
 
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = meteor.width;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(tailX, tailY);
-        ctx.lineTo(meteor.x, meteor.y);
-        ctx.stroke();
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = meteor.width;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
 
-        ctx.fillStyle = `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.headAlpha})`;
-        ctx.beginPath();
-        ctx.arc(meteor.x, meteor.y, meteor.width * 0.9, 0, Math.PI * 2);
-        ctx.fill();
+          if (head) {
+            ctx.fillStyle = `rgba(${meteorColor[0]}, ${meteorColor[1]}, ${meteorColor[2]}, ${BACKGROUND_METEOR.headAlpha})`;
+            ctx.beginPath();
+            ctx.arc(head.x, head.y, meteor.width * 0.9, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
 
         // Meteors belong to the page's flight window: recycle them once they
         // leave it instead of letting them cross the article.
-        if (meteor.x - meteor.length > width || meteor.y > height * maxYFraction) {
+        const planeWidth = meteor.birthCamera?.width ?? width;
+        const planeHeight = meteor.birthCamera?.height ?? height;
+        if (meteor.x - meteor.length > planeWidth || meteor.y > planeHeight * maxYFraction) {
           resetMeteor(i);
         }
       }
@@ -132,14 +175,24 @@ export default function MeteorBackground({ maxYFraction = 0.55 }: { maxYFraction
       rafId = window.requestAnimationFrame(draw);
     };
 
-    rafId = window.requestAnimationFrame(draw);
+    const resume = () => {
+      window.cancelAnimationFrame(rafId);
+      rafId = 0;
+      lastTs = 0;
+      if (!pausedRef.current && !motionQuery?.matches) rafId = window.requestAnimationFrame(draw);
+    };
+    resumeRef.current = resume;
+    resume();
+    motionQuery?.addEventListener('change', resume);
     window.addEventListener('resize', resize);
 
     return () => {
       window.cancelAnimationFrame(rafId);
+      resumeRef.current = null;
+      motionQuery?.removeEventListener('change', resume);
       window.removeEventListener('resize', resize);
     };
-  }, [maxYFraction]);
+  }, [maxYFraction, skyCameraRef]);
 
   return (
     <canvas

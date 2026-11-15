@@ -1,6 +1,7 @@
 'use client';
 
 import type React from 'react';
+import { SkyHint, useSkyHints } from './SkyHints';
 
 interface TrailControlsProps {
   holding: boolean;
@@ -31,7 +32,13 @@ export default function TrailControls({
   onHoldEnd,
   onReturnNow,
 }: TrailControlsProps) {
+  const { touch, canStartTrails, trailStarted } = useSkyHints();
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
+  const start = () => {
+    if (holding || !canStartTrails) return;
+    onHoldStart();
+    trailStarted(reduced);
+  };
 
   return (
     <div
@@ -50,17 +57,19 @@ export default function TrailControls({
           ? 'Reveal one hour of star trails'
           : 'Fast-forward the sky. Hold to accelerate, release to resume.'}
         onPointerDown={event => {
+          if (event.button !== 0 || !event.isPrimary) return;
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
-          if (!holding) onHoldStart();
+          start();
         }}
-        onPointerUp={() => { if (holding) onHoldEnd(); }}
-        onPointerCancel={() => { if (holding) onHoldEnd(); }}
+        onPointerUp={event => { if (event.button === 0 && event.isPrimary && holding) onHoldEnd(); }}
+        onPointerCancel={event => { if (event.isPrimary && holding) onHoldEnd(); }}
+        onBlur={() => { if (holding) onHoldEnd(); }}
         onKeyDown={event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           if (event.repeat || holding) return;
-          onHoldStart();
+          start();
         }}
         onKeyUp={event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -72,6 +81,9 @@ export default function TrailControls({
           <path d="M4 2.5v11l9-5.5z" />
         </svg>
       </button>
+      <SkyHint kind="trails" className="sky-discovery-hint--trails">
+        {reduced ? `${touch ? 'Tap' : 'Click'} for trails` : 'Hold for trails'}
+      </SkyHint>
       <span className="sky-time-pill" aria-live="polite">
         {holding && speed ? `time ${speedText(speed)}x` : offsetLabel ? `time ${offsetLabel} · 1x` : 'time 1x'}
       </span>

@@ -19,10 +19,10 @@ const { createCamera, project } = require('../src/lib/sky/projection.ts');
 const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb, trailHeadPoint } = require('../src/lib/sky/renderer.ts');
 const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel, positionStarLabels,
-  readFacing, SKY_DIRECTIONS,
+  readFacing, SKY_DIRECTIONS, viewForFacing, normalizeSkyView, directionName, cardinalFacing, dragSkyView,
 } = require('../src/lib/sky/look-up.ts');
 const names = require('../src/lib/sky/star-names-data.json');
-const { formatSkyTime, formatSkyTimeShort } = require('../src/lib/sky/time.ts');
+const { formatSkyTime, formatSkyTimeShort, formatSkyTimeCompact } = require('../src/lib/sky/time.ts');
 const city = { limitingMagnitude: 4, bortleApprox: 8, lightProxy: 0, source: 'override' };
 const darkSky = { ...city, limitingMagnitude: 6.5, bortleApprox: 1 };
 const scenes = [
@@ -63,27 +63,27 @@ test('pinhole camera stays orthonormal with square pixels and valid FOV across s
     near(dot(camera.right, camera.up), 0);
     near(dot(camera.right, camera.forward), 0);
     near(dot(camera.up, camera.forward), 0);
-    const center = project(47.5, 180, camera);
+    const center = project(35, 0, camera);
     near(center.x, width / 2);
     near(center.y, height / 2);
     const horizontalFov = 2 * Math.atan(width / (2 * camera.scale)) * 180 / Math.PI;
     const verticalFov = 2 * Math.atan(height / (2 * camera.scale)) * 180 / Math.PI;
     assert.ok(horizontalFov > 0 && horizontalFov < 180 && verticalFov > 0 && verticalFov < 180);
     near(width < 640 ? verticalFov : horizontalFov, width < 640 ? 75 : 100);
-    assert.equal(project(-47.5, 0, camera), null);
-    const lower = project(20, 180, camera);
-    near(lower.y - center.y, Math.tan(27.5 * Math.PI / 180) * camera.scale);
+    assert.equal(project(-35, 180, camera), null);
+    const lower = project(0, 0, camera);
+    near(lower.y - center.y, Math.tan(35 * Math.PI / 180) * camera.scale);
   }
 });
 
-test('four cardinal cameras reproject one immutable sky snapshot and cycle back to South', () => {
+test('four cardinal cameras reproject one immutable sky snapshot and cycle back to North', () => {
   const snapshot = computeSky(new Date('2026-01-15T13:00:00Z'), DEFAULT_OBSERVER, city);
   const original = JSON.stringify(snapshot);
-  let facing = 'south';
-  for (const expected of ['south', 'west', 'north', 'east']) {
+  let facing = 'north';
+  for (const expected of ['north', 'east', 'south', 'west']) {
     assert.equal(facing, expected);
     const camera = createLookUpCamera(1280, 575, facing);
-    const center = project(47.5, SKY_DIRECTIONS[facing].azimuth, camera);
+    const center = project(35, SKY_DIRECTIONS[facing].azimuth, camera);
     near(center.x, 640);
     near(center.y, 287.5);
     const rendered = projectSkyStars(snapshot, camera, { isDark: true, mobile: false, presentation: 'look-up' });
@@ -91,10 +91,102 @@ test('four cardinal cameras reproject one immutable sky snapshot and cycle back 
     assert.equal(JSON.stringify(snapshot), original);
     facing = SKY_DIRECTIONS[facing].next;
   }
-  assert.equal(facing, 'south');
+  assert.equal(facing, 'north');
   assert.equal(readFacing('north'), 'north');
-  assert.equal(readFacing(null), 'south');
-  assert.equal(readFacing('invalid'), 'south');
+  assert.equal(readFacing('south'), 'south');
+  assert.equal(readFacing('east'), 'east');
+  assert.equal(readFacing('west'), 'west');
+  assert.equal(readFacing(null), 'north');
+  assert.equal(readFacing('invalid'), 'north');
+});
+
+test('continuous views preserve square pixels and stable orthogonal axes through the zenith', () => {
+  const dot = (a, b) => a.reduce((sum, value, i) => sum + value * b[i], 0);
+  for (const [width, height] of [[1280, 575], [390, 667]]) {
+    const scale = createLookUpCamera(width, height).scale;
+    for (const azimuth of [0, 37.5, 90, 180, 270, 359.99]) {
+      for (const altitude of [0, 47.5, 80, 89.999, 90]) {
+        const camera = createLookUpCamera(width, height, { azimuth, altitude });
+        near(camera.scale, scale);
+        for (const axis of [camera.right, camera.up, camera.forward]) near(Math.hypot(...axis), 1);
+        near(dot(camera.right, camera.up), 0);
+        near(dot(camera.right, camera.forward), 0);
+        near(dot(camera.up, camera.forward), 0);
+        near(camera.right[2], 0, 1e-12);
+        const center = project(altitude, azimuth, camera);
+        near(center.x, width / 2);
+        near(center.y, height / 2);
+      }
+    }
+    const before = createLookUpCamera(width, height, { azimuth: 37.5, altitude: 89.999 });
+    const zenith = createLookUpCamera(width, height, { azimuth: 37.5, altitude: 90 });
+    near(dot(before.right, zenith.right), 1);
+    assert.ok(dot(before.up, zenith.up) > 0.999999, 'reaching the zenith preserves screen orientation');
+  }
+});
+
+test('view normalization and cardinal presets provide deterministic reset destinations', () => {
+  assert.deepEqual(normalizeSkyView({ azimuth: -1, altitude: 100 }), { azimuth: 359, altitude: 90 });
+  assert.deepEqual(normalizeSkyView({ azimuth: 721, altitude: -10 }), { azimuth: 1, altitude: 0 });
+  for (const facing of ['south', 'west', 'north', 'east']) {
+    const preset = viewForFacing(facing);
+    assert.deepEqual(preset, { azimuth: SKY_DIRECTIONS[facing].azimuth, altitude: 35 });
+    assert.deepEqual(viewForFacing(facing, 47.5), { azimuth: SKY_DIRECTIONS[facing].azimuth, altitude: 47.5 });
+    assert.deepEqual(createLookUpCamera(1280, 575, facing), createLookUpCamera(1280, 575, preset));
+  }
+  assert.equal(directionName(0), 'North');
+  assert.equal(directionName(359.9), 'North');
+  assert.equal(directionName(45), 'NE');
+  assert.equal(directionName(90), 'East');
+  assert.equal(directionName(135), 'SE');
+  assert.equal(directionName(180), 'South');
+  assert.equal(directionName(225), 'SW');
+  assert.equal(directionName(270), 'West');
+  assert.equal(directionName(-45), 'NW');
+});
+
+test('cardinal facing follows the current azimuth with clockwise ties at forty-five degrees', () => {
+  for (const [azimuth, facing] of [
+    [0, 'north'], [44.999, 'north'], [45, 'east'], [90, 'east'], [134.999, 'east'],
+    [135, 'south'], [180, 'south'], [224.999, 'south'], [225, 'west'], [270, 'west'],
+    [314.999, 'west'], [315, 'north'], [359.9, 'north'], [-45, 'north'], [-46, 'west'], [720, 'north'],
+  ]) assert.equal(cardinalFacing(azimuth), facing, `${azimuth} degrees`);
+});
+
+test('dragging moves sky content with the pointer at the camera perspective scale', () => {
+  for (const [width, height] of [[1280, 575], [390, 667]]) {
+    for (const altitude of [0, 47.5, 59]) {
+      const start = { azimuth: 0, altitude };
+      const camera = createLookUpCamera(width, height, start);
+      for (const dx of [-20, 20]) {
+        const view = dragSkyView(start, dx, 0, camera);
+        const moved = project(start.altitude, start.azimuth, createLookUpCamera(width, height, view));
+        near(moved.x - width / 2, dx, 0.15);
+        assert.ok(dx > 0 ? view.azimuth > 350 : view.azimuth > 0 && view.azimuth < 10,
+          'horizontal dragging crosses north without reversing motion');
+      }
+      const down = dragSkyView(start, 0, 20, camera);
+      const moved = project(start.altitude, start.azimuth, createLookUpCamera(width, height, down));
+      near(moved.y - height / 2, 20);
+    }
+  }
+});
+
+test('dragging stays bounded at the horizon and zenith without amplifying azimuth into a flip', () => {
+  for (const altitude of [0, 47.5, 89.999, 90]) {
+    const start = { azimuth: 359, altitude };
+    const camera = createLookUpCamera(390, 667, start);
+    assert.deepEqual(dragSkyView(start, 0, 0, camera), start);
+    const up = dragSkyView(start, 0, 1e6, camera).altitude;
+    const down = dragSkyView(start, 0, -1e6, camera).altitude;
+    assert.ok(up <= 90 && up >= Math.min(90, altitude + 89.9));
+    assert.ok(down >= 0 && down <= Math.max(0, altitude - 89.9));
+    const right = dragSkyView(start, 2, 0, camera);
+    const left = dragSkyView(start, -2, 0, camera);
+    const delta = view => ((view.azimuth - start.azimuth + 540) % 360) - 180;
+    assert.ok(delta(right) < 0 && delta(right) > -1);
+    assert.ok(delta(left) > 0 && delta(left) < 1);
+  }
 });
 
 // Independent mean-sidereal-time horizon equations; allow precession/nutation/refraction.
@@ -130,7 +222,7 @@ for (const [scene, utc, observer, pollution, selectedName] of scenes) {
     )) / deg;
     assert.ok(angularSeparation < 0.5, `J2000 approximation differs by ${angularSeparation}°`);
     for (const [width, height] of [[1280, 575], [390, 667]]) {
-      const camera = createLookUpCamera(width, height);
+      const camera = createLookUpCamera(width, height, { azimuth: 180, altitude: 47.5 });
       const rendered = projectSkyStars(snapshot, camera, { isDark: true, mobile: width < 640, presentation: 'look-up' });
       const interactive = interactiveStars(rendered, camera);
       assert.ok(interactive.some(entry => entry.star.name === selectedName));
@@ -142,7 +234,7 @@ for (const [scene, utc, observer, pollution, selectedName] of scenes) {
 }
 
 test('Look Up renders bottom-of-frame stars with unchanged magnitude limit; homepage mask remains', () => {
-  const camera = createLookUpCamera(1280, 575);
+  const camera = createLookUpCamera(1280, 575, { azimuth: 180, altitude: 47.5 });
   const snapshot = {
     visibility: 1, twilight: 1, pollution: city,
     stars: [{ ...getCatalog().find(star => star.name === 'Betelgeuse'), altitude: 20, azimuth: 180 }],
@@ -161,7 +253,7 @@ test('daytime floor, light theme suppression, size and low-saturation color mapp
   assert.equal(twilightFactor(-20), 1);
   const snapshot = computeSky(new Date('2026-01-15T04:00:00Z'), DEFAULT_OBSERVER, city);
   assert.equal(snapshot.visibility, SKY_DAYTIME_VISIBILITY);
-  const camera = createLookUpCamera(1280, 575);
+  const camera = createLookUpCamera(1280, 575, { azimuth: 180, altitude: 47.5 });
   const dark = projectSkyStars(snapshot, camera, { isDark: true, mobile: false, presentation: 'look-up' });
   const light = projectSkyStars(snapshot, camera, { isDark: false, mobile: false, presentation: 'look-up' });
   assert.ok(dark.length > 0 && light.length > 0);
@@ -204,7 +296,7 @@ test('both sky presentations share soft bright-star halos without changing proje
           return gradient;
         },
       };
-      const camera = createLookUpCamera(1440, 720);
+      const camera = createLookUpCamera(1440, 720, { azimuth: 180, altitude: 47.5 });
       const style = { presentation, isDark, mobile: false };
       const projected = projectSkyStars(snapshot, camera, style);
       const rendered = drawSky(ctx, snapshot, camera, style);
@@ -228,7 +320,7 @@ test('both sky presentations share soft bright-star halos without changing proje
 });
 
 test('trail heads blend through half size to the stroke radius while preserving stars and alpha', () => {
-  const camera = createLookUpCamera(1440, 720);
+  const camera = createLookUpCamera(1440, 720, { azimuth: 180, altitude: 47.5 });
   const seed = getCatalog().find(star => star.name === 'Betelgeuse');
   const stars = [0.2, 0.8, 2.2].map((mag, index) => ({
     ...seed, id: index + 1, mag, altitude: 47.5, azimuth: 170 + index * 10,
@@ -277,7 +369,7 @@ test('trail heads blend through half size to the stroke radius while preserving 
 });
 
 test('trail heads return from their endpoints while reported projections stay unchanged', () => {
-  const camera = createLookUpCamera(1440, 720);
+  const camera = createLookUpCamera(1440, 720, { azimuth: 180, altitude: 47.5 });
   const seed = getCatalog().find(star => star.name === 'Betelgeuse');
   const snapshot = {
     visibility: 1, twilight: 1, pollution: city,
@@ -365,18 +457,28 @@ test('names accumulate: clicks toggle one star at a time; updates keep only visi
   assert.deepEqual(ids, [4]);
 });
 
-test('footer uses the system timezone, 24-hour clock and rendered instant', () => {
+test('footer shows device dates, 24-hour clocks and UTC offsets across daylight saving', () => {
   const previous = process.env.TZ;
   try {
     process.env.TZ = 'Asia/Shanghai';
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 21:00');
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T16:00:00Z')), 'January 16, 2026 · 00:00');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T13:00:00Z')), 'Jan 15, 2026 · 21:00');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T16:00:00Z')), 'Jan 16, 2026 · 00:00');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 21:00 UTC+8');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T16:00:00Z')), 'January 16, 2026 00:00 UTC+8');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T13:00:00Z')), 'Jan 15, 2026 21:00 UTC+8');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-01-15T16:00:00Z')), 'Jan 16, 2026 00:00 UTC+8');
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-01-15T16:00:00Z')), '01/16 00:00 UTC+8');
     process.env.TZ = 'America/New_York';
-    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 · 08:00');
-    assert.equal(formatSkyTime(Date.parse('2026-07-15T13:00:00Z')), 'July 15, 2026 · 09:00');
-    assert.equal(formatSkyTimeShort(Date.parse('2026-07-15T13:00:00Z')), 'Jul 15, 2026 · 09:00');
+    assert.equal(formatSkyTime(Date.parse('2026-01-15T13:00:00Z')), 'January 15, 2026 08:00 UTC-5');
+    assert.equal(formatSkyTime(Date.parse('2026-07-15T13:00:00Z')), 'July 15, 2026 09:00 UTC-4');
+    assert.equal(formatSkyTimeShort(Date.parse('2026-07-15T13:00:00Z')), 'Jul 15, 2026 09:00 UTC-4');
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-01-15T13:00:00Z')), '01/15 08:00 UTC-5');
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-07-15T13:00:00Z')), '07/15 09:00 UTC-4');
+    process.env.TZ = 'UTC';
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-01-15T13:00:00Z')), '01/15 13:00 UTC+0');
+    process.env.TZ = 'Asia/Kolkata';
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-01-15T13:00:00Z')), '01/15 18:30 UTC+5:30');
+    process.env.TZ = 'Pacific/Chatham';
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-01-15T13:00:00Z')), '01/16 02:45 UTC+13:45');
+    assert.equal(formatSkyTimeCompact(Date.parse('2026-07-15T13:00:00Z')), '07/16 01:45 UTC+12:45');
   } finally {
     if (previous === undefined) delete process.env.TZ;
     else process.env.TZ = previous;
@@ -425,7 +527,7 @@ test('fractional text widths retain the twelve-pixel mobile margin', () => {
 
 test('landscape names use available space across the viewport after a dense portrait selection', () => {
   const snapshot=computeSky(new Date('2026-10-13T06:50:00Z'),DEFAULT_OBSERVER,{...city,limitingMagnitude:4.146324479884627});
-  const camera=createLookUpCamera(844,255);
+  const camera=createLookUpCamera(844,255,{azimuth:180,altitude:47.5});
   const stars=interactiveStars(projectSkyStars(snapshot,camera,{isDark:true,mobile:false,presentation:'look-up'}),camera);
   const labels=stars.map(({star,name,point})=>({id:star.id,x:point.x,y:point.y,width:Math.max(name.chinese.length*14,name.english.length*7),height:44}));
   const positions=positionStarLabels(labels,camera.width,camera.height);

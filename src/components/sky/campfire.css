@@ -40,6 +40,19 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   .campfire-marshmallow-burnt { transition: none; }
 }
 
+.campfire-world {
+  position: absolute;
+  width: 136px;
+  height: 108px;
+  transform-origin: 50% 100%;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.campfire-discovery-hint {
+  transform: translate(-50%, -100%);
+}
+
 .campfire-decoration {
   position: absolute;
   inset: 0;
@@ -47,14 +60,22 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   pointer-events: none;
 }
 
+.campfire-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 116px;
+  height: 14px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0.08) 42%, rgba(0, 0, 0, 0) 74%);
+}
+
 .campfire-body,
 .campfire-toggle {
   position: absolute;
-  left: 50%;
-  bottom: 14px;
-  width: 136px;
-  height: 108px;
-  transform: translateX(-50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .campfire-art {
@@ -71,6 +92,12 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   background: transparent;
   cursor: pointer;
   touch-action: manipulation;
+  pointer-events: auto;
+}
+
+.campfire-world[data-interactive='false'] .campfire-toggle,
+.campfire-world[data-interactive='false'] .campfire-eat {
+  pointer-events: none;
 }
 
 .campfire-toggle:focus-visible {
@@ -81,9 +108,9 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-glow {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  width: min(440px, 94%);
-  height: 14%;
+  bottom: -56px;
+  width: 440px;
+  height: 112px;
   transform: translateX(-50%) scale(0.85);
   transform-origin: 50% 100%;
   opacity: 0;
@@ -93,11 +120,11 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-glow-breathe {
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at 50% 84%,
+  background: radial-gradient(ellipse at 50% 50%,
     rgba(174, 112, 65, 0.18) 0%,
     rgba(146, 98, 66, 0.09) 26%,
     rgba(108, 81, 68, 0.03) 50%,
-    rgba(108, 81, 68, 0) 78%);
+    rgba(108, 81, 68, 0) 70%);
 }
 
 .campfire-flames {
@@ -248,7 +275,7 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-eat {
   position: absolute;
   left: calc(50% + 24px);
-  bottom: 43px;
+  bottom: 29px;
   width: 46px;
   height: 46px;
   transform: translateX(-50%);
@@ -259,6 +286,7 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   background: transparent;
   cursor: pointer;
   touch-action: manipulation;
+  pointer-events: auto;
 }
 
 .campfire-eat:focus-visible {
@@ -270,7 +298,7 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-count {
   position: absolute;
   right: calc(50% + 78px);
-  bottom: 26px;
+  bottom: 12px;
   font-size: 11px;
   letter-spacing: 0.02em;
   color: rgba(163, 141, 122, 0.9);
@@ -343,7 +371,7 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-hint {
   position: absolute;
   left: 50%;
-  bottom: 6px;
+  bottom: -8px;
   width: 150px;
   height: 52px;
   transform: translateX(-50%);
@@ -356,41 +384,9 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 }
 
 /* A quiet invitation: hovering or focusing the hit area warms the woodpile. */
-.campfire-decoration:has(+ .campfire-toggle:hover) .campfire-hint,
-.campfire-decoration:has(+ .campfire-toggle:focus-visible) .campfire-hint {
+.campfire-world:has(.campfire-toggle:hover) .campfire-hint,
+.campfire-world:has(.campfire-toggle:focus-visible) .campfire-hint {
   opacity: 1;
-}
-
-@media (max-width: 639px) {
-  .campfire-body,
-  .campfire-toggle {
-    bottom: 12px;
-    width: 110px;
-    height: 88px;
-  }
-
-  .campfire-eat {
-    left: calc(50% + 23px);
-    bottom: 33px;
-    width: 44px;
-    height: 44px;
-  }
-
-  .campfire-count {
-    right: calc(50% + 64px);
-    bottom: 24px;
-    font-size: 10px;
-  }
-
-  .campfire-glow {
-    width: min(300px, 90%);
-    height: 12%;
-  }
-
-  .campfire-hint {
-    width: 124px;
-    height: 44px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

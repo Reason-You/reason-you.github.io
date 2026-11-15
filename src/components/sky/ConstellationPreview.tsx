@@ -10,7 +10,7 @@ import type { RenderedStar } from '@/lib/sky/renderer';
 import type { SkyStar } from '@/lib/sky/astro';
 import { MOBILE_BREAKPOINT_PX } from '@/lib/sky/constants';
 
-export default function ConstellationPreview({ starId, selectedStarIds, pinnedConstellations, rendered, constellationStars, camera, skyRef, sceneRef }: {
+export default function ConstellationPreview({ starId, selectedStarIds, pinnedConstellations, rendered, constellationStars, camera, horizon, labelHeight, skyRef, sceneRef }: {
   starId: number | null;
   selectedStarIds: readonly number[];
   pinnedConstellations: string[];
@@ -19,6 +19,8 @@ export default function ConstellationPreview({ starId, selectedStarIds, pinnedCo
   rendered: readonly RenderedStar[];
   constellationStars: readonly SkyStar[];
   camera: Camera;
+  horizon?: readonly number[];
+  labelHeight?: number;
 }) {
   const preview = useSearchParams().get('constellationPreview');
   const alpha = readConstellationPreview(preview);
@@ -37,9 +39,9 @@ export default function ConstellationPreview({ starId, selectedStarIds, pinnedCo
     const ids = new Set(pinnedConstellations);
     if (shown) ids.add(shown.id);
     return CONSTELLATIONS.filter(c => ids.has(c.id)).map(c => ({
-      constellation: c, segments: projectConstellation(c, constellationStars, camera),
+      constellation: c, segments: projectConstellation(c, constellationStars, camera, horizon),
     })).filter(c => c.segments.length > 0);
-  }, [shown, pinnedConstellations, constellationStars, camera]);
+  }, [shown, pinnedConstellations, constellationStars, camera, horizon]);
   const labelId = selectConstellationLabel(shown?.id ?? null, selectedStarIds, pinnedConstellations,
     figures.map(figure => figure.constellation.id));
   const labelFigure = figures.find(figure => figure.constellation.id === labelId);
@@ -64,7 +66,8 @@ export default function ConstellationPreview({ starId, selectedStarIds, pinnedCo
     </svg>
     <AnimatePresence mode="wait">
       {labelFigure && <ConstellationLabel key={labelFigure.constellation.id}
-        constellation={labelFigure.constellation} segments={labelFigure.segments} anchor={anchor} rendered={rendered} camera={camera}
+        constellation={labelFigure.constellation} segments={labelFigure.segments} anchor={anchor} rendered={rendered}
+        camera={labelHeight === undefined ? camera : { ...camera, height: labelHeight }}
         skyRef={skyRef} sceneRef={sceneRef} />}
     </AnimatePresence>
     </>

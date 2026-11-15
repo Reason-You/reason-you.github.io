@@ -29,6 +29,8 @@ export interface ProjectedPoint {
   depth: number;
 }
 
+export type SkyDirectionVector = [number, number, number];
+
 const DEG = Math.PI / 180;
 
 /** Unit vector in local ENU coordinates for an altitude/azimuth pair. */
@@ -41,11 +43,6 @@ export function horizonToVector(altitudeDeg: number, azimuthDeg: number): [numbe
 
 function cross(a: [number, number, number], b: [number, number, number]): [number, number, number] {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
-
-function normalize(v: [number, number, number]): [number, number, number] {
-  const len = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / len, v[1] / len, v[2] / len];
 }
 
 /**
@@ -63,8 +60,8 @@ export function createCamera(
   centerYFraction = 0.5
 ): Camera {
   const forward = horizonToVector(view.centerAltitude, view.azimuth);
-  const worldUp: [number, number, number] = [0, 0, 1];
-  const right = normalize(cross(forward, worldUp));
+  const azimuth = view.azimuth * DEG;
+  const right: [number, number, number] = [Math.cos(azimuth), -Math.sin(azimuth), 0];
   const up = cross(right, forward);
   const scale = width / 2 / Math.tan((view.horizontalFov * DEG) / 2);
 
@@ -81,7 +78,29 @@ export function project(
   azimuthDeg: number,
   camera: Camera
 ): ProjectedPoint | null {
-  const [east, north, up] = horizonToVector(altitudeDeg, azimuthDeg);
+  return projectSkyDirection(horizonToVector(altitudeDeg, azimuthDeg), camera);
+}
+
+/** A screen position as a unit direction in the physical camera's local ENU frame. */
+export function unprojectSkyPoint(
+  point: Pick<ProjectedPoint, 'x' | 'y'>,
+  camera: Camera,
+): SkyDirectionVector {
+  const x = (point.x - camera.width / 2) / camera.scale;
+  const y = (camera.height * camera.centerYFraction - point.y) / camera.scale;
+  const east = camera.forward[0] + x * camera.right[0] + y * camera.up[0];
+  const north = camera.forward[1] + x * camera.right[1] + y * camera.up[1];
+  const up = camera.forward[2] + x * camera.right[2] + y * camera.up[2];
+  const length = Math.hypot(east, north, up);
+  return [east / length, north / length, up / length];
+}
+
+/** Project a local unit direction, retaining offscreen positions for trail heads. */
+export function projectSkyDirection(
+  direction: SkyDirectionVector,
+  camera: Camera,
+): ProjectedPoint | null {
+  const [east, north, up] = direction;
 
   const depth = east * camera.forward[0] + north * camera.forward[1] + up * camera.forward[2];
   if (depth <= 0.02) return null;
@@ -101,14 +120,38 @@ export function projectSkySegment(
   from: { altitude: number; azimuth: number },
   to: { altitude: number; azimuth: number },
   camera: Camera,
+  horizon: readonly number[] = [0, 0, 1],
 ): { from: ProjectedPoint; to: ProjectedPoint } | null {
-  const coordinates = (star: typeof from) => {
-    const [east, north, up] = horizonToVector(star.altitude, star.azimuth);
+  return clipSkyDirections(
+    horizonToVector(from.altitude, from.azimuth),
+    horizonToVector(to.altitude, to.azimuth),
+    camera,
+    horizon,
+  );
+}
+
+/** Clip local trail directions to the ground and camera frame before projection. */
+export function projectSkyDirectionSegment(
+  from: SkyDirectionVector,
+  to: SkyDirectionVector,
+  camera: Camera,
+): { from: ProjectedPoint; to: ProjectedPoint } | null {
+  return clipSkyDirections(from, to, camera, [0, 0, 1]);
+}
+
+function clipSkyDirections(
+  from: SkyDirectionVector,
+  to: SkyDirectionVector,
+  camera: Camera,
+  horizon: readonly number[],
+): { from: ProjectedPoint; to: ProjectedPoint } | null {
+  const coordinates = (direction: SkyDirectionVector) => {
+    const [east, north, up] = direction;
     return {
       x: east * camera.right[0] + north * camera.right[1] + up * camera.right[2],
       y: east * camera.up[0] + north * camera.up[1] + up * camera.up[2],
       depth: east * camera.forward[0] + north * camera.forward[1] + up * camera.forward[2],
-      altitude: up,
+      altitude: east * horizon[0] + north * horizon[1] + up * horizon[2],
     };
   };
   const a = coordinates(from), b = coordinates(to);

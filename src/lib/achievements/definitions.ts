@@ -21,7 +21,7 @@ export const ACHIEVEMENTS = [
   { id: '88-constellations-one-campfire', name: '88 Constellations, One Campfire', icon: 'waypoints', type: 'quantity', milestone: 88, condition: 'Eat 88 marshmallows during one visit to Stars Above.', description: '88 marshmallows', order: 88 },
   { id: 'just-one-more', name: 'Just One More.', icon: 'plus', type: 'quantity', milestone: 99, condition: 'Eat 99 marshmallows during one visit to Stars Above.', description: '99 marshmallows', order: 99 },
   { id: 'at-the-end-of-the-universe', name: 'At the End of the Universe', icon: 'infinity', type: 'quantity', milestone: 100, condition: 'Eat 100 marshmallows during one visit to Stars Above.', description: '100 marshmallows', order: 100 },
-  { id: 'four-skies-one-campfire', name: 'Four Skies, One Campfire', icon: 'compass', type: 'directions', condition: 'Eat a marshmallow facing each cardinal direction in one campfire.', description: 'One marshmallow in each direction, in one campfire.', order: 110 },
+  { id: 'four-skies-one-campfire', name: 'Four Skies, One Campfire', icon: 'compass', type: 'directions', condition: 'Look north, east, south and west while the same campfire burns.', description: 'Four directions, one campfire.', order: 110 },
   { id: 'a-taste-of-the-stars', name: 'A Taste of the Stars', icon: 'sparkles', type: 'starlight', condition: 'Eat a starlit marshmallow.', description: 'A little night sky, tasted.', order: 120 },
   { id: 'make-a-wish-at-the-marshmallowids', name: 'Make a Wish at the Marshmallowids', icon: 'comet', type: 'fireball', condition: 'Eat a rare starlit marshmallow and release its fireball.', description: 'A rare starlit marshmallow released a fireball.', order: 105 },
 ] as const satisfies readonly AchievementDefinition[];

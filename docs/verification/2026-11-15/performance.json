@@ -1,0 +1,304 @@
+{
+  "scenario": {
+    "name": "Dense daylight seam rendering",
+    "utc": "2026-11-15T11:57:00Z",
+    "query": "&lat=31.2989&lon=121.5035&mag=7.7",
+    "source": "override",
+    "holdMs": 11814
+  },
+  "phases": [
+    {
+      "name": "idle with campfire",
+      "elapsed": 653.1999999284744,
+      "fps": 100,
+      "frameMs": {
+        "n": 65,
+        "mean": 10,
+        "p50": 10,
+        "p95": 10.599999999999909,
+        "p99": 11,
+        "max": 11
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 0,
+        "mean": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "max": 0
+      },
+      "canvasDraws": {
+        "look-up-trails": 0,
+        "look-up-stars": 0,
+        "look-up-ground": 0,
+        "other": 66
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1322,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 0,
+          "altitude": 31.799552394413496
+        },
+        "dragging": false,
+        "holding": false,
+        "opacity": 1,
+        "sunAltitude": -38.337727951365
+      }
+    },
+    {
+      "name": "pan without grid or trails",
+      "elapsed": 853.1000000238419,
+      "fps": 100.10599458249911,
+      "frameMs": {
+        "n": 85,
+        "mean": 9.989411764705883,
+        "p50": 10,
+        "p95": 10.800000000000182,
+        "p99": 11,
+        "max": 11
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 83,
+        "mean": 1.7397590372935836,
+        "p50": 1.6999999284744263,
+        "p95": 2.5,
+        "p99": 3.200000047683716,
+        "max": 3.200000047683716
+      },
+      "canvasDraws": {
+        "look-up-trails": 0,
+        "look-up-stars": 83,
+        "look-up-ground": 83,
+        "other": 86
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1285,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 2.034437570658781,
+          "altitude": 30.695290375605143
+        },
+        "dragging": true,
+        "holding": false,
+        "opacity": 1,
+        "sunAltitude": -38.337727951365
+      }
+    },
+    {
+      "name": "pan with grid",
+      "elapsed": 855.6999999284744,
+      "fps": 100.07063809748061,
+      "frameMs": {
+        "n": 85,
+        "mean": 9.992941176470584,
+        "p50": 10,
+        "p95": 10.699999999999818,
+        "p99": 11,
+        "max": 11
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 83,
+        "mean": 2.030120476182685,
+        "p50": 2,
+        "p95": 2.5,
+        "p99": 3.5,
+        "max": 3.5
+      },
+      "canvasDraws": {
+        "look-up-trails": 0,
+        "look-up-stars": 83,
+        "look-up-ground": 83,
+        "other": 86,
+        "sky-guides": 83
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1291,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 1.7505196926479698,
+          "altitude": 30.847765751050506
+        },
+        "dragging": true,
+        "holding": false,
+        "opacity": 1,
+        "sunAltitude": -38.337727951365
+      }
+    },
+    {
+      "name": "hold ramp and maximum speed with grid",
+      "elapsed": 11820.300000071526,
+      "fps": 98.89923793395427,
+      "frameMs": {
+        "n": 1168,
+        "mean": 10.111301369863014,
+        "p50": 10,
+        "p95": 10.600000000000364,
+        "p99": 20,
+        "max": 20.100000000000364
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 0,
+        "mean": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0,
+        "max": 0
+      },
+      "canvasDraws": {
+        "look-up-trails": 1169,
+        "look-up-stars": 1169,
+        "look-up-ground": 61,
+        "other": 0,
+        "sky-guides": 1156
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1322,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 0,
+          "altitude": 31.799552394413496
+        },
+        "dragging": false,
+        "holding": true,
+        "opacity": 1,
+        "sunAltitude": -38.337727951365
+      }
+    },
+    {
+      "name": "retained trails pan with grid",
+      "elapsed": 1610.6000000238419,
+      "fps": 85.53459119496856,
+      "frameMs": {
+        "n": 136,
+        "mean": 11.691176470588236,
+        "p50": 10,
+        "p95": 20,
+        "p99": 20.399999999999636,
+        "max": 20.5
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 131,
+        "mean": 8.896946568525474,
+        "p50": 8.100000023841858,
+        "p95": 13.700000047683716,
+        "p99": 15.700000047683716,
+        "max": 18.200000047683716
+      },
+      "canvasDraws": {
+        "look-up-trails": 131,
+        "look-up-stars": 131,
+        "look-up-ground": 131,
+        "other": 0,
+        "sky-guides": 131
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1296,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 1.0483384235486142,
+          "altitude": 31.227772180338814
+        },
+        "dragging": true,
+        "holding": false,
+        "opacity": 1,
+        "sunAltitude": 38.69223069983788
+      }
+    },
+    {
+      "name": "retained trails pan without grid",
+      "elapsed": 1600.6000000238419,
+      "fps": 95.54940910233849,
+      "frameMs": {
+        "n": 152,
+        "mean": 10.465789473684206,
+        "p50": 10,
+        "p95": 10.900000000001455,
+        "p99": 20,
+        "max": 20.100000000002183
+      },
+      "gapsOver25ms": 0,
+      "gapsOver50ms": 0,
+      "renderMs": {
+        "n": 150,
+        "mean": 7.3946666661898295,
+        "p50": 6.800000071525574,
+        "p95": 11,
+        "p99": 14.100000023841858,
+        "max": 15.100000023841858
+      },
+      "canvasDraws": {
+        "look-up-trails": 150,
+        "look-up-stars": 150,
+        "look-up-ground": 150,
+        "other": 0,
+        "sky-guides": 0
+      },
+      "longTasks": [],
+      "longFrames": [],
+      "state": {
+        "stars": 1295,
+        "catalogue": 8920,
+        "view": {
+          "azimuth": 1.3099259839918318,
+          "altitude": 31.085795981870117
+        },
+        "dragging": true,
+        "holding": false,
+        "opacity": 1,
+        "sunAltitude": 38.69223069983788
+      }
+    }
+  ],
+  "actions": [],
+  "errors": [],
+  "clock": "native RAF and performance.now",
+  "environment": {
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+    "dpr": 2,
+    "hardwareThreads": 10,
+    "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+    "observers": [
+      "element",
+      "event",
+      "first-input",
+      "interaction-contentful-paint",
+      "largest-contentful-paint",
+      "layout-shift",
+      "long-animation-frame",
+      "longtask",
+      "mark",
+      "measure",
+      "navigation",
+      "paint",
+      "resource",
+      "soft-navigation",
+      "visibility-state"
+    ]
+  },
+  "releaseTime": 15410.5,
+  "final": {
+    "dragging": false,
+    "opacity": "1"
+  }
+}

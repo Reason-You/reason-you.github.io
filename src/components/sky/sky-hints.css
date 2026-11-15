@@ -1,0 +1,42 @@
+.sky-discovery-hint {
+  position: absolute;
+  z-index: 45;
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--neutral-500);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  opacity: 1;
+  transition: opacity 200ms ease-out, color 200ms ease-out;
+  animation: sky-discovery-hint-in 200ms ease-out;
+}
+
+.sky-discovery-hint[data-leaving='true'] {
+  opacity: 0;
+}
+
+.sky-discovery-hint:hover { color: var(--primary); }
+.sky-discovery-hint:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.sky-discovery-hint--trails {
+  left: 10.25px;
+  bottom: calc(100% + 10px);
+}
+
+@keyframes sky-discovery-hint-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-discovery-hint { animation: none; }
+}

@@ -96,7 +96,7 @@ test('preview URLs resolve each ID and details flag; random stays live and legac
   assert.equal(legacy.pollution.bortleApprox, 3);
 });
 
-test('store transitions restore Fudan, close details, leave preview time for real-time random, and reject late location results', async () => {
+test('store transitions preserve simulation time, restore Fudan, close details and reject late location results', async () => {
   const pollutionModule = require('../src/lib/sky/lightPollution.ts');
   const fudanPollution = { ...pollutionModule.FUDAN_FALLBACK };
   pollutionModule.getLightPollution = async () => fudanPollution;
@@ -109,18 +109,24 @@ test('store transitions restore Fudan, close details, leave preview time for rea
   assert.equal(state.detailsOpen, true);
   assert.equal(state.nightPreview, true);
   assert.ok(state.dateOverride !== null);
+  const baseTime = state.dateOverride;
+  state.setSnapshotDate(baseTime + 12 * 3600e3, 12 * 3600e3);
   state.randomSky();
   state = useSkyStore.getState();
   assert.notEqual(state.destination.id, 'namibrand');
   assert.equal(state.detailsOpen, false);
   assert.equal(state.nightPreview, false);
-  assert.equal(state.dateOverride, null);
-  assert.ok(getBodyAltitude(Body.Sun, new Date(), state.observer) < -18);
+  assert.equal(state.dateOverride, baseTime);
+  assert.equal(state.timeOffsetMs, 12 * 3600e3);
+  const simulated = new Date(baseTime + state.timeOffsetMs);
+  assert.ok(getBodyAltitude(Body.Sun, simulated, state.observer) < -18);
+  assert.ok(computeSky(simulated, state.observer, state.pollution).sunAltitude < -18);
   await state.resetSky();
   state = useSkyStore.getState();
   assert.deepEqual(state.observer, DEFAULT_OBSERVER);
   assert.equal(state.destination, null);
-  assert.equal(state.dateOverride, null);
+  assert.equal(state.dateOverride, baseTime);
+  assert.equal(state.timeOffsetMs, 12 * 3600e3);
   assert.equal(state.pollution, fudanPollution);
   await state.initialize('skyPreview=fudan&skyDetails=1');
   assert.equal(useSkyStore.getState().detailsOpen, true);
@@ -135,4 +141,32 @@ test('store transitions restore Fudan, close details, leave preview time for rea
   assert.equal(useSkyStore.getState().destination.id, selected);
   assert.equal(useSkyStore.getState().observer.source, 'random');
   assert.equal(useSkyStore.getState().pollution.source, 'atlas-2025');
+  useSkyStore.getState().setTimeOffset(0);
+});
+
+test('random selection uses the shared offset for live and fixed clocks and night previews stay dark', async () => {
+  const { useSkyStore } = require('../src/lib/stores/skyStore.ts');
+  const realNow = Date.now;
+  const epoch = Date.parse('2026-01-15T13:00:00Z');
+  Date.now = () => epoch;
+  try {
+    useSkyStore.setState({ dateOverride: null, timeOffsetMs: 17 * 3600e3 });
+    useSkyStore.getState().randomSky();
+    let state = useSkyStore.getState();
+    assert.equal(state.dateOverride, null);
+    assert.ok(getBodyAltitude(Body.Sun, new Date(epoch + state.timeOffsetMs), state.observer) < -18);
+    await state.initialize('skyPreview=random&skyUtc=2026-01-15T13:00:00Z');
+    state = useSkyStore.getState();
+    assert.equal(state.dateOverride, epoch);
+    assert.ok(getBodyAltitude(Body.Sun, new Date(epoch + state.timeOffsetMs), state.observer) < -18);
+    await state.initialize('skyPreview=namibrand&skyNight=1&skyUtc=2026-01-15T13:00:00Z');
+    state = useSkyStore.getState();
+    const date = new Date(state.dateOverride + state.timeOffsetMs);
+    assert.equal(date.toISOString().slice(0, 10), new Date(epoch + 17 * 3600e3).toISOString().slice(0, 10));
+    assert.ok(getBodyAltitude(Body.Sun, date, state.observer) < -18);
+    assert.equal(state.timeOffsetMs, 17 * 3600e3);
+  } finally {
+    Date.now = realNow;
+    useSkyStore.getState().setTimeOffset(0);
+  }
 });

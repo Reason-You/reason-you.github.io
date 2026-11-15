@@ -14,6 +14,7 @@ const { projectSkyStars } = require('../src/lib/sky/renderer.ts');
 const { createLookUpCamera, interactiveStars } = require('../src/lib/sky/look-up.ts');
 const { createCamera, project, projectSkySegment } = require('../src/lib/sky/projection.ts');
 const { DEFAULT_OBSERVER } = require('../src/lib/sky/constants.ts');
+const { cameraAtOffset, zenithAtOffset } = require('../src/lib/sky/star-trails.ts');
 const data = require('../public/data/constellation-lines.json');
 
 test('88 source graphs contain 695 unique real HIP segments with all 710 source coordinates',()=>{
@@ -45,13 +46,13 @@ test('HYG membership covers all 8920 existing stars, including unnamed and non-v
   for(const star of getCatalog())assert.ok(constellationForStarId(star.id));
   assert.equal(constellationForStarId(null),null);assert.equal(constellationForStarId(0),null);
   const snapshot=computeSky(new Date('2026-01-15T14:00:00Z'),DEFAULT_OBSERVER,{limitingMagnitude:4.146,bortleApprox:7.6,lightProxy:1,source:'viirs'});
-  const camera=createLookUpCamera(1440,780),rendered=projectSkyStars(snapshot,camera,{isDark:true,mobile:false,presentation:'look-up'});
+  const camera=createLookUpCamera(1440,780,{azimuth:180,altitude:47.5}),rendered=projectSkyStars(snapshot,camera,{isDark:true,mobile:false,presentation:'look-up'});
   const targets=constellationHitTargets(rendered,snapshot.constellationStars,camera);assert.ok(targets.some(e=>e.star.mag>3));
   assert.ok(targets.some(e=>!constellationForStarId(e.star.id).lines.some(l=>l.fromHip===e.star.hip||l.toHip===e.star.hip)));
   for(const e of targets)assert.ok(rendered.includes(e)&&projectConstellation(constellationForStarId(e.star.id),snapshot.constellationStars,camera).length>0);
 });
 test('click and keyboard targets require magnitude <= 3 and verified names',()=>{
-  const camera=createLookUpCamera(1440,780);
+  const camera=createLookUpCamera(1440,780,{azimuth:180,altitude:47.5});
   const named=getCatalog().find(s=>s.hip===24436);
   const unnamed=getCatalog().find(s=>s.hip===14328);
   assert.ok(unnamed.mag<=3&&!unnamed.name);
@@ -98,13 +99,38 @@ test('complete figures share the star camera and stay within the viewport and ho
   }
   assert.ok(total>100);
 });
+test('one-second sky frames clip constellation figures against their current horizon',()=>{
+  const observer={...DEFAULT_OBSERVER,latitude:10};
+  const snapshot=computeSky(new Date('2026-01-15T13:00:00Z'),observer,
+    {limitingMagnitude:5,bortleApprox:6,lightProxy:0,source:'override'});
+  const offset=419e3;
+  const camera=cameraAtOffset(createLookUpCamera(768,900,{azimuth:0,altitude:47.5}),observer.latitude,offset);
+  const horizon=zenithAtOffset(observer.latitude,offset);
+  const height=point=>{
+    const x=(point.x-camera.width/2)/camera.scale;
+    const y=(camera.height*camera.centerYFraction-point.y)/camera.scale;
+    return camera.forward.reduce((sum,value,i)=>sum+(value+x*camera.right[i]+y*camera.up[i])*horizon[i],0);
+  };
+  let oldHorizonEndpoints=0,visibleSegments=0;
+  for(const constellation of CONSTELLATIONS){
+    for(const line of projectConstellation(constellation,snapshot.constellationStars,camera)){
+      oldHorizonEndpoints+=[line.from,line.to].filter(point=>height(point)<-1e-9).length;
+    }
+    for(const line of projectConstellation(constellation,snapshot.constellationStars,camera,horizon)){
+      visibleSegments++;
+      assert.ok([line.from,line.to].every(point=>height(point)>=-1e-9));
+    }
+  }
+  assert.ok(oldHorizonEndpoints>0,'the cached horizon would leave submerged endpoints in this supported view');
+  assert.ok(visibleSegments>100,'the current horizon retains the visible constellation figures');
+});
 test('Scorpius retains every segment through the 4.7-magnitude middle vertex in the reported city sky',()=>{
   const snapshot=computeSky(new Date('2026-10-13T06:50:00Z'),DEFAULT_OBSERVER,{limitingMagnitude:4.146324479884627,bortleApprox:7.6,lightProxy:28.8855,source:'viirs'});
   const c=CONSTELLATIONS.find(c=>c.id==='Sco');
   assert.equal(snapshot.constellationStars.length,710);
   assert.ok(!snapshot.stars.some(s=>s.hip===82671));
   for(const [width,height] of [[360,665],[390,709],[412,780],[1280,755]]){
-    const camera=createLookUpCamera(width,height),lines=projectConstellation(c,snapshot.constellationStars,camera);
+    const camera=createLookUpCamera(width,height,{azimuth:180,altitude:47.5}),lines=projectConstellation(c,snapshot.constellationStars,camera);
     assert.equal(lines.length,12);
     const incoming=lines.find(l=>l.toHip===82671),outgoing=lines.find(l=>l.fromHip===82671);
     assert.ok(incoming&&outgoing);assert.deepEqual(incoming.to,outgoing.from);

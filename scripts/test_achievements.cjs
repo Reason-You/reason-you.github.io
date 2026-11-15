@@ -5,15 +5,15 @@ require.extensions['.ts']=(module,filename)=>{module._compile(ts.transpileModule
 const {ACHIEVEMENTS,ACHIEVEMENT_STORAGE_KEY}=require('../src/lib/achievements/definitions.ts');
 const {evaluateAchievements}=require('../src/lib/achievements/evaluate.ts');
 const {SPECIAL_EXCLUSIONS,sampleMarshmallowOutcome,roastTimings}=require('../src/lib/achievements/marshmallow.ts');
-const {campfireReducer,INITIAL_CAMPFIRE}=require('../src/lib/achievements/session.ts');
+const {campfireReducer,INITIAL_CAMPFIRE,observationFacing}=require('../src/lib/achievements/session.ts');
 const {parseAchievementRecord,loadAchievementRecord,saveAchievementRecord,emptyAchievementRecord}=require('../src/lib/achievements/persistence.ts');
 const {useAchievementStore}=require('../src/lib/stores/achievementStore.ts');
 const {createMarshmallowMeteor,meteorPosition,meteorFrame}=require('../src/lib/sky/marshmallow-meteor.ts');
 const {BACKGROUND_METEOR,meteorPhotometry}=require('../src/lib/sky/meteor-appearance.ts');
-const taste='a-taste-of-the-stars',wish='make-a-wish-at-the-marshmallowids';
+const taste='a-taste-of-the-stars',wish='make-a-wish-at-the-marshmallowids',fourSkies='four-skies-one-campfire';
 const milestones=[10,20,30,42,64,75,88,99,100];
-const event=(eaten,outcome='normal',meteorReleased=false)=>({eaten,outcome,meteorReleased,origin:{x:720,y:700},directions:['south']});
-const confirm=(s,facing='south',roll=.4)=>{s=campfireReducer(s,{type:'roast',roll});s=campfireReducer(s,{type:'ready'});s=campfireReducer(s,{type:'eat',facing,origin:{x:720,y:700}});return campfireReducer(s,{type:'confirm'})};
+const event=(eaten,outcome='normal',meteorReleased=false)=>({type:'marshmallow',eaten,outcome,meteorReleased,origin:{x:720,y:700}});
+const confirm=(s,roll=.4)=>{s=campfireReducer(s,{type:'roast',roll});s=campfireReducer(s,{type:'ready'});s=campfireReducer(s,{type:'eat',origin:{x:720,y:700}});return campfireReducer(s,{type:'confirm'})};
 
 test('twelve discoveries: nine quantity milestones, exploration, starlight and Marshmallowids',()=>{
  assert.equal(ACHIEVEMENTS.length,12);assert.equal(new Set(ACHIEVEMENTS.map(a=>a.icon)).size,12);
@@ -42,25 +42,54 @@ test('any starlight awards Taste; only a successfully released rare fireball awa
  assert.deepEqual(evaluateAchievements(event(2,'fireball',true),[wish,taste]),[]);
  assert.deepEqual(evaluateAchievements(event(1,'burnt'),[]),[]);
 });
-test('direction progress only changes at a completed bite and remains order independent',()=>{
- const e={...event(42),directions:['east','south','west','north','east']};assert.deepEqual(evaluateAchievements(e,[]),['the-answer-was-marshmallows','four-skies-one-campfire']);
- assert.deepEqual(evaluateAchievements({...e,eaten:40},[]),['four-skies-one-campfire']);
- for(const missing of ['south','west','north','east'])assert.deepEqual(evaluateAchievements({...e,eaten:4,directions:e.directions.filter(d=>d!==missing)},[]),[]);
+test('settled looks award the four skies independently from marshmallow discoveries',()=>{
+ const e={type:'look',directions:['east','south','west','north','east']};
+ assert.deepEqual(evaluateAchievements(e,[]),[fourSkies]);
+ assert.deepEqual(evaluateAchievements(e,[fourSkies]),[]);
+ assert.deepEqual(evaluateAchievements(event(42),[]),['the-answer-was-marshmallows']);
+ for(const missing of ['south','west','north','east'])assert.deepEqual(evaluateAchievements({...e,directions:e.directions.filter(d=>d!==missing)},[]),[]);
+});
+test('observation directions use narrow cardinal sectors below eighty degrees altitude',()=>{
+ for(const [azimuth,facing] of [[0,'north'],[90,'east'],[180,'south'],[270,'west']]){
+  for(const offset of [-22.5,0,22.5])assert.equal(observationFacing({azimuth:azimuth+offset,altitude:20}),facing);
+  for(const offset of [-22.501,22.501])assert.equal(observationFacing({azimuth:azimuth+offset,altitude:20}),null);
+  assert.equal(observationFacing({azimuth,altitude:79.999}),facing);
+  for(const altitude of [80,90])assert.equal(observationFacing({azimuth,altitude}),null);
+ }
+ assert.equal(observationFacing({azimuth:359,altitude:0}),'north');
+ for(const azimuth of [45,135,225,315])assert.equal(observationFacing({azimuth,altitude:20}),null);
+});
+test('looks accumulate while the fire burns without changing roasting or requiring a bite',()=>{
+ assert.equal(campfireReducer(INITIAL_CAMPFIRE,{type:'look',facing:'north'}),INITIAL_CAMPFIRE);
+ let s=campfireReducer(INITIAL_CAMPFIRE,{type:'toggle'});
+ s=campfireReducer(s,{type:'enter'});s=campfireReducer(s,{type:'roast',roll:.95});
+ const outcome=s.outcome,round=s.round,timings=s.timings;
+ for(const facing of ['north','east','south','west']){
+  s=campfireReducer(s,{type:'look',facing});
+  assert.equal(campfireReducer(s,{type:'look',facing}),s);
+ }
+ assert.equal(s.eaten,0);assert.equal(s.completion,null);assert.equal(s.phase,'roasting');
+ assert.equal(s.outcome,outcome);assert.equal(s.round,round);assert.equal(s.timings,timings);
+ assert.deepEqual(evaluateAchievements({type:'look',directions:s.directions},[]),[fourSkies]);
 });
 test('outcome stays fixed for the lifecycle; repeated roast, eat and confirm actions do not duplicate',()=>{
  let s=campfireReducer(INITIAL_CAMPFIRE,{type:'toggle'});s=campfireReducer(s,{type:'enter'});s=campfireReducer(s,{type:'roast',roll:.95});assert.equal(s.outcome,'fireball');assert.equal(campfireReducer(s,{type:'roast',roll:.4}),s);
- s=campfireReducer(s,{type:'ready'});assert.equal(s.eaten,0);s=campfireReducer(s,{type:'eat',facing:'west',origin:{x:700,y:650}});assert.equal(campfireReducer(s,{type:'eat',facing:'east'}),s);
- s=campfireReducer(s,{type:'confirm'});assert.equal(s.eaten,1);assert.deepEqual(s.completion,{eaten:1,directions:['west'],outcome:'fireball',origin:{x:700,y:650}});assert.equal(campfireReducer(s,{type:'confirm'}),s);
+ s=campfireReducer(s,{type:'ready'});assert.equal(s.eaten,0);s=campfireReducer(s,{type:'eat',origin:{x:700,y:650}});assert.equal(campfireReducer(s,{type:'eat'}),s);
+ s=campfireReducer(s,{type:'confirm'});assert.equal(s.eaten,1);assert.deepEqual(s.directions,[]);assert.deepEqual(s.completion,{type:'marshmallow',eaten:1,outcome:'fireball',origin:{x:700,y:650}});assert.equal(campfireReducer(s,{type:'confirm'}),s);
 });
 test('extinguishing cancels every unfinished phase, retaining only the visit count',()=>{
- for(const phase of ['entering','roasting','ready','eating']){const s=campfireReducer({...INITIAL_CAMPFIRE,fireOn:true,phase,eaten:39,directions:['west','north'],outcome:'fireball',biteFacing:'east'},{type:'toggle'});assert.equal(s.eaten,39);assert.equal(s.outcome,'normal');assert.deepEqual(s.directions,[]);assert.equal(s.completion,null);assert.equal(campfireReducer(s,{type:'confirm'}),s)}
+ for(const phase of ['entering','roasting','ready','eating']){const s=campfireReducer({...INITIAL_CAMPFIRE,fireOn:true,phase,eaten:39,directions:['west','north'],outcome:'fireball'},{type:'toggle'});assert.equal(s.eaten,39);assert.equal(s.outcome,'normal');assert.deepEqual(s.directions,[]);assert.equal(s.completion,null);assert.equal(campfireReducer(s,{type:'confirm'}),s)}
 });
 test('counts continue across ignitions; four directions never combine across separate fires',()=>{
- let s=campfireReducer(INITIAL_CAMPFIRE,{type:'toggle'});s=campfireReducer(s,{type:'enter'});s=confirm(s,'south');s=campfireReducer(s,{type:'enter'});s=confirm(s,'west');s=campfireReducer(s,{type:'toggle'});s=campfireReducer(s,{type:'toggle'});s=campfireReducer(s,{type:'enter'});s=confirm(s,'north');s=campfireReducer(s,{type:'enter'});s=confirm(s,'east');assert.equal(s.eaten,4);assert.deepEqual(s.directions,['north','east']);assert.deepEqual(evaluateAchievements(s.completion,[]),[]);
+ let s=campfireReducer(INITIAL_CAMPFIRE,{type:'toggle'});
+ for(const facing of ['south','west']){s=campfireReducer(s,{type:'look',facing});s=campfireReducer(s,{type:'enter'});s=confirm(s)}
+ s=campfireReducer(s,{type:'toggle'});s=campfireReducer(s,{type:'toggle'});
+ for(const facing of ['north','east']){s=campfireReducer(s,{type:'look',facing});s=campfireReducer(s,{type:'enter'});s=confirm(s)}
+ assert.equal(s.eaten,4);assert.deepEqual(s.directions,['north','east']);assert.deepEqual(evaluateAchievements({type:'look',directions:s.directions},[]),[]);
 });
 test('a full visit reaches 120 with all twelve discoveries, once each',()=>{
  let s=campfireReducer(INITIAL_CAMPFIRE,{type:'toggle'});s=campfireReducer(s,{type:'enter'});const unlocked=[];
- for(let n=1;n<=120;n++){s=confirm(s,['south','west','north','east'][Math.min(n-1,3)],n===5?.85:n===6?.95:.4);assert.equal(s.eaten,n);unlocked.push(...evaluateAchievements({...s.completion,meteorReleased:true},unlocked));assert.equal(campfireReducer(s,{type:'confirm'}),s);s=campfireReducer(s,{type:'enter'})}
+ for(let n=1;n<=120;n++){s=confirm(s,n===5?.85:n===6?.95:.4);assert.equal(s.eaten,n);unlocked.push(...evaluateAchievements({...s.completion,meteorReleased:true},unlocked));assert.equal(campfireReducer(s,{type:'confirm'}),s);s=campfireReducer(s,{type:'look',facing:['south','west','north','east'][Math.min(n-1,3)]});unlocked.push(...evaluateAchievements({type:'look',directions:s.directions},unlocked));s=campfireReducer(s,{type:'enter'})}
  assert.equal(new Set(unlocked).size,12);assert.equal(unlocked.length,12);
 });
 test('smooth cooking curve is continuous, strictly decreasing and approaches 800ms',()=>{
@@ -84,6 +113,25 @@ test('reduced motion replaces flight with a local short trail and preserves the 
 });
 test('existing records retain known discoveries and drop the removed fifty/burnt entries',()=>{
  const parsed=parseAchievementRecord({version:1,unlocked:{'cosmic-roaster':'2026-01-15T13:00:00Z','halfway-to-the-end-of-the-universe':'2026-01-15T14:00:00Z','a-little-too-close-to-the-sun':'2026-01-15T15:00:00Z'},recentId:'a-little-too-close-to-the-sun'});assert.deepEqual(parsed,{version:1,unlocked:{'cosmic-roaster':'2026-01-15T13:00:00Z'},recentId:'cosmic-roaster'});
+});
+test('the existing four-skies discovery keeps its timestamp and is not awarded again',()=>{
+ const timestamp='2026-01-15T13:00:00Z';
+ const record=parseAchievementRecord({version:1,unlocked:{[fourSkies]:timestamp},recentId:fourSkies});
+ assert.deepEqual(record,{version:1,unlocked:{[fourSkies]:timestamp},recentId:fourSkies});
+ useAchievementStore.setState({record,hydrated:true});
+ assert.deepEqual(useAchievementStore.getState().discover({type:'look',directions:['north','east','south','west']}),[]);
+ assert.equal(useAchievementStore.getState().record,record);
+});
+test('four settled views create one permanent discovery without a marshmallow event',()=>{
+ useAchievementStore.setState({record:emptyAchievementRecord(),hydrated:true});
+ assert.deepEqual(useAchievementStore.getState().discover({type:'look',directions:['north','east','south']}),[]);
+ const looked={type:'look',directions:['north','east','south','west']};
+ assert.deepEqual(useAchievementStore.getState().discover(looked),[fourSkies]);
+ const record=useAchievementStore.getState().record;
+ assert.equal(record.version,1);assert.equal(record.recentId,fourSkies);
+ assert.ok(Number.isFinite(Date.parse(record.unlocked[fourSkies])));
+ assert.deepEqual(useAchievementStore.getState().discover(looked),[]);
+ assert.equal(useAchievementStore.getState().record,record);
 });
 test('malformed, old and blocked storage remains usable; valid records round-trip',()=>{
  const deny=()=>{throw Error('disabled')};assert.deepEqual(loadAchievementRecord(deny),emptyAchievementRecord());assert.equal(saveAchievementRecord(emptyAchievementRecord(),deny),false);

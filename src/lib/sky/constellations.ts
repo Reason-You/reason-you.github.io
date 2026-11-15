@@ -2,7 +2,7 @@ import data from '../../../public/data/constellation-lines.json';
 import membership from '../../../public/data/constellation-membership.json';
 import vertices from '../../../public/data/constellation-vertices.json';
 import type { Camera, ProjectedPoint } from './projection';
-import { projectSkySegment } from './projection';
+import { horizonToVector, projectSkySegment } from './projection';
 import type { RenderedStar } from './renderer';
 import type { SkyStar } from './astro';
 
@@ -59,11 +59,15 @@ export function toggleConstellationSelection(pinnedIds: number[], constellationI
   };
 }
 
-export function constellationHitTargets(rendered: readonly RenderedStar[], stars: readonly SkyStar[], camera: Camera): RenderedStar[] {
-  const available = new Set(CONSTELLATIONS.filter(c => projectConstellation(c, stars, camera).length > 0).map(c => c.id));
+export function constellationHitTargets(
+  rendered: readonly RenderedStar[], stars: readonly SkyStar[], camera: Camera, horizon: readonly number[] = [0, 0, 1],
+): RenderedStar[] {
+  const available = new Set(CONSTELLATIONS.filter(c => projectConstellation(c, stars, camera, horizon).length > 0).map(c => c.id));
   return rendered.filter(({ star, point }) => {
     const constellation = constellationForStarId(star.id);
-    return constellation && available.has(constellation.id) && star.altitude >= 0 &&
+    const vector = horizonToVector(star.altitude, star.azimuth);
+    const aboveHorizon = vector.reduce((sum, value, i) => sum + value * horizon[i], 0) >= 0;
+    return constellation && available.has(constellation.id) && aboveHorizon &&
       Number.isFinite(point.x) && Number.isFinite(point.y) &&
       point.x >= 0 && point.x <= camera.width && point.y >= 0 && point.y <= camera.height;
   });
@@ -72,11 +76,12 @@ export function constellationHitTargets(rendered: readonly RenderedStar[], stars
 /** Complete source vertices share the star camera; visible portions survive clipping. */
 export function projectConstellation(
   constellation: typeof CONSTELLATIONS[number], stars: readonly SkyStar[], camera: Camera,
+  horizon?: readonly number[],
 ): ConstellationSegment[] {
   const byHip = new Map(stars.map(star => [star.hip, star]));
   return constellation.lines.flatMap(line => {
     const from = byHip.get(line.fromHip), to = byHip.get(line.toHip);
-    const segment = from && to ? projectSkySegment(from, to, camera) : null;
+    const segment = from && to ? projectSkySegment(from, to, camera, horizon) : null;
     return segment ? [{ ...line, ...segment }] : [];
   });
 }

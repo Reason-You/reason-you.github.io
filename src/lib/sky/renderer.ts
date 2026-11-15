@@ -8,6 +8,8 @@ export interface RenderStyle {
   mobile: boolean;
   /** The homepage fades its window; Look Up uses the whole camera frame. */
   presentation?: "background" | "look-up";
+  /** Screen boundary of the local ground in the Look Up view. */
+  horizonY?: number;
   /** Blend from normal star discs to trail-width heads without halos. */
   trailBlend?: number;
   /** Blend from the normal projection to the last trail endpoints. */
@@ -200,6 +202,7 @@ export function projectSkyStars(
   for (const star of snapshot.stars) {
     const point = project(star.altitude, star.azimuth, camera);
     if (!point) continue;
+    if (fullSky && point.y > (style.horizonY ?? Infinity)) continue;
     if (point.x < -4 || point.x > camera.width + 4 || point.y < -4 || point.y > camera.height + 4) {
       continue;
     }

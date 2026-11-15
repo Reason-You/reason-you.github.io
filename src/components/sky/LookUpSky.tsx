@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import MeteorBackground from '@/components/ui/MeteorBackground';
 import { useSkyStore } from '@/lib/stores/skyStore';
 import { useLabelStore } from '@/lib/stores/labelStore';
@@ -10,33 +10,46 @@ import ConstellationPreview from './ConstellationPreview';
 import StarLabels from './StarLabels';
 import { useSkyDirection } from './SkyDirection';
 import { resolveTheme, useThemeStore } from '@/lib/stores/themeStore';
-import { computeSky, type SkySnapshot } from '@/lib/sky/astro';
-import { createCamera, type Camera } from '@/lib/sky/projection';
+import { computeSky, solarSkyState, type SkySnapshot } from '@/lib/sky/astro';
+import { createCamera, projectSkyDirection, unprojectSkyPoint, type Camera, type SkyDirectionVector } from '@/lib/sky/projection';
 import { drawSky, trailHeadPoint, type RenderedStar } from '@/lib/sky/renderer';
 import { MOBILE_BREAKPOINT_PX, SKY_CENTER_Y, SKY_UPDATE_INTERVAL_MS, SKY_VIEW } from '@/lib/sky/constants';
-import { SPEED_START, TrailBuffer, formatOffset, snapshotAtOffset, speedMultiplier, virtualElapsedMs } from '@/lib/sky/star-trails';
+import { SPEED_START, SPEED_MAX, TRAIL_HOLD_MS, TRAIL_FADE_MS, TrailBuffer, formatOffset, snapshotAtOffset, speedMultiplier, virtualElapsedMs, zenithAtOffset } from '@/lib/sky/star-trails';
 import TrailControls from './TrailControls';
+import SkyGuides from './SkyGuides';
+import SkyViewControls from './SkyViewControls';
+import { SkyHintsProvider } from './SkyHints';
+import { drawSkyGuides } from '@/lib/sky/guides';
+import { horizonScreenY, projectCampfire } from '@/lib/sky/ground';
+import { drawGround } from '@/lib/sky/ground-renderer';
 import { constellationHitTargets, readConstellationPreview } from '@/lib/sky/constellations';
 import {
-  createLookUpCamera, hitTestStar, interactiveStars, LOOK_UP_HIT_RADIUS,
-  SKY_DIRECTIONS, type InteractiveStar,
+  createLookUpCamera, directionName, dragSkyView, hitTestStar, interactiveStars, LOOK_UP_HIT_RADIUS,
+  type InteractiveStar, type SkyView,
 } from '@/lib/sky/look-up';
 
 interface SkyFrame {
   camera: Camera;
   snapshot: SkySnapshot;
+  horizon: readonly number[];
   rendered: RenderedStar[];
   stars: InteractiveStar[];
+  groundY: number;
 }
 
 export default function LookUpSky() {
   const skyRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const groundCanvasRef = useRef<HTMLCanvasElement>(null);
   const directionLayerRef = useRef<HTMLDivElement>(null);
   const previousLayerRef = useRef<HTMLDivElement>(null);
-  const { facing } = useSkyDirection();
+  const { facing, view, setView, fitViewport } = useSkyDirection();
+  const [skySize, setSkySize] = useState<{ width: number; height: number } | null>(null);
+  const localCamera = useMemo(() => skySize
+    ? createLookUpCamera(skySize.width, skySize.height, view) : null, [skySize, view]);
   const facingRef = useRef(facing);
+  const viewRef = useRef(view);
   const reprojectRef = useRef<() => void>(() => {});
   const skyRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
   const snapshotRef = useRef<SkySnapshot | null>(null);
@@ -50,21 +63,57 @@ export default function LookUpSky() {
   const theme = useThemeStore((state) => state.theme);
   const isDark = resolveTheme(theme) === 'dark';
   const isDarkRef = useRef(isDark);
+  const groundColorRef = useRef(isDark ? '#0f172a' : '#fefffe');
   const observer = useSkyStore((state) => state.observer);
   const previousObserverRef = useRef(observer);
   const pollution = useSkyStore((state) => state.pollution);
   const dateOverride = useSkyStore((state) => state.dateOverride);
   const setSnapshotDate = useSkyStore((state) => state.setSnapshotDate);
   const [frame, setFrame] = useState<SkyFrame | null>(null);
+  const [guidesOpen, setGuidesOpen] = useState(false);
+  const guidesOpenRef = useRef(false);
+  const guidesCanvasRef = useRef<HTMLCanvasElement>(null);
+  const guideFrameRef = useRef<{
+    snapshot: SkySnapshot; camera: Camera; horizon?: readonly number[]; timestamp: number;
+  } | null>(null);
+  const guidePaintRef = useRef<{
+    snapshot: SkySnapshot; camera: Camera | null; second: number; isDark: boolean;
+  } | null>(null);
+  const groundPaintRef = useRef<{
+    camera: Camera; twilight: number; isDark: boolean; color: string;
+  } | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [hoveredPreviewId, setHoveredPreviewId] = useState<number | null>(null);
-  const [hintSeen, setHintSeen] = useState(true);
   const pinnedIds = useLabelStore((state) => state.pinnedIds);
   const pinnedConstellations = useLabelStore((state) => state.constellationIds);
   const togglePinned = useLabelStore((state) => state.toggle);
   const clearPinned = useLabelStore((state) => state.clearAll);
   const reconcilePinned = useLabelStore((state) => state.reconcile);
-  const pointerDown = useRef<{ x: number; y: number } | null>(null);
+  const pointerDown = useRef<{
+    id: number; x: number; y: number; view: SkyView; camera: Camera;
+    dragging: boolean; latestView: SkyView;
+  } | null>(null);
+  const draggingRef = useRef(false);
+  const panRafRef = useRef(0);
+  const [dragging, setDragging] = useState(false);
+
+  const finishPan = useCallback((applyPending = true) => {
+    const pointer = pointerDown.current;
+    pointerDown.current = null;
+    cancelAnimationFrame(panRafRef.current);
+    panRafRef.current = 0;
+    draggingRef.current = false;
+    if (pointer?.dragging) {
+      setDragging(false);
+      if (applyPending) {
+        viewRef.current = pointer.latestView;
+        setView(pointer.latestView);
+        reprojectRef.current();
+      } else renderRef.current();
+    }
+    if (pointer && skyRef.current?.hasPointerCapture(pointer.id)) skyRef.current.releasePointerCapture(pointer.id);
+    return Boolean(pointer?.dragging);
+  }, [setView]);
 
   // --- Time travel -----------------------------------------------------------
   // The sky is fast-forwarded by rotating the camera about the celestial pole
@@ -76,12 +125,19 @@ export default function LookUpSky() {
   const baseCameraRef = useRef<Camera | null>(null);
   const cameraRef = useRef<Camera | null>(null);
   const computeRef = useRef<() => void>(() => {});
-  const offsetMsRef = useRef(0);
+  const recomputeSnapshotRef = useRef<() => void>(() => {});
   const trailBufferRef = useRef(new TrailBuffer());
   const cancelTrailFadeRef = useRef<(() => void) | null>(null);
   const starHeadBlendRef = useRef(0);
   const trailPositionBlendRef = useRef(0);
   const trailHeadPositionsRef = useRef<ReadonlyMap<number, RenderedStar['point']>>(new Map());
+  const trailHeadDirectionsRef = useRef<ReadonlyMap<number, SkyDirectionVector>>(new Map());
+  const trailAnchorFrameRef = useRef<{
+    camera: Camera; directions: ReadonlyMap<number, SkyDirectionVector>;
+  } | null>(null);
+  const trailHeadSettleRafRef = useRef(0);
+  const retainedTrailFrameRef = useRef<{ camera: Camera; isDark: boolean } | null>(null);
+  const trailContextRef = useRef({ observer, dateOverride });
   const redrawStarsRef = useRef<() => void>(() => {});
   const holdRef = useRef<{
     active: boolean;
@@ -103,10 +159,66 @@ export default function LookUpSky() {
   const [timeTravel, setTimeTravel] = useState<{ holding: boolean; speed: number | null; offsetLabel: string | null }>({
     holding: false, speed: null, offsetLabel: null,
   });
+  const [trailsActive, setTrailsActive] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const reducedRef = useRef(false);
 
+  const renderGuides = useCallback((snapshot: SkySnapshot, camera: Camera, horizon?: readonly number[], force = false, timestamp = snapshot.date.getTime()) => {
+    const isDark = isDarkRef.current;
+    guideFrameRef.current = { snapshot, camera, horizon, timestamp };
+    if (!guidesOpenRef.current) return;
+    const localCamera = baseCameraRef.current;
+    const second = Math.floor(timestamp / 1000);
+    const previous = guidePaintRef.current;
+    if (!force && previous?.snapshot === snapshot && previous.camera === localCamera &&
+        previous.second === second && previous.isDark === isDark) return;
+    const ctx = guidesCanvasRef.current?.getContext('2d');
+    if (ctx) {
+      drawSkyGuides(ctx, snapshot.date, snapshot.observer, camera, { isDark, horizon });
+      guidePaintRef.current = { snapshot, camera: localCamera, second, isDark };
+    }
+  }, []);
+
+  const renderGround = useCallback((twilight: number) => {
+    const camera = baseCameraRef.current;
+    const ctx = groundCanvasRef.current?.getContext('2d');
+    if (!camera || !ctx) return;
+    const isDark = isDarkRef.current;
+    const color = groundColorRef.current;
+    const previous = groundPaintRef.current;
+    if (previous?.camera === camera && previous.twilight === twilight && previous.isDark === isDark && previous.color === color) return;
+    drawGround(ctx, camera, isDark, twilight, color);
+    groundPaintRef.current = { camera, twilight, isDark, color };
+  }, []);
+
+  const refreshTrailAnchors = useCallback((camera: Camera) => {
+    const directions = trailHeadDirectionsRef.current;
+    const previous = trailAnchorFrameRef.current;
+    if (previous?.camera === camera && previous.directions === directions) return;
+    const positions = new Map<number, RenderedStar['point']>();
+    for (const [id, direction] of directions) {
+      const point = projectSkyDirection(direction, camera);
+      if (point) positions.set(id, point);
+    }
+    trailHeadPositionsRef.current = positions;
+    trailAnchorFrameRef.current = { camera, directions };
+  }, []);
+
+  const renderRetainedTrails = useCallback(() => {
+    const camera = baseCameraRef.current;
+    if (!camera || holdRef.current.active) return;
+    const previous = retainedTrailFrameRef.current;
+    const isDark = isDarkRef.current;
+    if (previous?.camera === camera && previous.isDark === isDark) return;
+    const ctx = trailCanvasRef.current?.getContext('2d');
+    if (!ctx || !trailBufferRef.current.hasTrails()) return;
+    trailBufferRef.current.draw(ctx, { isDark, camera });
+    retainedTrailFrameRef.current = { camera, isDark };
+  }, []);
+
   const clearTrails = useCallback(() => {
+    cancelAnimationFrame(trailHeadSettleRafRef.current);
+    trailHeadSettleRafRef.current = 0;
     cancelTrailFadeRef.current?.();
     cancelTrailFadeRef.current = null;
     const trail = trailCanvasRef.current;
@@ -119,6 +231,9 @@ export default function LookUpSky() {
     starHeadBlendRef.current = 0;
     trailPositionBlendRef.current = 0;
     trailHeadPositionsRef.current = new Map();
+    trailHeadDirectionsRef.current = new Map();
+    retainedTrailFrameRef.current = null;
+    setTrailsActive(false);
   }, []);
 
   const fadeTrails = useCallback(() => {
@@ -126,16 +241,20 @@ export default function LookUpSky() {
     const ctx = trail?.getContext('2d');
     if (!trail || !ctx) return;
     cancelTrailFadeRef.current?.();
-    const duration = reducedRef.current ? 500 : 3500;
-    const started = performance.now();
+    const duration = TRAIL_FADE_MS;
+    let started = 0;
     const initialBlend = starHeadBlendRef.current;
     const initialPositionBlend = trailPositionBlendRef.current;
     let raf = 0;
+    let clearTimer = 0;
     const cancel = () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(holdTimer);
+      window.clearTimeout(clearTimer);
       cancelAnimationFrame(raf);
     };
     const clear = () => {
+      cancelAnimationFrame(trailHeadSettleRafRef.current);
+      trailHeadSettleRafRef.current = 0;
       cancel();
       cancelTrailFadeRef.current = null;
       ctx.clearRect(0, 0, trail.width, trail.height);
@@ -144,6 +263,9 @@ export default function LookUpSky() {
       starHeadBlendRef.current = 0;
       trailPositionBlendRef.current = 0;
       trailHeadPositionsRef.current = new Map();
+      trailHeadDirectionsRef.current = new Map();
+      retainedTrailFrameRef.current = null;
+      setTrailsActive(false);
       redrawStarsRef.current();
     };
     const tick = (now: number) => {
@@ -156,12 +278,47 @@ export default function LookUpSky() {
       if (progress < 1) raf = requestAnimationFrame(tick);
       else clear();
     };
-    const timer = window.setTimeout(clear, duration + 700);
+    const holdTimer = window.setTimeout(() => {
+      started = performance.now();
+      raf = requestAnimationFrame(tick);
+      clearTimer = window.setTimeout(clear, duration + 700);
+    }, TRAIL_HOLD_MS);
     cancelTrailFadeRef.current = cancel;
-    raf = requestAnimationFrame(tick);
   }, []);
 
   const settleExposure = useCallback((rendered: RenderedStar[]) => {
+    cancelAnimationFrame(trailHeadSettleRafRef.current);
+    trailHeadSettleRafRef.current = 0;
+    const camera = baseCameraRef.current;
+    const directions = new Map(trailBufferRef.current.headDirections());
+    trailHeadDirectionsRef.current = directions;
+    if (camera && trailPositionBlendRef.current > 0 && rendered.length) {
+      const starts = rendered.map(({ star, point }) => [star.id, unprojectSkyPoint(point, camera)] as const);
+      const initial = new Map(directions);
+      for (const [id, direction] of starts) initial.set(id, direction);
+      trailHeadDirectionsRef.current = initial;
+      const started = performance.now();
+      const settle = (now: number) => {
+        const progress = Math.min(1, (now - started) / 180);
+        const blend = progress * progress * (3 - 2 * progress);
+        const next = new Map(directions);
+        if (progress < 1) {
+          for (const [id, from] of starts) {
+            const to = directions.get(id);
+            if (!to) continue;
+            const x = from[0] + (to[0] - from[0]) * blend;
+            const y = from[1] + (to[1] - from[1]) * blend;
+            const z = from[2] + (to[2] - from[2]) * blend;
+            const length = Math.hypot(x, y, z);
+            next.set(id, [x / length, y / length, z / length]);
+          }
+        }
+        trailHeadDirectionsRef.current = next;
+        renderRef.current();
+        trailHeadSettleRafRef.current = progress < 1 ? requestAnimationFrame(settle) : 0;
+      };
+      trailHeadSettleRafRef.current = requestAnimationFrame(settle);
+    }
     trailHeadPositionsRef.current = new Map(rendered.map(({ star, point }) => [star.id, point]));
     trailPositionBlendRef.current = 1;
     computeRef.current();
@@ -188,6 +345,8 @@ export default function LookUpSky() {
       isDark: isDarkRef.current,
       mobile: frame.camera.width < MOBILE_BREAKPOINT_PX,
       presentation: 'look-up' as const,
+      // Keep the below-horizon collar so trails cross the opaque ground edge.
+      horizonY: Infinity,
       trailBlend: starHeadBlendRef.current,
       trailPositionBlend: trailPositionBlendRef.current,
       trailHeadPositions: trailHeadPositionsRef.current,
@@ -197,11 +356,13 @@ export default function LookUpSky() {
       ...entry,
       point: trailHeadPoint(entry.point, trailHeadPositionsRef.current.get(entry.star.id), trailPositionBlendRef.current),
     })) : rendered;
-    trailBufferRef.current.push(virtualNowMs, exposed, frame.snapshot.twilight);
-    trailBufferRef.current.draw(trailCtx, style);
-    setSnapshotDate(virtualNowMs);
+    trailBufferRef.current.push(virtualNowMs, frame.snapshot.twilight);
+    trailBufferRef.current.draw(trailCtx, { ...style, camera: baseCamera });
+    renderGuides(base, frame.camera, zenithAtOffset(base.observer.latitude, advanceMs), false, virtualNowMs);
+    renderGround(frame.snapshot.twilight);
+    setSnapshotDate(virtualNowMs, virtualNowMs - (dateOverride ?? Date.now()));
     return exposed;
-  }, [setSnapshotDate]);
+  }, [dateOverride, renderGuides, renderGround, setSnapshotDate]);
 
   const endHold = useCallback(() => {
     const hold = holdRef.current;
@@ -214,20 +375,22 @@ export default function LookUpSky() {
       document.removeEventListener('visibilitychange', hold.onVisibilityChange);
       hold.onVisibilityChange = null;
     }
-    offsetMsRef.current = hold.offsetAtStart + virtualMs;
+    const offsetMs = hold.wallPress + hold.offsetAtStart + virtualMs - (dateOverride ?? Date.now());
+    useSkyStore.getState().setTimeOffset(offsetMs);
     // The snapshot date carries the offset; heads follow the final trail frame
     // until the exposure fades back into the normal star presentation.
     settleExposure(rendered ?? []);
     setTimeTravel({
       holding: false,
       speed: null,
-      offsetLabel: offsetMsRef.current ? formatOffset(offsetMsRef.current) : null,
+      offsetLabel: offsetMs ? formatOffset(offsetMs) : null,
     });
     fadeTrails();
-  }, [drawExposureFrame, fadeTrails, settleExposure]);
+  }, [dateOverride, drawExposureFrame, fadeTrails, settleExposure]);
 
   // Reduced motion: one static, pre-computed hour of trails; a fade is the only motion.
   const staticExposure = useCallback(() => {
+    recomputeSnapshotRef.current();
     const base = snapshotRef.current;
     const baseCamera = baseCameraRef.current;
     const trail = trailCanvasRef.current;
@@ -238,34 +401,24 @@ export default function LookUpSky() {
     const steps = 20;
     const buffer = trailBufferRef.current;
     clearTrails();
+    setTrailsActive(true);
+    buffer.begin(base, base.date.getTime());
     starHeadBlendRef.current = 1;
-    let rendered: RenderedStar[] = [];
     for (let i = 1; i <= steps; i += 1) {
-      const advanceMs = (totalMs * i) / steps;
-      const frame = snapshotAtOffset(base, baseCamera, advanceMs);
-      const style = {
-        isDark: isDarkRef.current,
-        mobile: frame.camera.width < MOBILE_BREAKPOINT_PX,
-        presentation: 'look-up' as const,
-        trailBlend: 1,
-      };
-      rendered = drawSky(ctx, frame.snapshot, frame.camera, style);
-      buffer.push(base.date.getTime() + advanceMs, rendered, frame.snapshot.twilight);
+      const timestamp = base.date.getTime() + totalMs * i / steps;
+      buffer.push(timestamp, solarSkyState(new Date(timestamp), base.observer).twilight);
     }
-    buffer.draw(trailCtx, { isDark: isDarkRef.current });
-    offsetMsRef.current += totalMs;
-    settleExposure(rendered);
-    setTimeTravel({ holding: false, speed: null, offsetLabel: formatOffset(offsetMsRef.current) });
-    const timer = window.setTimeout(() => {
-      cancelTrailFadeRef.current = null;
-      fadeTrails();
-    }, 6000);
-    cancelTrailFadeRef.current = () => window.clearTimeout(timer);
-  }, [clearTrails, fadeTrails, settleExposure]);
+    buffer.draw(trailCtx, { isDark: isDarkRef.current, camera: baseCamera });
+    const offsetMs = base.date.getTime() + totalMs - (dateOverride ?? Date.now());
+    useSkyStore.getState().setTimeOffset(offsetMs);
+    settleExposure([]);
+    setTimeTravel({ holding: false, speed: null, offsetLabel: formatOffset(offsetMs) });
+    fadeTrails();
+  }, [clearTrails, dateOverride, fadeTrails, settleExposure]);
 
   const startHold = useCallback(() => {
     const hold = holdRef.current;
-    if (hold.active) return;
+    if (hold.active || draggingRef.current) return;
     const trail = trailCanvasRef.current;
     const trailCtx = trail?.getContext('2d');
     if (!trail || !trailCtx || !snapshotRef.current || !baseCameraRef.current) return;
@@ -277,17 +430,21 @@ export default function LookUpSky() {
     hold.active = true;
     hold.startTs = performance.now();
     hold.wallPress = dateOverride ?? Date.now();
-    hold.offsetAtStart = offsetMsRef.current;
+    hold.offsetAtStart = useSkyStore.getState().timeOffsetMs;
     hold.snapshotDate0 = snapshotRef.current.date.getTime();
     hold.headBlendAtStart = starHeadBlendRef.current;
     hold.positionBlendAtStart = trailPositionBlendRef.current;
     const headPositions = trailHeadPositionsRef.current;
+    const headDirections = trailHeadDirectionsRef.current;
     hold.lastShown = -1;
     hold.lastShownTs = 0;
     clearTrails();
+    setTrailsActive(true);
+    trailBufferRef.current.begin(snapshotRef.current, hold.wallPress + hold.offsetAtStart);
     starHeadBlendRef.current = hold.headBlendAtStart;
     trailPositionBlendRef.current = hold.positionBlendAtStart;
     trailHeadPositionsRef.current = headPositions;
+    trailHeadDirectionsRef.current = headDirections;
     clearPinned();
     setHoveredId(null);
     setHoveredPreviewId(null);
@@ -300,7 +457,7 @@ export default function LookUpSky() {
       if (ts - current.lastShownTs >= 120) {
         current.lastShownTs = ts;
         const multiplier = speedMultiplier(ts - current.startTs);
-        const shown = multiplier >= 3600 ? 3600 : Math.round(multiplier / 10) * 10;
+        const shown = Math.min(SPEED_MAX, Math.round(multiplier / 10) * 10);
         if (shown !== current.lastShown) {
           current.lastShown = shown;
           setTimeTravel(state => ({ ...state, speed: shown }));
@@ -314,7 +471,7 @@ export default function LookUpSky() {
   }, [clearPinned, clearTrails, dateOverride, drawExposureFrame, endHold, staticExposure]);
 
   const returnNow = useCallback(() => {
-    offsetMsRef.current = 0;
+    useSkyStore.getState().setTimeOffset(0);
     clearTrails();
     computeRef.current();
     setTimeTravel({ holding: false, speed: null, offsetLabel: null });
@@ -326,65 +483,114 @@ export default function LookUpSky() {
     const ctx = canvas?.getContext('2d');
     if (!sky || !canvas || !ctx) return;
 
+    const previousContext = trailContextRef.current;
+    if (previousContext.observer !== observer || previousContext.dateOverride !== dateOverride) clearTrails();
+    trailContextRef.current = { observer, dateOverride };
+
     let snapshot: SkySnapshot;
     let computeDurationMs = 0;
     let rafId = 0;
     const compute = () => {
       const started = performance.now();
-      snapshot = computeSky(new Date((dateOverride === null ? Date.now() : dateOverride) + offsetMsRef.current), observer, pollution);
+      snapshot = computeSky(new Date((dateOverride ?? Date.now()) + useSkyStore.getState().timeOffsetMs), observer, pollution);
       snapshotRef.current = snapshot;
       computeDurationMs = performance.now() - started;
     };
-    const drawStars = (camera: Camera) => drawSky(ctx, snapshot, camera, {
-      isDark: isDarkRef.current,
-      mobile: camera.width < MOBILE_BREAKPOINT_PX,
-      presentation: 'look-up',
-      trailBlend: starHeadBlendRef.current,
-      trailPositionBlend: trailPositionBlendRef.current,
-      trailHeadPositions: trailHeadPositionsRef.current,
-    });
-    const render = () => {
+    const currentFrame = () => {
       const camera = cameraRef.current;
-      if (!camera || !snapshot) return;
+      if (!camera || !snapshot) return null;
+      const timestamp = (dateOverride ?? Date.now()) + useSkyStore.getState().timeOffsetMs;
+      const advanceMs = timestamp - snapshot.date.getTime();
+      return {
+        ...snapshotAtOffset(snapshot, camera, advanceMs),
+        horizon: zenithAtOffset(observer.latitude, advanceMs),
+      };
+    };
+    const drawStars = ({ snapshot: current, camera, horizon }: ReturnType<typeof snapshotAtOffset> & { horizon: readonly number[] }) => {
+      if (baseCameraRef.current) refreshTrailAnchors(baseCameraRef.current);
+      const groundY = baseCameraRef.current ? horizonScreenY(baseCameraRef.current) : Infinity;
+      const rendered = drawSky(ctx, current, camera, {
+        isDark: isDarkRef.current,
+        mobile: camera.width < MOBILE_BREAKPOINT_PX,
+        presentation: 'look-up',
+        horizonY: groundY,
+        trailBlend: starHeadBlendRef.current,
+        trailPositionBlend: trailPositionBlendRef.current,
+        trailHeadPositions: trailHeadPositionsRef.current,
+      });
+      renderGuides(snapshot, camera, horizon, false, current.date.getTime());
+      renderGround(current.twilight);
+      renderRetainedTrails();
+      const displayed = trailPositionBlendRef.current > 0 ? rendered.map(entry => ({
+        ...entry,
+        point: trailHeadPoint(entry.point, trailHeadPositionsRef.current.get(entry.star.id), trailPositionBlendRef.current),
+      })) : rendered;
+      return displayed.filter(entry => entry.point.y <= groundY);
+    };
+    const render = () => {
+      const current = currentFrame();
+      if (!current) return;
+      const { camera, snapshot: displayed, horizon } = current;
       const started = performance.now();
-      const rendered = drawStars(camera);
-      setSnapshotDate(snapshot.date.getTime());
+      const rendered = drawStars(current);
+      if (draggingRef.current) {
+        const published = useSkyStore.getState().snapshotDate;
+        if (published === null || Math.abs(displayed.date.getTime() - published) >= 1000) {
+          setSnapshotDate(displayed.date.getTime());
+        }
+        if (new URLSearchParams(window.location.search).has('skydebug')) {
+          (window as unknown as Record<string, unknown>).__sky = {
+            observer: displayed.observer, lightPollution: displayed.pollution,
+            snapshot: displayed, camera, rendered, interactiveStars: [], facing: facingRef.current,
+            view: viewRef.current, dragging: true, localCamera: baseCameraRef.current,
+            groundY: horizonScreenY(baseCameraRef.current!), campfire: projectCampfire(baseCameraRef.current!),
+            computeDurationMs, renderDurationMs: performance.now() - started,
+          };
+        }
+        return;
+      }
+      setSnapshotDate(displayed.date.getTime());
       const stars = interactiveStars(rendered, camera);
       starsRef.current = stars;
       reconcilePinned(stars.map(({ star }) => star.id));
       const previewStars = readConstellationPreview(new URLSearchParams(window.location.search).get('constellationPreview')) === null
-        ? [] : constellationHitTargets(rendered, snapshot.constellationStars, camera);
+        ? [] : constellationHitTargets(rendered, displayed.constellationStars, camera, horizon);
       previewStarsRef.current = previewStars;
       visibleStarsRef.current = rendered.filter(({ point }) => point.x >= 0 && point.x <= camera.width && point.y >= 0 && point.y <= camera.height);
-      setFrame({ camera, snapshot, rendered, stars });
+      const groundY = horizonScreenY(baseCameraRef.current!);
+      setFrame({ camera, snapshot: displayed, horizon, rendered, stars, groundY });
 
       if (new URLSearchParams(window.location.search).has('skydebug')) {
         (window as unknown as Record<string, unknown>).__sky = {
-          observer: snapshot.observer,
-          lightPollution: snapshot.pollution,
-          snapshot, camera, rendered, interactiveStars: stars, facing: facingRef.current,
+          observer: displayed.observer,
+          lightPollution: displayed.pollution,
+          snapshot: displayed, camera, rendered, interactiveStars: stars, facing: facingRef.current,
+          view: viewRef.current, dragging: false, localCamera: baseCameraRef.current,
+          groundY, campfire: projectCampfire(baseCameraRef.current!),
           computeDurationMs, renderDurationMs: performance.now() - started,
         };
       }
     };
     renderRef.current = render;
     redrawStarsRef.current = () => {
-      const camera = cameraRef.current;
-      if (camera && snapshot) drawStars(camera);
+      const current = currentFrame();
+      if (current) drawStars(current);
     };
     computeRef.current = () => { compute(); render(); };
+    recomputeSnapshotRef.current = compute;
     reprojectRef.current = () => {
       const previous = baseCameraRef.current;
       if (!previous) return;
-      baseCameraRef.current = createLookUpCamera(previous.width, previous.height, facingRef.current);
+      baseCameraRef.current = createLookUpCamera(previous.width, previous.height, viewRef.current);
       cameraRef.current = baseCameraRef.current;
-      clearTrails();
       render();
     };
     const resize = () => {
       const width = sky.clientWidth;
       const height = sky.clientHeight;
       if (!width || !height) return;
+      setSkySize(current => current?.width === width && current.height === height ? current : { width, height });
+      fitViewport(width, height);
       const bounds = sky.getBoundingClientRect();
       skyRectRef.current = { left: bounds.left, top: bounds.top, width, height };
       const dpr = Math.min(window.devicePixelRatio || 1, width < MOBILE_BREAKPOINT_PX ? 1.5 : 2);
@@ -399,12 +605,24 @@ export default function LookUpSky() {
         trailCtx?.setTransform(dpr, 0, 0, dpr, 0, 0);
         trailCtx?.clearRect(0, 0, width, height);
       }
-      clearTrails();
-      baseCameraRef.current = createLookUpCamera(width, height, facingRef.current);
+      const guides = guidesCanvasRef.current;
+      if (guides) {
+        guides.width = canvas.width;
+        guides.height = canvas.height;
+        guides.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      const ground = groundCanvasRef.current;
+      if (ground) {
+        ground.width = canvas.width;
+        ground.height = canvas.height;
+        ground.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      baseCameraRef.current = createLookUpCamera(width, height, viewRef.current);
       cameraRef.current = baseCameraRef.current;
       render();
     };
     const resizeObserver = new ResizeObserver(() => {
+      finishPan();
       if (holdRef.current.active) endHold();
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(resize);
@@ -418,34 +636,63 @@ export default function LookUpSky() {
       compute();
       render();
     }, SKY_UPDATE_INTERVAL_MS) : null;
+    const clockTimer = dateOverride === null ? window.setInterval(() => {
+      if (!holdRef.current.active) render();
+    }, 1000) : null;
     return () => {
+      finishPan(false);
       endHold();
-      cancelTrailFadeRef.current?.();
-      cancelTrailFadeRef.current = null;
-      starHeadBlendRef.current = 0;
-      trailPositionBlendRef.current = 0;
-      trailHeadPositionsRef.current = new Map();
       resizeObserver.disconnect();
       cancelAnimationFrame(rafId);
       if (timer !== null) window.clearInterval(timer);
+      if (clockTimer !== null) window.clearInterval(clockTimer);
       renderRef.current = () => {};
       redrawStarsRef.current = () => {};
       reprojectRef.current = () => {};
+      recomputeSnapshotRef.current = () => {};
     };
-  }, [observer, pollution, dateOverride, setSnapshotDate, reconcilePinned, clearTrails, endHold]);
+  }, [observer, pollution, dateOverride, setSnapshotDate, reconcilePinned, clearTrails, endHold, renderGuides, renderGround, renderRetainedTrails, refreshTrailAnchors, finishPan, fitViewport]);
+
+  useEffect(() => () => {
+    clearTrails();
+    useSkyStore.getState().setTimeOffset(0);
+  }, [clearTrails]);
+
+  useEffect(() => {
+    const blur = () => { finishPan(); };
+    const hidden = () => { if (document.hidden) finishPan(); };
+    window.addEventListener('blur', blur);
+    document.addEventListener('visibilitychange', hidden);
+    return () => {
+      window.removeEventListener('blur', blur);
+      document.removeEventListener('visibilitychange', hidden);
+    };
+  }, [finishPan]);
 
   useLayoutEffect(() => {
     const locationChanged = previousObserverRef.current !== observer;
-    if (facingRef.current === facing && !locationChanged) return;
-    endHold();
+    const facingChanged = facingRef.current !== facing;
+    const viewChanged = viewRef.current.azimuth !== view.azimuth || viewRef.current.altitude !== view.altitude;
+    if (!facingChanged && !locationChanged && !viewChanged) return;
+    if (facingChanged || locationChanged) finishPan(false);
+    if (!draggingRef.current) endHold();
     previousObserverRef.current = observer;
     facingRef.current = facing;
+    viewRef.current = view;
+    if (!facingChanged && !locationChanged) {
+      reprojectRef.current();
+      return;
+    }
     setHoveredId(null);
     setHoveredPreviewId(null);
     pointerStarRef.current = null;
     suppressedStarRef.current = null;
     pointerDown.current = null;
     clearPinned();
+    if (!locationChanged && trailBufferRef.current.hasTrails()) {
+      reprojectRef.current();
+      return;
+    }
     const layer = directionLayerRef.current;
     const previous = previousLayerRef.current;
     const canvas = canvasRef.current;
@@ -472,17 +719,14 @@ export default function LookUpSky() {
       outgoing.cancel();
       previous.replaceChildren();
     };
-  }, [facing, observer, clearPinned, endHold]);
+  }, [facing, view, observer, clearPinned, endHold, finishPan]);
 
   useEffect(() => {
     isDarkRef.current = isDark;
+    groundColorRef.current = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
     renderRef.current();
   }, [isDark]);
 
-  useEffect(() => {
-    try { setHintSeen(window.localStorage.getItem('stars-above-star-hint-seen') !== null); }
-    catch { setHintSeen(false); }
-  }, []);
   useEffect(() => {
     reducedRef.current = reducedMotion;
   }, [reducedMotion]);
@@ -494,15 +738,9 @@ export default function LookUpSky() {
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
-  const acknowledgeStar = useCallback(() => {
-    setHintSeen(true);
-    try { window.localStorage.setItem('stars-above-star-hint-seen', '1'); }
-    catch { /* The hint remains acknowledged for this visit. */ }
-  }, []);
-  const hintVisible = !hintSeen && (frame?.stars.length ?? 0) > 0;
 
   // Leaving Look Up hands the sky over to the page background: a viewport-sized
-  // layer re-renders the background's own view of the same snapshot beneath the
+  // layer renders the background's current-time view beneath the
   // captured star bitmap, then both rise together while the real background
   // slides in from below. At landing the layer is pixel-identical to the
   // background, so the handover is invisible.
@@ -510,10 +748,12 @@ export default function LookUpSky() {
     const canvas = canvasRef.current;
     return () => {
       const rect = skyRectRef.current;
-      const snapshot = snapshotRef.current;
-      if (!canvas || !rect || !snapshot) return;
+      if (!canvas || !rect) return;
       if (window.location.pathname.replace(/\/$/, '') === '/stars-above') return;
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const state = useSkyStore.getState();
+      const snapshot = computeSky(new Date(state.dateOverride ?? Date.now()), state.observer, state.pollution);
 
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -579,11 +819,18 @@ export default function LookUpSky() {
   }, []);
 
   useEffect(() => {
-    setHoveredId(null);
-    setHoveredPreviewId(null);
-    pointerStarRef.current = null;
-    suppressedStarRef.current = null;
-  }, [frame?.camera, frame?.snapshot]);
+    if (!frame) return;
+    const named = new Set(frame.stars.map(({ star }) => star.id));
+    const previews = new Set(previewStarsRef.current.map(({ star }) => star.id));
+    setHoveredId(id => id !== null && named.has(id) ? id : null);
+    setHoveredPreviewId(id => id !== null && previews.has(id) ? id : null);
+    if (pointerStarRef.current !== null && !named.has(pointerStarRef.current) && !previews.has(pointerStarRef.current)) {
+      pointerStarRef.current = null;
+    }
+    if (suppressedStarRef.current !== null && !named.has(suppressedStarRef.current) && !previews.has(suppressedStarRef.current)) {
+      suppressedStarRef.current = null;
+    }
+  }, [frame]);
 
   useEffect(() => {
     if (previousPinCount.current > 0 && pinnedIds.length === 0) {
@@ -608,6 +855,8 @@ export default function LookUpSky() {
 
   const hit = (event: PointerEvent<HTMLDivElement>, stars: readonly RenderedStar[] = starsRef.current) => {
     const bounds = sceneRef.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect();
+    const camera = baseCameraRef.current;
+    if (camera && event.clientY - bounds.top > horizonScreenY(camera)) return null;
     const radius = event.pointerType === 'mouse' ? LOOK_UP_HIT_RADIUS.mouse : LOOK_UP_HIT_RADIUS.touch;
     return hitTestStar(stars, event.clientX - bounds.left, event.clientY - bounds.top, radius);
   };
@@ -632,10 +881,39 @@ export default function LookUpSky() {
       ref={skyRef}
       className="look-up-sky absolute inset-0 overflow-hidden"
       data-time-holding={timeTravel.holding ? '' : undefined}
+      data-trails-active={trailsActive ? '' : undefined}
+      data-view-dragging={dragging ? '' : undefined}
       role="region"
-      aria-label={`${SKY_DIRECTIONS[facing].name}-facing starry sky`}
-      style={{ cursor: hoveredId !== null ? 'pointer' : 'default' }}
+      tabIndex={-1}
+      aria-label={`${directionName(view.azimuth)}-facing starry sky`}
+      style={{ cursor: dragging ? 'grabbing' : hoveredId !== null ? 'pointer' : 'grab' }}
       onPointerMove={(event) => {
+        const pointer = pointerDown.current;
+        if (pointer && pointer.id === event.pointerId) {
+          const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
+          if (!pointer.dragging && Math.hypot(dx, dy) > 10) {
+            pointer.dragging = true;
+            draggingRef.current = true;
+            endHold();
+            setDragging(true);
+            setHoveredId(null);
+            setHoveredPreviewId(null);
+            pointerStarRef.current = null;
+            suppressedStarRef.current = null;
+            setFrame(null);
+          }
+          if (pointer.dragging) {
+            pointer.latestView = dragSkyView(pointer.view, dx, dy, pointer.camera);
+            if (!panRafRef.current) {
+              panRafRef.current = requestAnimationFrame(() => {
+                panRafRef.current = 0;
+                const current = pointerDown.current;
+                if (current?.dragging) setView(current.latestView);
+              });
+            }
+          }
+          return;
+        }
         if (event.pointerType === 'mouse') {
           const namedId = hitNamed(event)?.star.id ?? null;
           const previewId = hit(event, previewStarsRef.current)?.star.id ?? null;
@@ -647,38 +925,57 @@ export default function LookUpSky() {
         }
       }}
       onPointerLeave={() => {
-        pointerDown.current = null;
+        if (pointerDown.current) return;
         setHoveredId(null);
         setHoveredPreviewId(null);
         pointerStarRef.current = null;
         suppressedStarRef.current = null;
       }}
       onPointerDown={(event) => {
-        if (event.button === 0 && event.isPrimary) pointerDown.current = { x: event.clientX, y: event.clientY };
+        if (event.button !== 0 || !event.isPrimary || pointerDown.current || !baseCameraRef.current) return;
+        event.currentTarget.focus({ preventScroll: true });
+        event.currentTarget.setPointerCapture(event.pointerId);
+        pointerDown.current = {
+          id: event.pointerId, x: event.clientX, y: event.clientY, view: viewRef.current,
+          camera: baseCameraRef.current, dragging: false, latestView: viewRef.current,
+        };
       }}
       onPointerUp={(event) => {
         const start = pointerDown.current;
-        pointerDown.current = null;
-        if (!start || event.button !== 0 || !event.isPrimary ||
-            Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
+        if (!start || start.id !== event.pointerId || event.button !== 0 || !event.isPrimary) return;
+        if (start.dragging) start.latestView = dragSkyView(start.view, event.clientX - start.x, event.clientY - start.y, start.camera);
+        if (finishPan() || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
         const star = hitNamed(event)?.star;
         if (star) toggleNamedStar(star.id);
       }}
-      onPointerCancel={() => { pointerDown.current = null; }}
+      onPointerCancel={() => { finishPan(); }}
+      onLostPointerCapture={() => { if (pointerDown.current) finishPan(); }}
     >
-      <Campfire />
-      <CampfireLog skyHeight={frame?.camera.height} />
-      <div
-        aria-hidden="true"
-        className={`look-up-star-hint pointer-events-none absolute z-20 left-4 bottom-[120px] sm:left-6 sm:bottom-[100px] text-xs text-neutral-500 transition-opacity duration-[400ms] ${hintVisible ? 'opacity-100' : 'opacity-0'}`}
-      >
-        <span className="look-up-star-hint-hover">Hover over a bright star</span>
-        <span className="look-up-star-hint-tap">Tap a bright star</span>
+      <SkyHintsProvider ready={skySize !== null} holding={timeTravel.holding} dragging={dragging}>
+      <div className="look-up-ground-objects pointer-events-none absolute inset-0 z-20">
+        <Campfire camera={localCamera} dragging={dragging} skyRef={skyRef} />
       </div>
-      {pinnedIds.length > 0 && (
+      <CampfireLog skyHeight={frame?.camera.height} />
+      <button
+        type="button"
+        className="sky-guides-toggle"
+        aria-label={guidesOpen ? 'Hide sky grid' : 'Show sky grid'}
+        aria-pressed={guidesOpen}
+        onPointerDown={event => event.stopPropagation()}
+        onPointerUp={event => event.stopPropagation()}
+        onPointerMove={event => event.stopPropagation()}
+        onClick={event => {
+          event.stopPropagation();
+          guidesOpenRef.current = !guidesOpenRef.current;
+          setGuidesOpen(guidesOpenRef.current);
+          const current = guideFrameRef.current;
+          if (current && guidesOpenRef.current) renderGuides(current.snapshot, current.camera, current.horizon, true, current.timestamp);
+        }}
+      >Grid</button>
+      {!dragging && pinnedIds.length > 0 && (
         <button
           type="button"
-          className="sky-clear-names absolute right-4 bottom-5 sm:right-6 sm:bottom-6 z-30 text-xs text-neutral-500 hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+          className="sky-clear-names absolute z-30 text-xs text-neutral-500 hover:text-accent transition-colors duration-200 rounded focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
           onPointerDown={(event) => event.stopPropagation()}
           onPointerUp={(event) => event.stopPropagation()}
           onPointerMove={(event) => event.stopPropagation()}
@@ -702,18 +999,20 @@ export default function LookUpSky() {
         onHoldEnd={endHold}
         onReturnNow={returnNow}
       />
+      <SkyViewControls />
       <div ref={sceneRef} className="look-up-scene absolute inset-0">
-      <MeteorBackground maxYFraction={0.9} />
+      <MeteorBackground maxYFraction={0.9} paused={trailsActive || timeTravel.holding} skyCameraRef={baseCameraRef} />
       <div ref={directionLayerRef} className="look-up-direction absolute inset-0">
       {frame && <Suspense fallback={null}>
         <ConstellationPreview
-          key={`${facing}:${frame.camera.width}:${frame.camera.height}:${frame.snapshot.date.getTime()}:${frame.snapshot.observer.latitude}:${frame.snapshot.observer.longitude}:${frame.snapshot.pollution.limitingMagnitude}`}
+          key={`${facing}:${frame.camera.width}:${frame.camera.height}:${frame.snapshot.observer.latitude}:${frame.snapshot.observer.longitude}:${frame.snapshot.pollution.limitingMagnitude}`}
           starId={hoveredPreviewId} selectedStarIds={pinnedIds} pinnedConstellations={pinnedConstellations}
           rendered={frame.rendered} constellationStars={frame.snapshot.constellationStars}
-          camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} />
+          camera={frame.camera} horizon={frame.horizon} labelHeight={Math.min(frame.camera.height, frame.groundY)} skyRef={skyRef} sceneRef={sceneRef} />
       </Suspense>}
       <canvas ref={canvasRef} aria-hidden="true" className="look-up-stars absolute inset-0 h-full w-full" />
       <canvas ref={trailCanvasRef} aria-hidden="true" className="look-up-trails absolute inset-0 h-full w-full" />
+      <SkyGuides ref={guidesCanvasRef} visible={guidesOpen} />
       {frame?.stars.map(({ star, name, point }) => (
         <button
           key={star.id}
@@ -740,10 +1039,12 @@ export default function LookUpSky() {
         />
       ))}
       {frame && <StarLabels stars={hoverStar ? [...activeStars, hoverStar] : activeStars}
-        camera={frame.camera} skyRef={skyRef} sceneRef={sceneRef} onDisplay={acknowledgeStar} />}
+        camera={{ ...frame.camera, height: Math.min(frame.camera.height, frame.groundY) }} skyRef={skyRef} sceneRef={sceneRef} />}
       </div>
       <div ref={previousLayerRef} aria-hidden="true" className="look-up-previous absolute inset-0 pointer-events-none" />
+      <canvas ref={groundCanvasRef} aria-hidden="true" className="look-up-ground pointer-events-none absolute inset-0 z-40 h-full w-full" />
       </div>
+      </SkyHintsProvider>
     </div>
   );
 }

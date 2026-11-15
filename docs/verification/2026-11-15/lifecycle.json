@@ -1,0 +1,189 @@
+{
+  "checks": [
+    {
+      "mode": "desktop",
+      "turns": [
+        {
+          "view": {
+            "azimuth": 90,
+            "altitude": 31.799552394413496
+          },
+          "stars": 63,
+          "aligned": 63,
+          "newStars": 50,
+          "segments": 2206
+        },
+        {
+          "view": {
+            "azimuth": 180,
+            "altitude": 31.799552394413496
+          },
+          "stars": 84,
+          "aligned": 84,
+          "newStars": 84,
+          "segments": 3240
+        },
+        {
+          "view": {
+            "azimuth": 270,
+            "altitude": 31.799552394413496
+          },
+          "stars": 112,
+          "aligned": 112,
+          "newStars": 94,
+          "segments": 3372
+        },
+        {
+          "view": {
+            "azimuth": 0,
+            "altitude": 31.799552394413496
+          },
+          "stars": 72,
+          "aligned": 72,
+          "newStars": 0,
+          "segments": 2453
+        }
+      ],
+      "captured": {
+        "segments": 2828,
+        "aligned": 72
+      },
+      "moved": {
+        "segments": 2501,
+        "aligned": 70,
+        "common": 64
+      },
+      "at19": 1,
+      "at21": 0.846553,
+      "duringFade": 0.405262,
+      "done": {
+        "segments": 0,
+        "thin": false
+      }
+    },
+    {
+      "mode": "touch",
+      "turns": [
+        {
+          "view": {
+            "azimuth": 90,
+            "altitude": 31.18862825041345
+          },
+          "stars": 30,
+          "aligned": 30,
+          "newStars": 30,
+          "segments": 1055
+        },
+        {
+          "view": {
+            "azimuth": 180,
+            "altitude": 31.18862825041345
+          },
+          "stars": 34,
+          "aligned": 34,
+          "newStars": 34,
+          "segments": 1804
+        },
+        {
+          "view": {
+            "azimuth": 270,
+            "altitude": 31.18862825041345
+          },
+          "stars": 53,
+          "aligned": 53,
+          "newStars": 53,
+          "segments": 1594
+        },
+        {
+          "view": {
+            "azimuth": 0,
+            "altitude": 31.18862825041345
+          },
+          "stars": 25,
+          "aligned": 25,
+          "newStars": 0,
+          "segments": 756
+        }
+      ],
+      "captured": {
+        "segments": 883,
+        "aligned": 25
+      },
+      "moved": {
+        "segments": 747,
+        "aligned": 24,
+        "common": 22
+      },
+      "at19": 1,
+      "at21": 0.846553,
+      "duringFade": 0.440873,
+      "done": {
+        "segments": 0,
+        "thin": false
+      }
+    },
+    {
+      "mode": "reduced",
+      "turns": [
+        {
+          "view": {
+            "azimuth": 90,
+            "altitude": 31.18862825041345
+          },
+          "stars": 34,
+          "aligned": 34,
+          "newStars": 34,
+          "segments": 226
+        },
+        {
+          "view": {
+            "azimuth": 180,
+            "altitude": 31.18862825041345
+          },
+          "stars": 60,
+          "aligned": 60,
+          "newStars": 60,
+          "segments": 337
+        },
+        {
+          "view": {
+            "azimuth": 270,
+            "altitude": 31.18862825041345
+          },
+          "stars": 36,
+          "aligned": 36,
+          "newStars": 36,
+          "segments": 191
+        },
+        {
+          "view": {
+            "azimuth": 0,
+            "altitude": 31.18862825041345
+          },
+          "stars": 19,
+          "aligned": 19,
+          "newStars": 0,
+          "segments": 130
+        }
+      ],
+      "captured": {
+        "segments": 130,
+        "aligned": 19
+      },
+      "moved": {
+        "segments": 136,
+        "aligned": 17,
+        "common": 14
+      },
+      "at19": 1,
+      "at21": 0.846832,
+      "duringFade": 0.441246,
+      "done": {
+        "segments": 0,
+        "thin": false
+      }
+    }
+  ],
+  "failures": [],
+  "errors": []
+}

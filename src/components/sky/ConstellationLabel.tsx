@@ -9,7 +9,7 @@ import type { RenderedStar } from '@/lib/sky/renderer';
 import type { Camera } from '@/lib/sky/projection';
 import './constellation-label.css';
 
-const OBSTACLES = '.look-up-label, .campfire-art, .campfire-hint, .campfire-count, .campfire-notifications, .look-up-star-hint, button:not(.look-up-star-focus), a, input, select, textarea, [role="dialog"]';
+const OBSTACLES = '.look-up-label, .campfire-art, .campfire-hint, .campfire-count, .campfire-notifications, button:not(.look-up-star-focus), a, input, select, textarea, [role="dialog"]';
 
 export default function ConstellationLabel({ constellation, segments, anchor, rendered, camera, skyRef, sceneRef }: {
   constellation: typeof CONSTELLATIONS[number];
@@ -42,7 +42,7 @@ export default function ConstellationLabel({ constellation, segments, anchor, re
         if (!observed.has(element)) { resize.observe(element); observed.add(element); }
         const style = getComputedStyle(element), rect = element.getBoundingClientRect();
         if (!rect.width || !rect.height || style.display === 'none' || style.visibility === 'hidden' ||
-            (element.matches('.look-up-star-hint') && Number(style.opacity) === 0)) continue;
+            (element.matches('.sky-discovery-hint') && Number(style.opacity) === 0)) continue;
         obstacles.push({ x: rect.left - origin.left, y: rect.top - origin.top, width: rect.width, height: rect.height });
       }
       for (const { star, point } of rendered) {
