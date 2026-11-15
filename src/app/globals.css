@@ -661,8 +661,8 @@ html.dark .sky-location-popover {
 
 .sky-time-travel {
   position: absolute;
-  /* Align the triangle's visible edge with the shared page inset. */
-  left: calc(var(--sky-control-inset) - 10.25px);
+  /* Align the fast-forward glyph with the shared page inset. */
+  left: calc(var(--sky-control-inset) - 7.75px);
   bottom: 1.25rem;
   z-index: 30;
   display: flex;
@@ -681,9 +681,12 @@ html.dark .sky-location-popover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
   height: 26px;
-  border-radius: 9999px;
+  gap: 4px;
+  padding-right: 4px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  line-height: 1rem;
   color: var(--neutral-500);
   transition: color 200ms ease;
   touch-action: manipulation;
@@ -695,6 +698,30 @@ html.dark .sky-location-popover {
   content: '';
   position: absolute;
   inset: -8px;
+}
+
+.sky-time-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+.sky-time-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.sky-time-button.is-holding .sky-time-icon::before {
+  opacity: 0.7;
 }
 
 .sky-time-button:hover,

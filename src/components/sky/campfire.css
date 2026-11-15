@@ -140,6 +140,60 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   transition: opacity 380ms ease-in;
 }
 
+.campfire-log-highlight,
+.campfire-marshmallow-highlight {
+  opacity: 0;
+  transition: opacity 180ms ease-out, stroke 180ms ease-out;
+}
+
+.campfire-world[data-interactive='true'] .campfire-log-highlight {
+  opacity: 0.65;
+}
+
+.campfire-world[data-interactive='true'] .m-ready .campfire-marshmallow-highlight {
+  opacity: 0.8;
+}
+
+.campfire-log-highlight {
+  filter: drop-shadow(0 0 2px rgba(214, 178, 139, 0.35));
+}
+
+.campfire-marshmallow-highlight {
+  filter: drop-shadow(0 0 3px rgba(244, 198, 126, 0.6));
+}
+
+.campfire-marshmallow[data-first='true'].m-ready svg {
+  overflow: visible;
+}
+
+.campfire-world[data-interactive='true'] .campfire-marshmallow[data-first='true'].m-ready .campfire-marshmallow-highlight {
+  opacity: 1;
+  stroke: #fff5d6;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 0 2px rgba(255, 239, 188, 0.95))
+    drop-shadow(0 0 6px rgba(247, 196, 120, 0.85));
+}
+
+.campfire-world[data-interactive='true']:has(.campfire-toggle:focus-visible, .campfire-toggle:active) .campfire-log-highlight {
+  opacity: 1;
+}
+
+.campfire-world[data-interactive='true']:has(.campfire-eat:focus-visible, .campfire-eat:active) .m-ready .campfire-marshmallow-highlight {
+  opacity: 1;
+  stroke: #fff1d4;
+}
+
+@media (hover: hover) {
+  .campfire-world[data-interactive='true']:has(.campfire-toggle:hover) .campfire-log-highlight {
+    opacity: 1;
+  }
+
+  .campfire-world[data-interactive='true']:has(.campfire-eat:hover) .m-ready .campfire-marshmallow-highlight {
+    opacity: 1;
+    stroke: #fff1d4;
+  }
+}
+
 .campfire-flame-breathe,
 .campfire-flame-tip {
   transform-box: fill-box;
@@ -383,9 +437,13 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
   transition: opacity 250ms ease;
 }
 
-/* A quiet invitation: hovering or focusing the hit area warms the woodpile. */
-.campfire-world:has(.campfire-toggle:hover) .campfire-hint,
-.campfire-world:has(.campfire-toggle:focus-visible) .campfire-hint {
+.campfire-world[data-interactive='true'] .campfire-decoration[data-fire-on='false'] .campfire-hint {
+  opacity: 0.75;
+}
+
+/* The woodpile brightens when its hit area is explored. */
+.campfire-world[data-interactive='true']:has(.campfire-toggle:hover) .campfire-hint,
+.campfire-world[data-interactive='true']:has(.campfire-toggle:focus-visible) .campfire-hint {
   opacity: 1;
 }
 

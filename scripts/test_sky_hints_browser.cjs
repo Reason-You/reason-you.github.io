@@ -67,8 +67,14 @@ async page => {
     const { c, p } = await open();
     try {
       await advance(p, 1400); const b = await p.locator('.sky-time-button').boundingBox();
+      assert((await p.locator('.sky-time-button').innerText()).trim() === 'Hold', 'the hold action remains visible on the button');
       await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await p.mouse.down(); await advance(p, 350); await p.mouse.up(); await advance(p, 250);
       assert(!await p.evaluate(() => localStorage.getItem('stars-above-learned-trails')), 'a short press is not marked as learning hold');
+      assert((await text(p)).join() === 'Press & hold', 'the first short press explains how to hold');
+      await hint(p).click(); await advance(p, 250);
+      assert((await hint(p).count()) === 0, 'the short-press caption supports click dismissal');
+      await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await p.mouse.down(); await advance(p, 100); await p.mouse.up(); await advance(p, 250);
+      assert((await hint(p).count()) === 0, 'the short-press caption appears only once per visit');
       await p.mouse.down(); await advance(p, 1250); await p.mouse.up(); await advance(p, 250);
       assert(await p.evaluate(() => localStorage.getItem('stars-above-learned-trails') === '1'), 'an effective hold is remembered');
       assert((await hint(p).count()) === 0, 'holding ends the intro');
@@ -76,6 +82,23 @@ async page => {
       await p.reload(); await p.waitForFunction(() => window.__sky?.lightPollution.source === 'viirs'); await advance(p, 1400);
       assert((await text(p)).join() === 'Click to roast', 'a learned play gesture is skipped on a later round');
       report.checks.push({ case: 'hold threshold and persistent learning' });
+    } finally { await c.close(); }
+  }
+  {
+    const { c, p } = await open();
+    try {
+      await advance(p, 1400);
+      const button = p.locator('.sky-time-button');
+      await button.focus(); await p.keyboard.down('Space'); await advance(p, 100);
+      assert((await button.getAttribute('aria-pressed')) === 'true', 'keyboard hold accelerates the sky');
+      const ring = await button.locator('.sky-time-icon').evaluate(e => {
+        const s = getComputedStyle(e, '::before'); return { border: s.borderTopWidth, opacity: Number(s.opacity) };
+      });
+      assert(ring.border === '1px' && ring.opacity > 0, 'a fine ring confirms the hold immediately');
+      await p.keyboard.up('Space'); await advance(p, 250);
+      assert((await text(p)).join() === 'Press & hold', 'a short keyboard press receives the same caption');
+      await advance(p, 6200); assert((await hint(p).count()) === 0, 'the short-press caption expires after six seconds');
+      report.checks.push({ case: 'keyboard feedback and caption expiry', ring });
     } finally { await c.close(); }
   }
   {
@@ -108,7 +131,12 @@ async page => {
       if (!reduced) {
         await advance(p, 6600); assert((await text(p)).join() === 'Tap to roast', 'mobile fire caption uses Tap');
         await p.waitForTimeout(230); await p.screenshot({ path: '.cache/sky-verification/hint-mobile-fire.png' });
+        const button = p.locator('.sky-time-button');
+        assert((await button.innerText()).trim() === 'Hold', 'mobile hold label remains visible');
+        await button.tap(); await advance(p, 250);
+        assert((await text(p)).join() === 'Press & hold', 'a mobile tap receives the hold caption');
       } else {
+        assert((await p.locator('.sky-time-button').innerText()).trim() === 'Tap', 'reduced motion labels the static action as Tap');
         await p.locator('.sky-time-button').click(); await advance(p, 250);
         assert(await p.evaluate(() => localStorage.getItem('stars-above-learned-trails') === '1'), 'reduced static exposure immediately records the click gesture');
       }

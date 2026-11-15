@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import './sky-hints.css';
 
 type HintKind = 'trails' | 'fire' | 'taste';
-type Hint = { kind: HintKind; leaving: boolean };
+type Hint = { kind: HintKind; leaving: boolean; text?: string };
 type CampfireState = { visible: boolean; fireOn: boolean; ready: boolean };
 
 const SESSION_KEY = 'stars-above-hints-started';
@@ -19,6 +19,7 @@ interface SkyHintsValue {
   canStartTrails: boolean;
   dismiss: () => void;
   trailStarted: (reduced: boolean) => void;
+  trailEnded: () => void;
   campfireChanged: (state: CampfireState) => void;
   fireClicked: (lighting: boolean) => void;
   tasteClicked: () => void;
@@ -27,7 +28,7 @@ interface SkyHintsValue {
 
 const SkyHintsContext = createContext<SkyHintsValue>({
   hint: null, touch: false, canStartTrails: true,
-  dismiss: () => {}, trailStarted: () => {}, campfireChanged: () => {},
+  dismiss: () => {}, trailStarted: () => {}, trailEnded: () => {}, campfireChanged: () => {},
   fireClicked: () => {}, tasteClicked: () => {}, tasteCompleted: () => {},
 });
 
@@ -56,6 +57,7 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
   const introEnded = useRef(false);
   const introStarted = useRef(false);
   const tasteChecked = useRef(false);
+  const shortPressHintShown = useRef(false);
   const bootTimer = useRef(0);
   const expiryTimer = useRef(0);
   const fadeTimer = useRef(0);
@@ -89,10 +91,10 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
     }, FADE_MS);
   }, []);
 
-  const present = useCallback((kind: HintKind, after?: () => void) => {
+  const present = useCallback((kind: HintKind, after?: () => void, text?: string) => {
     window.clearTimeout(expiryTimer.current);
     window.clearTimeout(fadeTimer.current);
-    const next = { kind, leaving: false };
+    const next = { kind, leaving: false, text };
     hintRef.current = next;
     setHint(next);
     expiryTimer.current = window.setTimeout(() => retire(after), HINT_MS);
@@ -195,6 +197,12 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
     if (reduced) learn('trails');
   }, [claimRound, endIntro, learn]);
 
+  const trailEnded = useCallback(() => {
+    if (learned.current.trails || shortPressHintShown.current || document.hidden || !activityRef.current.ready) return;
+    shortPressHintShown.current = true;
+    present('trails', undefined, 'Press & hold');
+  }, [present]);
+
   const campfireChanged = useCallback((next: CampfireState) => {
     campfireRef.current = next;
     setCampfire(current => current.visible === next.visible && current.fireOn === next.fireOn && current.ready === next.ready ? current : next);
@@ -211,8 +219,8 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
 
   const value = useMemo(() => ({
     hint, touch, canStartTrails: ready && !dragging,
-    dismiss: endIntro, trailStarted, campfireChanged, fireClicked, tasteClicked, tasteCompleted,
-  }), [hint, touch, ready, dragging, endIntro, trailStarted, campfireChanged, fireClicked, tasteClicked, tasteCompleted]);
+    dismiss: endIntro, trailStarted, trailEnded, campfireChanged, fireClicked, tasteClicked, tasteCompleted,
+  }), [hint, touch, ready, dragging, endIntro, trailStarted, trailEnded, campfireChanged, fireClicked, tasteClicked, tasteCompleted]);
 
   return <SkyHintsContext.Provider value={value}>{children}</SkyHintsContext.Provider>;
 }
@@ -225,14 +233,15 @@ export function SkyHint({ kind, children, className = '', style }: {
 }) {
   const { hint, dismiss } = useSkyHints();
   if (hint?.kind !== kind) return null;
+  const content = hint.text ?? children;
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
   return (
     <button type="button" className={`sky-discovery-hint ${className}`}
       data-leaving={hint.leaving} style={style}
-      aria-label={`${typeof children === 'string' ? children : 'Sky hint'}. Dismiss hint`}
+      aria-label={`${typeof content === 'string' ? content : 'Sky hint'}. Dismiss hint`}
       onPointerDown={stop} onPointerUp={stop} onPointerMove={stop} onPointerCancel={stop}
       onClick={event => { event.stopPropagation(); dismiss(); }}>
-      {children}
+      {content}
     </button>
   );
 }

@@ -32,12 +32,16 @@ export default function TrailControls({
   onHoldEnd,
   onReturnNow,
 }: TrailControlsProps) {
-  const { touch, canStartTrails, trailStarted } = useSkyHints();
+  const { touch, canStartTrails, trailStarted, trailEnded } = useSkyHints();
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
   const start = () => {
     if (holding || !canStartTrails) return;
     onHoldStart();
     trailStarted(reduced);
+  };
+  const finish = () => {
+    onHoldEnd();
+    if (!reduced) trailEnded();
   };
 
   return (
@@ -62,7 +66,7 @@ export default function TrailControls({
           event.currentTarget.setPointerCapture(event.pointerId);
           start();
         }}
-        onPointerUp={event => { if (event.button === 0 && event.isPrimary && holding) onHoldEnd(); }}
+        onPointerUp={event => { if (event.button === 0 && event.isPrimary && holding) finish(); }}
         onPointerCancel={event => { if (event.isPrimary && holding) onHoldEnd(); }}
         onBlur={() => { if (holding) onHoldEnd(); }}
         onKeyDown={event => {
@@ -74,12 +78,15 @@ export default function TrailControls({
         onKeyUp={event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
-          if (holding) onHoldEnd();
+          if (holding) finish();
         }}
       >
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path d="M4 2.5v11l9-5.5z" />
-        </svg>
+        <span className="sky-time-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 3v10l6-5zM8 3v10l6-5z" />
+          </svg>
+        </span>
+        <span>{reduced ? (touch ? 'Tap' : 'Click') : 'Hold'}</span>
       </button>
       <SkyHint kind="trails" className="sky-discovery-hint--trails">
         {reduced ? `${touch ? 'Tap' : 'Click'} for trails` : 'Hold for trails'}

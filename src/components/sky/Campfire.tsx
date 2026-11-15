@@ -249,6 +249,9 @@ export default function Campfire({ camera, dragging, skyRef }: {
             <g fill="#a9764f" opacity="0.18">
               <circle cx="62" cy="98" r="0.9" /><circle cx="71" cy="99" r="0.7" /><circle cx="54" cy="97" r="0.6" />
             </g>
+            <g className="campfire-log-highlight" fill="none" stroke="#d6b28b" strokeWidth="0.85" strokeLinecap="round">
+              <path d="M31 95Q33 93 40 94L104 97M38 91Q43 88 50 89L102 84Q109 84 110 88M51 85 92 100" />
+            </g>
             <g className="campfire-log-light" fill="none" stroke="#ba8d62" strokeWidth="0.9">
               <path d="m42 96 40 2m-24 0 34-3m-40 5 24 2m6-9 30-4" />
             </g>
@@ -269,6 +272,7 @@ export default function Campfire({ camera, dragging, skyRef }: {
               style={{ '--marshmallow-enter-ms': `${timings.enter}ms`, '--marshmallow-roast-ms': `${timings.roast}ms` } as CSSProperties}
               data-outcome={outcome}
               data-burnt={burnt}
+              data-first={eaten === 0}
             >
               <svg viewBox="0 0 90 44" focusable="false" aria-hidden="true">
                 <defs>
@@ -284,6 +288,7 @@ export default function Campfire({ camera, dragging, skyRef }: {
                   <ellipse className="campfire-marshmallow-cream" cx="26" cy="30" rx="8" ry="9.5" fill="#e8d6b4" opacity="0" />
                   <ellipse className="campfire-marshmallow-caramel" cx="23" cy="27" rx="5.2" ry="6.2" fill={`url(#${id}-caramel)`} opacity="0" />
                   {burnt && <ellipse className="campfire-marshmallow-burnt" cx="22" cy="28" rx="3.8" ry="5" fill="#70492f" opacity="0" />}
+                  <ellipse className="campfire-marshmallow-highlight" cx="26" cy="30" rx="8" ry="9.5" fill="none" stroke="#f5d6aa" strokeWidth="1.05" />
                   {isStarlit(outcome) && <g className={`campfire-starlight ${outcome === 'fireball' ? 'campfire-starlight-rare' : ''}`}>
                     {outcome === 'fireball' ? <>
                       <circle cx="25" cy="27" r="4.5" fill="#e9c995" opacity="0.18" />
