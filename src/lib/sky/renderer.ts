@@ -16,8 +16,6 @@ export interface RenderStyle {
   trailPositionBlend?: number;
   /** Last trail endpoints used while star heads return to the normal projection. */
   trailHeadPositions?: ReadonlyMap<number, { x: number; y: number }>;
-  /** Temporary detail ceiling while a dense sky is moving on a slower device. */
-  magnitudeLimit?: number;
 }
 
 const MIN_MAGNITUDE = -1.5;
@@ -232,10 +230,8 @@ export function projectSkyStars(
   const visibility = Number.isFinite(snapshot.visibility) ? snapshot.visibility * themeFactor : 0;
   if (visibility <= 0.001) return [];
   const rendered: RenderedStar[] = [];
-  const interactionLimit = style.magnitudeLimit ?? Infinity;
 
   for (const star of snapshot.stars) {
-    if (star.mag > interactionLimit) continue;
     const point = projectSkyDirection(skyStarDirection(star), camera);
     if (!point) continue;
     if (fullSky && point.y > (style.horizonY ?? Infinity)) continue;
