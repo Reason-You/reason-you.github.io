@@ -17,7 +17,7 @@ import type { LightPollution } from '@/lib/sky/lightPollution';
 import { createCamera, projectSkyDirection, unprojectSkyPoint, type Camera, type SkyDirectionVector } from '@/lib/sky/projection';
 import { drawSky, projectSkyStars, trailHeadPoint, type RenderedStar } from '@/lib/sky/renderer';
 import { MOBILE_BREAKPOINT_PX, SKY_CENTER_Y, SKY_UPDATE_INTERVAL_MS, SKY_VIEW } from '@/lib/sky/constants';
-import { SPEED_START, SPEED_MAX, TRAIL_HOLD_MS, TRAIL_FADE_MS, TrailBuffer, formatOffset, snapshotAtOffset, speedMultiplier, virtualElapsedMs, zenithAtOffset } from '@/lib/sky/star-trails';
+import { SPEED_START, SPEED_MAX, TRAIL_HOLD_MS, TRAIL_FADE_MS, TrailBuffer, cameraAtOffset, formatOffset, snapshotAtOffset, speedMultiplier, virtualElapsedMs, zenithAtOffset } from '@/lib/sky/star-trails';
 import TrailControls from './TrailControls';
 import SkyGuides from './SkyGuides';
 import SkyViewControls from './SkyViewControls';
@@ -40,8 +40,8 @@ interface SkyFrame {
   groundY: number;
 }
 
-const PAN_FRAME_BUDGET_MS = 1000 / 30;
-const SLOWER_PAN_FRAME_MS = 1000 / 20;
+const PAN_FRAME_BUDGET_MS = 1000 / 50;
+const SLOWER_PAN_FRAME_MS = 1000 / 30;
 const SLOW_PAN_FRAMES = 3;
 
 interface RetainedTrailFrame {
@@ -111,11 +111,22 @@ export default function LookUpSky() {
   const pointerDown = useRef<{
     id: number; x: number; y: number; view: SkyView; camera: Camera;
     dragging: boolean; latestView: SkyView;
-    slowTrailFrames: number[]; trailMagnitudeLimit: number;
+    slowFrames: number[]; magnitudeLimit: number;
   } | null>(null);
   const draggingRef = useRef(false);
   const panRafRef = useRef(0);
+  const starDetailLimitRef = useRef(Infinity);
+  const starDetailTimerRef = useRef(0);
   const [dragging, setDragging] = useState(false);
+
+  const restoreStarDetail = useCallback((delay = 320) => {
+    window.clearTimeout(starDetailTimerRef.current);
+    starDetailTimerRef.current = window.setTimeout(() => {
+      starDetailTimerRef.current = 0;
+      starDetailLimitRef.current = Infinity;
+      if (!holdRef.current.active) renderRef.current();
+    }, delay);
+  }, []);
 
   const finishPan = useCallback((applyPending = true) => {
     const pointer = pointerDown.current;
@@ -252,7 +263,7 @@ export default function LookUpSky() {
     }
   }, []);
 
-  const renderRetainedTrails = useCallback((panFrameStart?: number) => {
+  const renderRetainedTrails = useCallback(() => {
     const camera = baseCameraRef.current;
     const buffer = trailBufferRef.current;
     const previous = retainedTrailFrameRef.current;
@@ -268,19 +279,10 @@ export default function LookUpSky() {
     if (!frame) {
       if (previous?.restoreRaf) cancelAnimationFrame(previous.restoreRaf);
       // Keep the current bright-star selection when another drag interrupts restoration.
-      const limit = Math.min(previous?.maxMagnitude ?? Infinity, pan?.trailMagnitudeLimit ?? Infinity);
+      const limit = Math.min(previous?.maxMagnitude ?? Infinity, pan?.magnitudeLimit ?? Infinity);
       const complete = buffer.draw(ctx, style, limit);
       frame = { ...style, maxMagnitude: complete ? Infinity : limit, restoreRaf: 0 };
       retainedTrailFrameRef.current = frame;
-      if (pan && limit === Infinity && panFrameStart !== undefined) {
-        const elapsed = performance.now() - panFrameStart;
-        if (elapsed > PAN_FRAME_BUDGET_MS) {
-          pan.slowTrailFrames.push(elapsed);
-          if (pan.slowTrailFrames.length === SLOW_PAN_FRAMES) {
-            pan.trailMagnitudeLimit = pan.slowTrailFrames.every(ms => ms > SLOWER_PAN_FRAME_MS) ? 5.2 : 5.8;
-          }
-        } else pan.slowTrailFrames.length = 0;
-      }
     }
     if (frame.maxMagnitude === Infinity) return;
     if (pan) return;
@@ -579,6 +581,10 @@ export default function LookUpSky() {
     trailContextRef.current = { observer, dateOverride };
 
     let snapshot: SkySnapshot;
+    let timeFrameCache: {
+      base: SkySnapshot; timestamp: number; snapshot: SkySnapshot; horizon: readonly number[];
+      sourceCamera: Camera; camera: Camera;
+    } | null = null;
     let widestSky: SkySnapshot | null = null;
     let computeDurationMs = 0;
     let rafId = 0;
@@ -644,12 +650,25 @@ export default function LookUpSky() {
     const currentFrame = () => {
       const camera = cameraRef.current;
       if (!camera || !snapshot) return null;
-      // The ephemeris is stored as a Date with whole-millisecond precision.
-      const timestamp = Math.trunc((dateOverride ?? Date.now()) + useSkyStore.getState().timeOffsetMs);
+      const liveTimestamp = (dateOverride ?? Date.now()) + useSkyStore.getState().timeOffsetMs;
+      // Human-scale interaction does not need the horizon subset rebuilt more than once per second.
+      const timestamp = snapshot.date.getTime() + Math.floor((liveTimestamp - snapshot.date.getTime()) / 1000) * 1000;
       const advanceMs = timestamp - snapshot.date.getTime();
+      if (timeFrameCache?.base === snapshot && timeFrameCache.timestamp === timestamp) {
+        return {
+          snapshot: timeFrameCache.snapshot,
+          camera: timeFrameCache.sourceCamera === camera ? timeFrameCache.camera
+            : cameraAtOffset(camera, observer.latitude, advanceMs),
+          horizon: timeFrameCache.horizon,
+        };
+      }
+      const advanced = snapshotAtOffset(snapshot, camera, advanceMs);
+      const horizon = zenithAtOffset(observer.latitude, advanceMs);
+      timeFrameCache = { base: snapshot, timestamp, snapshot: advanced.snapshot, horizon,
+        sourceCamera: camera, camera: advanced.camera };
       return {
-        ...snapshotAtOffset(snapshot, camera, advanceMs),
-        horizon: zenithAtOffset(observer.latitude, advanceMs),
+        ...advanced,
+        horizon,
       };
     };
     const drawStars = ({ snapshot: current, camera, horizon }: ReturnType<typeof snapshotAtOffset> & { horizon: readonly number[] }, panFrameStart?: number) => {
@@ -661,6 +680,8 @@ export default function LookUpSky() {
         horizonY: groundY,
         trailBlend: starHeadBlendRef.current,
         trailPositionBlend: trailPositionBlendRef.current,
+        magnitudeLimit: Math.min(starDetailLimitRef.current,
+          pointerDown.current?.dragging ? pointerDown.current.magnitudeLimit : Infinity),
       };
       const rendered = projectSkyStars(current, camera, style);
       if (baseCameraRef.current && style.trailPositionBlend > 0) {
@@ -672,7 +693,18 @@ export default function LookUpSky() {
       drawSky(ctx, current, camera, style, rendered);
       renderGuides(snapshot, camera, horizon, false, current.date.getTime());
       renderGround(current.twilight);
-      renderRetainedTrails(panFrameStart);
+      renderRetainedTrails();
+      const pan = pointerDown.current?.dragging ? pointerDown.current : null;
+      if (pan && panFrameStart !== undefined && pan.magnitudeLimit === Infinity) {
+        const elapsed = performance.now() - panFrameStart;
+        if (elapsed > PAN_FRAME_BUDGET_MS) {
+          pan.slowFrames.push(elapsed);
+          if (pan.slowFrames.length === SLOW_PAN_FRAMES) {
+            const limit = pan.slowFrames.every(ms => ms > SLOWER_PAN_FRAME_MS) ? 5.2 : 5.8;
+            pan.magnitudeLimit = limit;
+          }
+        } else pan.slowFrames.length = 0;
+      }
       return rendered.filter(entry => entry.point.y <= groundY);
     };
     const render = () => {
@@ -872,6 +904,7 @@ export default function LookUpSky() {
   useLayoutEffect(() => removeLightingLayer, [view, isDark, observer, dateOverride, removeLightingLayer]);
 
   useEffect(() => () => {
+    window.clearTimeout(starDetailTimerRef.current);
     clearTrails();
     useSkyStore.getState().setTimeOffset(0);
   }, [clearTrails]);
@@ -902,6 +935,13 @@ export default function LookUpSky() {
       reprojectRef.current();
       return;
     }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (facingChanged && baseCameraRef.current && baseCameraRef.current.width < MOBILE_BREAKPOINT_PX &&
+      !reduced && !trailBufferRef.current.hasTrails() &&
+      (snapshotRef.current?.celestialStars.length ?? 0) > 4_105) {
+      starDetailLimitRef.current = 5.8;
+      restoreStarDetail();
+    }
     setHoveredId(null);
     setHoveredPreviewId(null);
     pointerStarRef.current = null;
@@ -915,7 +955,6 @@ export default function LookUpSky() {
     const layer = directionLayerRef.current;
     const previous = previousLayerRef.current;
     const canvas = canvasRef.current;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (layer && previous && canvas && !reduced) {
       const copy = document.createElement('canvas');
       copy.width = canvas.width;
@@ -938,7 +977,7 @@ export default function LookUpSky() {
       outgoing.cancel();
       previous.replaceChildren();
     };
-  }, [facing, view, observer, clearPinned, endHold, stopHold, finishPan]);
+  }, [facing, view, observer, clearPinned, endHold, stopHold, finishPan, restoreStarDetail]);
 
   useEffect(() => {
     isDarkRef.current = isDark;
@@ -1158,7 +1197,7 @@ export default function LookUpSky() {
         pointerDown.current = {
           id: event.pointerId, x: event.clientX, y: event.clientY, view: viewRef.current,
           camera: baseCameraRef.current, dragging: false, latestView: viewRef.current,
-          slowTrailFrames: [], trailMagnitudeLimit: Infinity,
+          slowFrames: [], magnitudeLimit: Infinity,
         };
       }}
       onPointerUp={(event) => {
