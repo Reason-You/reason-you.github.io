@@ -22,6 +22,7 @@ const { DARK_SKY_DESTINATIONS } = require('../src/lib/sky/destinations.ts');
 const { computeSky, getBodyAltitude } = require('../src/lib/sky/astro.ts');
 const { DEFAULT_OBSERVER } = require('../src/lib/sky/constants.ts');
 const { readOverrides } = require('../src/lib/sky/observer.ts');
+const { formatObservationTime, shanghaiTonight } = require('../src/lib/sky/time.ts');
 const { destinationObserver, destinationPollution, nightDestinations, selectRandomSky,
   findNightPreviewTime, readSkyPreview } = require('../src/lib/sky/random-sky.ts');
 
@@ -33,10 +34,22 @@ test('the supplied 15 coordinate lookups retain stable identities and atlas prov
   assert.equal(DARK_SKY_DESTINATIONS.find(site => site.id === 'chatham').longitude, -176.55);
   for (const site of DARK_SKY_DESTINATIONS) {
     assert.ok(site.chineseName && site.chineseDescription && site.country && site.englishName);
+    assert.ok(formatObservationTime(Date.UTC(2026, 10, 18, 14), site.timeZone));
   }
   assert.equal(destinationPollution().source, 'atlas-2025');
   assert.equal(destinationPollution().datasetYear, 2025);
   assert.equal(destinationPollution().bortleApprox, 1);
+});
+
+test('observation clocks use the site calendar and seasonal offsets', () => {
+  const winter = Date.parse('2026-01-15T16:00:00Z');
+  const summer = Date.parse('2026-07-15T16:00:00Z');
+  assert.equal(formatObservationTime(winter, 'Asia/Shanghai'), 'Jan 16, 00:00');
+  assert.equal(formatObservationTime(winter, 'America/Los_Angeles'), 'Jan 15, 08:00');
+  assert.equal(formatObservationTime(summer, 'America/Los_Angeles'), 'Jul 15, 09:00');
+  assert.equal(formatObservationTime(winter, 'Pacific/Chatham'), 'Jan 16, 05:45');
+  assert.equal(formatObservationTime(summer, 'Pacific/Chatham'), 'Jul 16, 04:45');
+  assert.equal(new Date(shanghaiTonight(winter)).toISOString(), '2026-01-16T14:00:00.000Z');
 });
 
 test('real-time choices stay below -18°, avoid repeatable alternatives, and prefer a Moon below the horizon', () => {
@@ -168,5 +181,65 @@ test('random selection uses the shared offset for live and fixed clocks and nigh
   } finally {
     Date.now = realNow;
     useSkyStore.getState().setTimeOffset(0);
+  }
+});
+
+test('Shanghai comparison keeps the real pollution and fixed time independent of the selected look', async () => {
+  const pollutionModule = require('../src/lib/sky/lightPollution.ts');
+  const baseline = { ...pollutionModule.FUDAN_FALLBACK, limitingMagnitude: 4.4 };
+  pollutionModule.getLightPollution = async () => baseline;
+  const { selectSkyPollution, useSkyStore } = require('../src/lib/stores/skyStore.ts');
+  const night = Date.parse('2026-11-18T14:00:00Z');
+  global.window = {
+    location: new URL('https://example.test/stars-above/?skyUtc=2026-11-18T14:00:00Z&facing=north&bortle=1'),
+    history: { replaceState: (_, __, url) => { window.location = url; } },
+  };
+  try {
+    const query = window.location.search.slice(1);
+    await useSkyStore.getState().initialize(query, false);
+    assert.equal(useSkyStore.getState().skyLookMode, 'city');
+    assert.equal(selectSkyPollution(useSkyStore.getState()).bortleApprox, 1);
+    await useSkyStore.getState().initialize(query, true);
+    let state = useSkyStore.getState();
+    assert.equal(state.skyLookMode, 'ideal');
+    assert.equal(selectSkyPollution(state).bortleApprox, 1);
+    assert.equal(state.pollution, baseline);
+    state.setSnapshotDate(night);
+    state.setSkyLookMode('city');
+    state = useSkyStore.getState();
+    assert.equal(selectSkyPollution(state), baseline);
+    assert.equal(state.dateOverride, night);
+    assert.equal(window.location.searchParams.has('bortle'), false);
+    assert.equal(window.location.searchParams.get('facing'), 'north');
+    state.setSkyLookMode('ideal');
+    state.randomSky();
+    state = useSkyStore.getState();
+    assert.equal(state.skyLookMode, 'city');
+    assert.equal(state.pollution.source, 'atlas-2025');
+    state.backToLive();
+    assert.equal(useSkyStore.getState().dateOverride, null);
+    assert.equal(window.location.searchParams.has('skyUtc'), false);
+    assert.equal(window.location.searchParams.get('skyPreview'), state.destination.id);
+    await state.resetSky();
+    const day = Date.parse('2026-11-18T04:00:00Z');
+    state.setSnapshotDate(day);
+    state.setSkyLookMode('ideal');
+    assert.equal(useSkyStore.getState().skyLookMode, 'city');
+    state.previewShanghaiTonight();
+    assert.equal(useSkyStore.getState().skyLookMode, 'ideal');
+    assert.equal(useSkyStore.getState().dateOverride, night);
+    state.setTimeOffset(3600e3);
+    state.setTimeOffset(0);
+    assert.equal(useSkyStore.getState().dateOverride, night);
+    state.backToLive();
+    assert.equal(useSkyStore.getState().dateOverride, null);
+    assert.equal(useSkyStore.getState().skyLookMode, 'city');
+    assert.equal(window.location.searchParams.get('facing'), 'north');
+    assert.equal(window.location.searchParams.has('skyUtc'), false);
+    await state.initialize('lat=42&lon=-111&mag=6');
+    assert.equal(useSkyStore.getState().observer.source, 'override');
+    assert.equal(selectSkyPollution(useSkyStore.getState()).limitingMagnitude, 6);
+  } finally {
+    delete global.window;
   }
 });

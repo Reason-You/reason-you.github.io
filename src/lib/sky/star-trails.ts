@@ -1,6 +1,6 @@
-import { solarSkyState, SkySnapshot, SkyStar } from "./astro";
-import { Camera, horizonToVector, projectSkyDirection, type ProjectedPoint, type SkyDirectionVector } from "./projection";
-import { colorIndexToRgb, trailWidthForMagnitude } from "./renderer";
+import { skyStarDirection, solarSkyState, SkySnapshot, SkyStar } from "./astro";
+import { Camera, projectSkyDirection, type ProjectedPoint, type SkyDirectionVector } from "./projection";
+import { colorIndexToRgb, starInkRgb, trailWidthForMagnitude } from "./renderer";
 import { createTrailIndex, createTrailOrbit, createTrailProjector, trailOrbitDirection, type TrailOrbit } from "./trail-geometry";
 
 /**
@@ -34,6 +34,7 @@ export const TRAIL_TAIL_DAY_MS = 18 * 60 * 1000;
 /** Twilight interval over which new trails develop into full night retention. */
 const NIGHT_KEEP_START = 0.6;
 const NIGHT_KEEP_END = 0.95;
+const TRAIL_RESTORE_BUDGET_MS = 5;
 
 const DEG = Math.PI / 180;
 /** Stars below this (refracted) altitude are dropped, matching computeSky's horizon cut. */
@@ -109,7 +110,7 @@ export function snapshotAtOffset(
   const zenith = zenithAtOffset(latitude, offsetMs);
   const stars: SkyStar[] = [];
   for (const star of base.celestialStars) {
-    const v = horizonToVector(star.altitude, star.azimuth);
+    const v = skyStarDirection(star);
     if (v[0] * zenith[0] + v[1] * zenith[1] + v[2] * zenith[2] < HORIZON_SIN) continue;
     stars.push(star);
   }
@@ -171,15 +172,17 @@ export interface TrailSlice {
 }
 
 interface TrailStyle {
-  color: string;
+  darkColor: string;
+  lightColor: string;
   width: number;
 }
 
 interface PaintedSlice {
+  magnitudeLimit: number;
   tPainted: number;
   paths: (Path2D | undefined)[];
   emitters: ((x1: number, y1: number, x2: number, y2: number, connected?: boolean) => void)[];
-  graded?: { tEnd: number; trails: GradedTrail[] };
+  graded?: { tEnd: number; trails: GradedTrail[]; colors?: string; context?: CanvasRenderingContext2D };
 }
 
 interface GradedTrail {
@@ -187,6 +190,17 @@ interface GradedTrail {
   bucket: number;
   from: ProjectedPoint | null;
   to: ProjectedPoint | null;
+  gradient?: CanvasGradient;
+}
+
+interface TrailStar {
+  id: number;
+  orbit: TrailOrbit;
+  bucket: number;
+  mag: number;
+  endpointCamera: Camera | null;
+  endpointTime: number;
+  endpoint: ProjectedPoint | null;
 }
 
 const COLOR_SAMPLES = [-0.1, 0.4, 1.2] as const;
@@ -211,12 +225,15 @@ export class TrailBuffer {
   private currentStart = 0;
   private lastTime: number | null = null;
   private epochMs = 0;
-  private stars: { id: number; orbit: TrailOrbit; bucket: number; uniqueTrail: boolean }[] = [];
+  private stars: TrailStar[] = [];
   private orbits: TrailOrbit[] = [];
   private styles: (TrailStyle | undefined)[] = [];
   private targetCamera: Camera | null = null;
   private projector: ReturnType<typeof createTrailProjector> | null = null;
   private painted = new Map<TrailSlice, PaintedSlice>();
+  private faintestMagnitude = -Infinity;
+  private sortedByMagnitude = true;
+  private lastMagnitudeLimit = Infinity;
   private worldIndices = new Map<TrailSlice, ReadonlyMap<number, Uint32Array>>();
 
   constructor(
@@ -230,19 +247,22 @@ export class TrailBuffer {
     this.currentStart = startTimeMs;
     this.lastTime = startTimeMs;
     const pole = poleAxis(snapshot.observer.latitude);
-    const coincident = new Map<number, Map<number, number>>();
     this.stars = snapshot.celestialStars.map(star => {
       const bucket = colorBucketOf(star.colorIndex) * 3 + (star.mag < 0.8 ? 0 : star.mag < 2.2 ? 1 : 2);
-      let azimuths = coincident.get(star.altitude);
-      if (!azimuths) { azimuths = new Map(); coincident.set(star.altitude, azimuths); }
-      const styles = azimuths.get(star.azimuth) ?? 0;
-      const uniqueTrail = (styles & (1 << bucket)) === 0;
-      azimuths.set(star.azimuth, styles | (1 << bucket));
+      this.sortedByMagnitude &&= star.mag >= this.faintestMagnitude;
+      this.faintestMagnitude = Math.max(this.faintestMagnitude, star.mag);
       if (!this.styles[bucket]) {
-        const [r, g, b] = colorIndexToRgb(COLOR_SAMPLES[Math.floor(bucket / 3)]);
-        this.styles[bucket] = { color: `${r}, ${g}, ${b}`, width: trailWidthForMagnitude(star.mag) };
+        const sample = COLOR_SAMPLES[Math.floor(bucket / 3)];
+        this.styles[bucket] = {
+          darkColor: colorIndexToRgb(sample).join(", "),
+          lightColor: starInkRgb(sample).join(", "),
+          width: trailWidthForMagnitude(star.mag),
+        };
       }
-      return { id: star.id, orbit: createTrailOrbit(horizonToVector(star.altitude, star.azimuth), pole), bucket, uniqueTrail };
+      return {
+        id: star.id, orbit: createTrailOrbit(skyStarDirection(star), pole), bucket, mag: star.mag,
+        endpointCamera: null, endpointTime: NaN, endpoint: null,
+      };
     });
     this.orbits = this.stars.map(star => star.orbit);
   }
@@ -269,14 +289,17 @@ export class TrailBuffer {
     this.lastTime = virtualNowMs;
     const oldestTime = virtualNowMs - this.sliceSpanMs * this.maxSlices;
     this.ring = this.ring.filter(closed => {
-      if (closed.tStart < oldestTime) { this.painted.delete(closed); this.worldIndices.delete(closed); return false; }
-      closed.opacity = Math.min(closed.opacity, sliceOpacity(virtualNowMs - closed.tEnd, twilight));
-      if (closed.opacity <= 0) { this.painted.delete(closed); this.worldIndices.delete(closed); return false; }
-      return true;
+      if (closed.tStart >= oldestTime) {
+        closed.opacity = Math.min(closed.opacity, sliceOpacity(virtualNowMs - closed.tEnd, twilight));
+        if (closed.opacity > 0) return true;
+      }
+      this.painted.delete(closed);
+      this.worldIndices.delete(closed);
+      return false;
     });
   }
 
-  private createPaintedSlice(slice: TrailSlice): PaintedSlice {
+  private createPaintedSlice(slice: TrailSlice, magnitudeLimit: number): PaintedSlice {
     const paths: PaintedSlice['paths'] = [];
     const emitters = Array.from({ length: 9 }, (_, bucket) => {
       let path: Path2D | undefined;
@@ -286,7 +309,7 @@ export class TrailBuffer {
         path.lineTo(x2, y2);
       };
     });
-    return { tPainted: slice.tStart, paths, emitters };
+    return { magnitudeLimit, tPainted: slice.tStart, paths, emitters };
   }
 
   private gradedTrails(slice: TrailSlice, painted: PaintedSlice, camera: Camera): GradedTrail[] {
@@ -300,33 +323,51 @@ export class TrailBuffer {
     }
     const trails: GradedTrail[] = [];
     const projector = this.projector!;
+    const fromCosine = Math.cos(fromAngle), fromSine = Math.sin(fromAngle);
+    const toCosine = Math.cos(toAngle), toSine = Math.sin(toAngle);
+    let path: Path2D | undefined;
+    const append = (x1: number, y1: number, x2: number, y2: number, connected?: boolean) => {
+      path ??= new Path2D();
+      if (!connected) path.moveTo(x1, y1);
+      path.lineTo(x2, y2);
+    };
     for (const cell of projector.visibleCells) {
       const candidates = index.get(cell);
       if (!candidates) continue;
       for (let i = 0; i < candidates.length; i++) {
         const star = this.stars[candidates[i]];
-        if (!star.uniqueTrail) continue;
-        let path: Path2D | undefined;
-        projector.appendCoordinates(star.orbit, fromAngle, toAngle, (x1, y1, x2, y2, connected) => {
-          path ??= new Path2D();
-          if (!connected) path.moveTo(x1, y1);
-          path.lineTo(x2, y2);
-        });
+        if (star.mag > painted.magnitudeLimit) {
+          if (this.sortedByMagnitude) break;
+          continue;
+        }
+        path = undefined;
+        projector.appendCoordinates(star.orbit, fromAngle, toAngle, append);
         if (!path) continue;
-        trails.push({
-          path, bucket: star.bucket,
-          from: projectSkyDirection(trailOrbitDirection(star.orbit, fromAngle), camera),
-          to: projectSkyDirection(trailOrbitDirection(star.orbit, toAngle), camera),
-        });
+        const from = star.endpointCamera === camera && star.endpointTime === slice.tStart
+          ? star.endpoint : this.projectEndpoint(star.orbit, fromCosine, fromSine, camera);
+        const to = this.projectEndpoint(star.orbit, toCosine, toSine, camera);
+        star.endpointCamera = camera;
+        star.endpointTime = slice.tEnd;
+        star.endpoint = to;
+        trails.push({ path, bucket: star.bucket, from, to });
       }
     }
     painted.graded = { tEnd: slice.tEnd, trails };
     return trails;
   }
 
-  draw(ctx: CanvasRenderingContext2D, style: { isDark: boolean; camera: Camera }): void {
+  private projectEndpoint(orbit: TrailOrbit, angleCosine: number, angleSine: number, camera: Camera): ProjectedPoint | null {
+    const { center, cosine, sine } = orbit;
+    return projectSkyDirection([
+      center[0] + cosine[0] * angleCosine + sine[0] * angleSine,
+      center[1] + cosine[1] * angleCosine + sine[1] * angleSine,
+      center[2] + cosine[2] * angleCosine + sine[2] * angleSine,
+    ], camera);
+  }
+
+  draw(ctx: CanvasRenderingContext2D, style: { isDark: boolean; camera: Camera }, detail: number | "restore" = Infinity): boolean {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.globalCompositeOperation = "lighter";
+    ctx.globalCompositeOperation = style.isDark ? "lighter" : "source-over";
     ctx.lineCap = "butt";
     ctx.lineJoin = "round";
     const gain = style.isDark ? 0.85 : 1.8;
@@ -338,11 +379,15 @@ export class TrailBuffer {
     const projector = this.projector!;
     const slices = this.current ? [...this.ring, this.current] : this.ring;
     const alphas = slices.map(slice => Math.min(0.75, gain * slice.opacity));
+    const restore = detail === "restore";
+    if (!restore) this.lastMagnitudeLimit = detail >= this.faintestMagnitude ? Infinity : detail;
+    const restoreStarted = restore ? performance.now() : 0;
+    let restoredSlice = false;
+    let complete = true;
+    let lineWidth = 0;
     for (let n = 0; n < slices.length; n++) {
       const slice = slices[n], alpha = alphas[n];
       if (slice.opacity <= 0 || slice.tEnd <= slice.tStart) continue;
-      let painted = this.painted.get(slice);
-      if (!painted) { painted = this.createPaintedSlice(slice); this.painted.set(slice, painted); }
       const previous = slices[n - 1], next = slices[n + 1], span = slice.tEnd - slice.tStart;
       const previousSpan = previous ? previous.tEnd - previous.tStart : 0;
       const nextSpan = next ? next.tEnd - next.tStart : 0;
@@ -351,24 +396,45 @@ export class TrailBuffer {
       const right = next?.tStart === slice.tEnd
         ? (alpha * nextSpan + alphas[n + 1] * span) / (span + nextSpan) : alpha;
       const centerAlpha = alpha.toFixed(3), leftAlpha = left.toFixed(3), rightAlpha = right.toFixed(3);
-      if (leftAlpha !== centerAlpha || rightAlpha !== centerAlpha) {
-        const colors = this.styles.map(stroke => stroke ? [
-          `rgba(${stroke.color}, ${leftAlpha})`,
-          `rgba(${stroke.color}, ${centerAlpha})`,
-          `rgba(${stroke.color}, ${rightAlpha})`,
-        ] : undefined);
-        for (const trail of this.gradedTrails(slice, painted, style.camera)) {
+      if (centerAlpha === "0.000" && leftAlpha === centerAlpha && rightAlpha === centerAlpha) continue;
+      const gradedSlice = leftAlpha !== centerAlpha || rightAlpha !== centerAlpha;
+      let magnitudeLimit = restore ? Infinity : this.lastMagnitudeLimit;
+      let painted = this.painted.get(slice);
+      const cachedLimit = painted?.magnitudeLimit ?? this.lastMagnitudeLimit;
+      if (restore && cachedLimit < Infinity) {
+        if (restoredSlice && performance.now() - restoreStarted >= TRAIL_RESTORE_BUDGET_MS) {
+          magnitudeLimit = cachedLimit;
+        } else restoredSlice = true;
+      }
+      if (magnitudeLimit < Infinity) complete = false;
+      if (!painted || painted.magnitudeLimit !== magnitudeLimit) {
+        painted = this.createPaintedSlice(slice, magnitudeLimit);
+        this.painted.set(slice, painted);
+      }
+      if (gradedSlice) {
+        const trails = this.gradedTrails(slice, painted, style.camera);
+        const key = `${style.isDark}/${leftAlpha}/${centerAlpha}/${rightAlpha}`;
+        const graded = painted.graded!;
+        const reuse = graded.colors === key && graded.context === ctx;
+        graded.colors = key;
+        graded.context = ctx;
+        const colors = this.styles.map(stroke => {
+          if (!stroke) return undefined;
+          const rgb = style.isDark ? stroke.darkColor : stroke.lightColor;
+          return [`rgba(${rgb}, ${leftAlpha})`, `rgba(${rgb}, ${centerAlpha})`, `rgba(${rgb}, ${rightAlpha})`];
+        });
+        for (const trail of trails) {
           const stroke = this.styles[trail.bucket]!;
           const color = colors[trail.bucket]!;
           const { from, to } = trail;
-          if (from && to && Math.hypot(to.x - from.x, to.y - from.y) > 1e-3) {
-            const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
-            gradient.addColorStop(0, color[0]);
-            gradient.addColorStop(0.5, color[1]);
-            gradient.addColorStop(1, color[2]);
-            ctx.strokeStyle = gradient;
-          } else ctx.strokeStyle = color[1];
-          ctx.lineWidth = stroke.width;
+          if (!reuse && from && to && (to.x - from.x) ** 2 + (to.y - from.y) ** 2 > 1e-6) {
+            trail.gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+            trail.gradient.addColorStop(0, color[0]);
+            trail.gradient.addColorStop(0.5, color[1]);
+            trail.gradient.addColorStop(1, color[2]);
+          }
+          ctx.strokeStyle = trail.gradient ?? color[1];
+          if (stroke.width !== lineWidth) ctx.lineWidth = lineWidth = stroke.width;
           ctx.stroke(trail.path);
         }
         continue;
@@ -384,12 +450,20 @@ export class TrailBuffer {
             if (!candidates) continue;
             for (let i = 0; i < candidates.length; i++) {
               const star = this.stars[candidates[i]];
+              if (star.mag > magnitudeLimit) {
+                if (this.sortedByMagnitude) break;
+                continue;
+              }
               projector.appendCoordinates(star.orbit, fromAngle, toAngle, painted.emitters[star.bucket]);
             }
           }
         } else {
           for (let i = 0; i < this.stars.length; i++) {
             const star = this.stars[i];
+            if (star.mag > magnitudeLimit) {
+              if (this.sortedByMagnitude) break;
+              continue;
+            }
             projector.appendCoordinates(star.orbit, fromAngle, toAngle, painted.emitters[star.bucket]);
           }
         }
@@ -398,12 +472,13 @@ export class TrailBuffer {
       for (let bucket = 0; bucket < painted.paths.length; bucket++) {
         const path = painted.paths[bucket], stroke = this.styles[bucket];
         if (!path || !stroke) continue;
-        ctx.strokeStyle = `rgba(${stroke.color}, ${centerAlpha})`;
-        ctx.lineWidth = stroke.width;
+        ctx.strokeStyle = `rgba(${style.isDark ? stroke.darkColor : stroke.lightColor}, ${centerAlpha})`;
+        if (stroke.width !== lineWidth) ctx.lineWidth = lineWidth = stroke.width;
         ctx.stroke(path);
       }
     }
     ctx.globalCompositeOperation = "source-over";
+    return complete;
   }
 
   /** Closed slices, oldest first; the in-progress slice is excluded. */
@@ -435,6 +510,9 @@ export class TrailBuffer {
     this.targetCamera = null;
     this.projector = null;
     this.painted.clear();
+    this.faintestMagnitude = -Infinity;
+    this.sortedByMagnitude = true;
+    this.lastMagnitudeLimit = Infinity;
     this.worldIndices.clear();
   }
 }

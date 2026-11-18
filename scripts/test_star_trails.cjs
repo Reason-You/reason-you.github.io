@@ -343,7 +343,7 @@ function withRecordedPaths(check) {
     canvas: { width: 800, height: 600 }, strokes: [], gradients: [],
     clearRect() { this.strokes = []; },
     createLinearGradient(...coordinates) { const gradient = new Gradient(...coordinates); this.gradients.push(gradient); return gradient; },
-    stroke(path) { this.strokes.push({ path, alpha: this.strokeStyle, width: this.lineWidth }); },
+    stroke(path) { this.strokes.push({ path, alpha: this.strokeStyle, width: this.lineWidth, composite: this.globalCompositeOperation }); },
   });
   try { check(context); }
   finally {
@@ -385,6 +385,12 @@ test('unequal neighboring trail slices share a continuous brightness boundary an
     const center = stroke => typeof stroke.alpha === 'string' ? stroke.alpha : stroke.alpha.stops.find(stop => stop.offset === .5).color;
     const edge = (stroke, end) => typeof stroke.alpha === 'string' ? stroke.alpha : (end ? stroke.alpha.stops.at(-1) : stroke.alpha.stops[0]).color;
     const alphaOf = color => Number(color.match(/, ([\d.]+)\)$/)[1]);
+    const { starInkRgb, colorIndexToRgb } = require('../src/lib/sky/renderer.ts');
+    const palette = isDark ? colorIndexToRgb : starInkRgb;
+    ctx.strokes.forEach(stroke => {
+      assert.equal(stroke.composite, isDark ? 'lighter' : 'source-over');
+      assert.ok(center(stroke).startsWith(`rgba(${palette(0.4).join(', ')}, `));
+    });
     ctx.strokes.forEach((stroke, i) => assert.equal(alphaOf(center(stroke)), Number(Math.min(.75, (isDark ? .85 : 1.8) * intervals[i].opacity).toFixed(3))));
     for (let i = 0; i < ctx.strokes.length - 1; i++) assert.equal(edge(ctx.strokes[i], true), edge(ctx.strokes[i + 1], false), 'both sides of a join use the same color and alpha');
     assert.ok(ctx.gradients.length >= 2);
@@ -392,11 +398,51 @@ test('unequal neighboring trail slices share a continuous brightness boundary an
   const ctx = context();
   buffer.draw(ctx, { isDark: true, camera });
   const [oldPath, middlePath, headPath] = ctx.strokes.map(stroke => stroke.path);
+  const gradientCount = ctx.gradients.length;
+  buffer.draw(ctx, { isDark: true, camera });
+  assert.equal(ctx.gradients.length, gradientCount, 'a stable view and opacity reuse the same gradients');
   buffer.push(elapsed + 60e3, 0);
   buffer.draw(ctx, { isDark: true, camera });
   assert.equal(ctx.strokes[0].path, oldPath);
   assert.equal(ctx.strokes[1].path, middlePath);
   assert.notEqual(ctx.strokes[2].path, headPath, 'the advancing head gets its new full interval');
+}));
+
+test('retained trail detail restores one time slice per exhausted frame and equals a direct draw', t => withRecordedPaths(context => {
+  let now = 0;
+  t.mock.method(performance, 'now', () => now += 8);
+  const stars = [testStars[0], { ...testStars[0], id: 4, mag: 5.8, azimuth: 20 },
+    { ...testStars[0], id: 5, mag: 5.9, azimuth: 40 }];
+  const createBuffer = (catalogue, twilight) => {
+    const buffer = new TrailBuffer();
+    buffer.begin(exposureSnapshot(0, catalogue), 0);
+    buffer.push(22 * 60e3, twilight);
+    return buffer;
+  };
+  const catalogues = [stars, [stars[2], stars[0], stars[1]]];
+  for (const [isDark, twilight] of [[true, 0], [false, 0], [true, 1], [false, 1]]) {
+    for (const catalogue of catalogues) {
+      const buffer = createBuffer(catalogue, twilight);
+      const ctx = context(), expected = context(), brightExpected = context();
+      const style = { isDark, camera: createCamera(800, 600, captureView) };
+      const history = buffer.slices().map(slice => ({ ...slice }));
+      for (const threshold of [5.8, 5.2, 5.8]) {
+        const bright = createBuffer(catalogue.filter(star => star.mag <= threshold), twilight);
+        assert.equal(bright.draw(brightExpected, style, threshold), true);
+        assert.equal(buffer.draw(ctx, style, threshold), false);
+        assert.deepEqual(ctx.strokes, brightExpected.strokes);
+      }
+      assert.equal(buffer.headDirections().size, 3);
+      assert.equal(buffer.draw(ctx, style, 'restore'), false);
+      const firstRestored = ctx.strokes[0].path;
+      assert.equal(buffer.draw(ctx, style, 'restore'), false);
+      assert.equal(ctx.strokes[0].path, firstRestored);
+      assert.equal(buffer.draw(ctx, style, 'restore'), true);
+      assert.equal(createBuffer(catalogue, twilight).draw(expected, style), true);
+      assert.deepEqual(ctx.strokes, expected.strokes);
+      assert.deepEqual(buffer.slices(), history);
+    }
+  }
 }));
 
 test('a real star entering the viewport retains its full-arc gradient anchors through clipping and reprojection', () => withRecordedPaths(context => {
@@ -424,7 +470,7 @@ test('a real star entering the viewport retains its full-arc gradient anchors th
   assert.deepEqual(ctx.strokes.map(stroke => stroke.alpha), colors);
 }));
 
-test('coincident real binary components keep one graded stroke per style and retain both star identities', () => withRecordedPaths(context => {
+test('coincident real binary components each contribute a graded stroke and retain both star identities', () => withRecordedPaths(context => {
   const sky = computeSky(new Date('2026-04-15T13:00:00Z'), DEFAULT_OBSERVER,
     { limitingMagnitude: 5, bortleApprox: 6, lightProxy: 0, source: 'override' });
   const pair = sky.celestialStars.filter(star => star.id === 118742 || star.id === 118743);
@@ -442,9 +488,9 @@ test('coincident real binary components keep one graded stroke per style and ret
   const single = draw([pair[0]]), binary = draw(pair);
   assert.equal(binary.buffer.headDirections().size, 2);
   assert.ok(binary.ctx.gradients.length > 0);
-  assert.equal(binary.ctx.strokes.length, single.ctx.strokes.length, 'coincident same-style curves keep their original single coverage');
-  assert.deepEqual(pathGeometry(binary.ctx), pathGeometry(single.ctx));
-  assert.deepEqual(binary.ctx.strokes.map(stroke => stroke.alpha), single.ctx.strokes.map(stroke => stroke.alpha));
+  assert.deepEqual(pathGeometry(binary.ctx), pathGeometry(single.ctx).flatMap(path => [path, path]));
+  assert.deepEqual(binary.ctx.strokes.map(stroke => [stroke.alpha, stroke.composite]),
+    single.ctx.strokes.flatMap(stroke => [[stroke.alpha, 'lighter'], [stroke.alpha, 'lighter']]));
 }));
 
 test('the same exposure exists in opposite directions even when the initial viewport excludes those stars', () => withRecordedPaths(context => {

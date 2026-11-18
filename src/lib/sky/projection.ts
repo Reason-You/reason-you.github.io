@@ -139,6 +139,36 @@ export function projectSkyDirectionSegment(
   return clipSkyDirections(from, to, camera, [0, 0, 1]);
 }
 
+/** Adjacent grid edges share one projection. Only crossings need six-plane clipping. */
+export function projectSkyPolyline(points: readonly SkyDirectionVector[], camera: Camera, horizon: readonly number[]) {
+  const segments: { from: ProjectedPoint; to: ProjectedPoint }[] = [];
+  const { right, up, forward, scale } = camera;
+  const half = camera.width / 2, top = camera.height * camera.centerYFraction, bottom = camera.height - top;
+  let previousMask = 0;
+  let previous: ProjectedPoint | null = null;
+  for (let i = 0; i < points.length; i++) {
+    const [east, north, z] = points[i];
+    const depth = east * forward[0] + north * forward[1] + z * forward[2];
+    const x = scale * (east * right[0] + north * right[1] + z * right[2]);
+    const y = scale * (east * up[0] + north * up[1] + z * up[2]);
+    let mask = depth < 0.02 ? 1 : 0;
+    if (east * horizon[0] + north * horizon[1] + z * horizon[2] < 0) mask |= 2;
+    if (x < -half * depth) mask |= 4;
+    if (x > half * depth) mask |= 8;
+    if (y < -bottom * depth) mask |= 16;
+    if (y > top * depth) mask |= 32;
+    const current = mask ? null : { x: half + x / depth, y: top - y / depth, depth };
+    if (previous && current) segments.push({ from: previous, to: current });
+    else if (i > 0 && !(previousMask & mask)) {
+      const crossing = clipSkyDirections(points[i - 1], points[i], camera, horizon);
+      if (crossing) segments.push(crossing);
+    }
+    previous = current;
+    previousMask = mask;
+  }
+  return segments;
+}
+
 function clipSkyDirections(
   from: SkyDirectionVector,
   to: SkyDirectionVector,

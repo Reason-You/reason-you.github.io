@@ -3,12 +3,25 @@ import { getCatalog, Star } from "./catalog";
 import { ObserverSpec, SKY_DAYTIME_VISIBILITY } from "./constants";
 import { LightPollution } from "./lightPollution";
 import { CONSTELLATION_VERTICES } from "./constellations";
+import { horizonToVector, type SkyDirectionVector } from "./projection";
 
 export interface SkyStar extends Star {
   /** Degrees clockwise from north, as seen by the observer. */
   azimuth: number;
   /** Degrees above the horizon (refraction corrected). */
   altitude: number;
+}
+
+const snapshotDirections = new WeakMap<SkyStar, SkyDirectionVector>();
+
+/** A snapshot star keeps the same local direction as the visitor pans or advances its camera. */
+export function skyStarDirection(star: SkyStar): SkyDirectionVector {
+  let direction = snapshotDirections.get(star);
+  if (!direction) {
+    direction = horizonToVector(star.altitude, star.azimuth);
+    snapshotDirections.set(star, direction);
+  }
+  return direction;
 }
 
 export interface SkySnapshot {
@@ -18,6 +31,8 @@ export interface SkySnapshot {
   observer: ObserverSpec;
   /** Light pollution model in effect. */
   pollution: LightPollution;
+  /** The city visibility limit at this site when comparing Shanghai with an ideal dark sky. */
+  cityLimitingMagnitude?: number;
   /** Solar altitude in degrees (refraction corrected). */
   sunAltitude: number;
   /**
@@ -37,6 +52,11 @@ export interface SkySnapshot {
   celestialStars: SkyStar[];
   /** Complete constellation vertices, including faint stars and points beyond the horizon. */
   constellationStars: SkyStar[];
+}
+
+export interface SkyComputation {
+  /** Continue the calculation for at most one small main-thread time slice. */
+  runFor(budgetMs: number): SkySnapshot | null;
 }
 
 const DEG = Math.PI / 180;
@@ -104,21 +124,14 @@ export function solarSkyState(
   return { sunAltitude, twilight, visibility };
 }
 
-/**
- * Compute one static snapshot of the sky: sun altitude plus the horizontal
- * coordinates of every catalog star worth drawing.
- *
- * This is the only place that does astronomy; it is intentionally called a few
- * times per hour, never per animation frame.
- */
-export function computeSky(
+/** Prepare the same sky calculation as computeSky, with an optional per-frame budget. */
+export function createSkyComputation(
   date: Date,
   observer: ObserverSpec,
   pollution: LightPollution
-): SkySnapshot {
+): SkyComputation {
   const geoObserver = new Observer(observer.latitude, observer.longitude, 10);
   const { sunAltitude, twilight, visibility } = solarSkyState(date, observer);
-
   const rotation = Rotation_EQJ_EQD(date);
   const positions = new Map<number, SkyStar>();
   const atHorizon = (star: Star): SkyStar => {
@@ -132,23 +145,59 @@ export function computeSky(
   };
   const stars: SkyStar[] = [];
   const celestialStars: SkyStar[] = [];
-  for (const star of getCatalog()) {
-    if (star.mag > pollution.limitingMagnitude) continue;
-    const position = atHorizon(star);
-    celestialStars.push(position);
-    if (position.altitude >= -2) stars.push(position);
-  }
-  const constellationStars = CONSTELLATION_VERTICES.map(atHorizon);
+  const constellationStars: SkyStar[] = [];
+  const catalog = getCatalog();
+  let catalogIndex = 0;
+  let constellationIndex = 0;
+  let complete: SkySnapshot | null = null;
 
   return {
-    date,
-    observer,
-    pollution,
-    sunAltitude,
-    twilight,
-    visibility,
-    stars,
-    celestialStars,
-    constellationStars,
+    runFor(budgetMs: number): SkySnapshot | null {
+      if (complete) return complete;
+      const started = performance.now();
+      let batch = 0;
+      while (catalogIndex < catalog.length) {
+        const star = catalog[catalogIndex++];
+        if (star.mag <= pollution.limitingMagnitude) {
+          const position = atHorizon(star);
+          celestialStars.push(position);
+          if (position.altitude >= -2) stars.push(position);
+        }
+        batch += 1;
+        if (batch % 16 === 0 && performance.now() - started >= budgetMs) return null;
+      }
+      while (constellationIndex < CONSTELLATION_VERTICES.length) {
+        constellationStars.push(atHorizon(CONSTELLATION_VERTICES[constellationIndex++]));
+        batch += 1;
+        if (batch % 16 === 0 && performance.now() - started >= budgetMs) return null;
+      }
+      complete = {
+        date,
+        observer,
+        pollution,
+        sunAltitude,
+        twilight,
+        visibility,
+        stars,
+        celestialStars,
+        constellationStars,
+      };
+      return complete;
+    },
   };
+}
+
+/**
+ * Compute one static snapshot of the sky: sun altitude plus the horizontal
+ * coordinates of every catalog star worth drawing.
+ *
+ * This is the only place that does astronomy; it is intentionally called a few
+ * times per hour, never per animation frame.
+ */
+export function computeSky(
+  date: Date,
+  observer: ObserverSpec,
+  pollution: LightPollution
+): SkySnapshot {
+  return createSkyComputation(date, observer, pollution).runFor(Infinity)!;
 }

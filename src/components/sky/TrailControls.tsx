@@ -1,6 +1,6 @@
 'use client';
 
-import type React from 'react';
+import { FastForward, RotateCcw } from 'lucide-react';
 import { SkyHint, useSkyHints } from './SkyHints';
 
 interface TrailControlsProps {
@@ -8,9 +8,11 @@ interface TrailControlsProps {
   speed: number | null;
   offsetLabel: string | null;
   reduced: boolean;
-  onHoldStart: () => void;
+  preview?: boolean;
+  onHoldStart: () => boolean;
   onHoldEnd: () => void;
   onReturnNow: () => void;
+  onBackToLive: () => void;
 }
 
 function speedText(speed: number): string {
@@ -28,20 +30,18 @@ export default function TrailControls({
   speed,
   offsetLabel,
   reduced,
+  preview,
   onHoldStart,
   onHoldEnd,
   onReturnNow,
+  onBackToLive,
 }: TrailControlsProps) {
-  const { touch, canStartTrails, trailStarted, trailEnded } = useSkyHints();
+  const { canStartTrails, trailStarted } = useSkyHints();
+  const resetLabel = preview ? 'Reset preview' : 'Back to now';
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
   const start = () => {
     if (holding || !canStartTrails) return;
-    onHoldStart();
-    trailStarted(reduced);
-  };
-  const finish = () => {
-    onHoldEnd();
-    if (!reduced) trailEnded();
+    if (onHoldStart()) trailStarted(reduced);
   };
 
   return (
@@ -55,57 +55,47 @@ export default function TrailControls({
     >
       <button
         type="button"
-        className={`sky-time-button${holding ? ' is-holding' : ''}`}
-        aria-pressed={holding}
-        aria-label={reduced
-          ? 'Reveal one hour of star trails'
-          : 'Fast-forward the sky. Hold to accelerate, release to resume.'}
+        className={`sky-tool-button sky-time-button${holding ? ' is-holding' : ''}`}
+        aria-pressed={reduced ? undefined : holding}
+        aria-label={reduced ? undefined : 'Hold for trails. Hold to fast-forward the sky.'}
+        onClick={reduced ? start : undefined}
         onPointerDown={event => {
+          if (reduced) return;
           if (event.button !== 0 || !event.isPrimary) return;
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
           start();
         }}
-        onPointerUp={event => { if (event.button === 0 && event.isPrimary && holding) finish(); }}
+        onPointerUp={event => { if (event.button === 0 && event.isPrimary && holding) onHoldEnd(); }}
         onPointerCancel={event => { if (event.isPrimary && holding) onHoldEnd(); }}
+        onLostPointerCapture={() => { if (holding) onHoldEnd(); }}
         onBlur={() => { if (holding) onHoldEnd(); }}
         onKeyDown={event => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
+          if (reduced || (event.key !== 'Enter' && event.key !== ' ')) return;
           event.preventDefault();
           if (event.repeat || holding) return;
           start();
         }}
         onKeyUp={event => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
+          if (reduced || (event.key !== 'Enter' && event.key !== ' ')) return;
           event.preventDefault();
-          if (holding) finish();
+          if (holding) onHoldEnd();
         }}
       >
-        <span className="sky-time-icon" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M2 3v10l6-5zM8 3v10l6-5z" />
-          </svg>
-        </span>
-        <span>{reduced ? (touch ? 'Tap' : 'Click') : 'Hold'}</span>
+        <FastForward size={16} aria-hidden="true" />
+        <span>{reduced ? 'Show 1 hour of trails' : holding && speed ? `${speedText(speed)}×` : 'Hold for trails'}</span>
       </button>
       <SkyHint kind="trails" className="sky-discovery-hint--trails">
-        {reduced ? `${touch ? 'Tap' : 'Click'} for trails` : 'Hold for trails'}
+        {reduced ? 'Show an hour of trails. Which star barely moves?' : 'Hold for about 3 seconds. Which star barely moves?'}
       </SkyHint>
-      <span className="sky-time-pill" aria-live="polite">
-        {holding && speed ? `time ${speedText(speed)}x` : offsetLabel ? `time ${offsetLabel} · 1x` : 'time 1x'}
-      </span>
-      {!holding && offsetLabel && (
-        <button
-          type="button"
-          className="sky-time-return"
-          onClick={onReturnNow}
-          aria-label="Return the sky to the present moment"
-        >
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
-            <path d="M2.8 8a5.2 5.2 0 1 0 1.5-3.7M2.8 1.8v3h3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          now
-        </button>
+      {!holding && (offsetLabel || preview) && (
+        <div className="sky-time-offset">
+          {offsetLabel && <span className="sky-time-pill" role="status">{offsetLabel}</span>}
+          <button type="button" className="sky-tool-button sky-time-return" onClick={offsetLabel ? onReturnNow : onBackToLive}>
+            <RotateCcw size={14} aria-hidden="true" />
+            <span>{offsetLabel ? resetLabel : 'Back to live'}</span>
+          </button>
+        </div>
       )}
     </div>
   );

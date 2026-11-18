@@ -53,6 +53,12 @@ async page => {
     }
     try{
       await p.goto(url);await settle();
+      // Frame the Scorpius pair and the Hercules segment that crosses the top edge.
+      const skyBox = await p.locator('.look-up-sky').boundingBox();
+      const dy = await p.evaluate(() => window.__sky.localCamera.scale * Math.tan((47.5 - window.__sky.view.altitude) * Math.PI / 180));
+      const x = skyBox.x + skyBox.width / 2, y = skyBox.y + skyBox.height / 3;
+      await p.mouse.move(x, y);await p.mouse.down();await p.mouse.move(x, y + dy);await p.mouse.up();
+      await p.waitForFunction(() => window.__sky.interactiveStars.some(entry => entry.star.hip === 80816));
       await p.evaluate(()=>{
         window.__beforeLayout=window.__sky;
         window.__layoutTrace={running:true,frames:0,collisions:[]};
@@ -81,7 +87,7 @@ async page => {
         const l=document.querySelector('.constellation-preview g[data-constellation="Her"] line[data-from-hip="80816"][data-to-hip="81693"]');
         return l?{x1:+l.getAttribute('x1'),y1:+l.getAttribute('y1'),x2:+l.getAttribute('x2'),y2:+l.getAttribute('y2')}:null;
       });
-      assert(edge&&edge.y1>0&&edge.y2===0,`${key}: Hercules line reaches the top edge`);await audit('clipped Hercules');
+      assert(edge&&edge.y1>0&&Math.abs(edge.y2)<1e-8,`${key}: Hercules line reaches the top edge`);await audit('clipped Hercules');
       const remaining=await p.locator('.look-up-star-focus[aria-pressed="false"]').evaluateAll(buttons=>buttons.map(button=>button.getAttribute('aria-label')));
       for(const name of remaining){await p.getByRole('button',{name,exact:true}).focus();await p.keyboard.press('Enter');}
       await p.evaluate(()=>document.activeElement?.blur());

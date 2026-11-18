@@ -1,8 +1,8 @@
-import { SkySnapshot, SkyStar } from "./astro";
-import { Camera, project, ProjectedPoint } from "./projection";
+import { skyStarDirection, type SkySnapshot, type SkyStar } from "./astro";
+import { projectSkyDirection, type Camera, type ProjectedPoint } from "./projection";
 
 export interface RenderStyle {
-  /** Effective theme; stars are strongly suppressed on the light theme. */
+  /** The star window and the full-size chart have separate daylight palettes. */
   isDark: boolean;
   /** Smaller screens keep a slightly taller sky window. */
   mobile: boolean;
@@ -147,6 +147,38 @@ export function colorIndexToRgb(colorIndex?: number): Rgb {
   return [255, 253, 248];
 }
 
+/** Blue-grey ink for the light star chart, with a warmer tint for red stars. */
+export function starInkRgb(colorIndex = 0.4): Rgb {
+  const warmth = clamp((colorIndex + 0.2) / 2, 0, 1);
+  return [Math.round(22 + 37 * warmth), Math.round(42 + 14 * warmth), Math.round(73 - 12 * warmth)];
+}
+
+interface StarPaint {
+  ink: boolean;
+  color: string;
+  radius: number;
+  trailRadius: number;
+  alpha: number;
+  fill: string;
+}
+
+const starPaints = new WeakMap<SkyStar, StarPaint>();
+
+/** Panning moves a star on screen while its size, colour and brightness stay constant. */
+function starPaint(star: SkyStar, alpha: number, ink: boolean): StarPaint {
+  let paint = starPaints.get(star);
+  if (!paint || paint.ink !== ink) {
+    const color = (ink ? starInkRgb(star.colorIndex) : colorIndexToRgb(star.colorIndex)).join(', ');
+    paint = { ink, color, radius: magnitudeToRadius(star.mag), trailRadius: trailWidthForMagnitude(star.mag) / 2,
+      alpha, fill: `rgba(${color}, ${alpha.toFixed(3)})` };
+    starPaints.set(star, paint);
+  } else if (paint.alpha !== alpha) {
+    paint.alpha = alpha;
+    paint.fill = `rgba(${paint.color}, ${alpha.toFixed(3)})`;
+  }
+  return paint;
+}
+
 /**
  * Faint warm city glow, kept inside the top window so it never creates a band
  * in the clean body of the page.
@@ -193,14 +225,14 @@ export function projectSkyStars(
   camera: Camera,
   style: RenderStyle
 ): RenderedStar[] {
-  const themeFactor = style.isDark ? 1 : 0.14;
+  const fullSky = style.presentation === "look-up";
+  const themeFactor = style.isDark ? 1 : fullSky ? 1.12 : 0.14;
   const visibility = Number.isFinite(snapshot.visibility) ? snapshot.visibility * themeFactor : 0;
   if (visibility <= 0.001) return [];
-  const fullSky = style.presentation === "look-up";
   const rendered: RenderedStar[] = [];
 
   for (const star of snapshot.stars) {
-    const point = project(star.altitude, star.azimuth, camera);
+    const point = projectSkyDirection(skyStarDirection(star), camera);
     if (!point) continue;
     if (fullSky && point.y > (style.horizonY ?? Infinity)) continue;
     if (point.x < -4 || point.x > camera.width + 4 || point.y < -4 || point.y > camera.height + 4) {
@@ -217,10 +249,13 @@ export function projectSkyStars(
     );
     if (star.mag > limit) continue;
 
-    const alpha = Math.min(0.96,
-      magnitudeToAlpha(star.mag, snapshot.pollution.limitingMagnitude, visibility) * skyMask *
-      (fullSky ? 1.15 : 1)
-    );
+    let intensity = magnitudeToAlpha(star.mag, snapshot.pollution.limitingMagnitude, visibility);
+    if (fullSky && snapshot.cityLimitingMagnitude !== undefined && snapshot.twilight < 1) {
+      const city = star.mag <= snapshot.cityLimitingMagnitude
+        ? magnitudeToAlpha(star.mag, snapshot.cityLimitingMagnitude, visibility) : 0;
+      intensity = lerp(city, intensity, snapshot.twilight);
+    }
+    const alpha = Math.min(0.96, intensity * skyMask * (fullSky ? 1.15 : 1));
     if (!Number.isFinite(alpha) || alpha <= 0.004) continue;
     rendered.push({ star, point, alpha });
   }
@@ -232,37 +267,36 @@ export function drawSky(
   ctx: CanvasRenderingContext2D,
   snapshot: SkySnapshot,
   camera: Camera,
-  style: RenderStyle
+  style: RenderStyle,
+  rendered = projectSkyStars(snapshot, camera, style)
 ): RenderedStar[] {
   ctx.clearRect(0, 0, camera.width, camera.height);
   if (style.presentation !== "look-up") {
     drawSkyGlow(ctx, camera, snapshot, style, Number.isFinite(snapshot.twilight) ? snapshot.twilight : 0);
   }
-  const rendered = projectSkyStars(snapshot, camera, style);
   ctx.globalCompositeOperation = "source-over";
   const trailBlend = clamp(style.trailBlend ?? 0, 0, 1);
+  const ink = style.presentation === "look-up" && !style.isDark;
 
   for (const { star, point, alpha } of rendered) {
     const anchor = style.trailHeadPositions?.get(star.id);
     const { x, y } = trailHeadPoint(point, anchor, style.trailPositionBlend ?? 0);
-    const normalRadius = magnitudeToRadius(star.mag);
-    const radius = lerp(normalRadius, trailWidthForMagnitude(star.mag) / 2, trailBlend);
-    const [r, g, b] = colorIndexToRgb(star.colorIndex);
-    const color = `${r}, ${g}, ${b}`;
+    const paint = starPaint(star, alpha, ink);
+    const radius = lerp(paint.radius, paint.trailRadius, trailBlend);
 
     // Subtle halo for the brightest stars only.
     if (star.mag < 0.6 && trailBlend < 1) {
-      const halo = normalRadius * 3.8;
+      const halo = paint.radius * 3.8;
       const gradient = ctx.createRadialGradient(x, y, 0, x, y, halo);
-      gradient.addColorStop(0, `rgba(${color}, ${(alpha * 0.42 * (1 - trailBlend)).toFixed(3)})`);
-      gradient.addColorStop(1, `rgba(${color}, 0)`);
+      gradient.addColorStop(0, `rgba(${paint.color}, ${(alpha * (ink ? 0.14 : 0.42) * (1 - trailBlend)).toFixed(3)})`);
+      gradient.addColorStop(1, `rgba(${paint.color}, 0)`);
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(x, y, halo, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    ctx.fillStyle = `rgba(${color}, ${alpha.toFixed(3)})`;
+    ctx.fillStyle = paint.fill;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();

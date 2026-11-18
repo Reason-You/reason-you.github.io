@@ -57,5 +57,28 @@ async page => {
     report.checks.push({mode,turns,captured:{segments:captured.segments,aligned:captured.aligned.length},moved:{segments:moved.segments,aligned:moved.aligned.length,common:common.length},at19:at19.opacity,at21:at21.opacity,duringFade:duringFade.opacity,done:{segments:done.segments,thin:done.thin}});
     await c.close();
   }
+  for(const mode of ['desktop-lighting','touch-lighting']) {
+    const mobile=mode.startsWith('touch'),c=await page.context().browser().newContext({viewport:{width:mobile?390:1280,height:900},hasTouch:mobile,isMobile:mobile,colorScheme:'dark',timezoneId:'Asia/Shanghai'});
+    await c.addInitScript(()=>{localStorage.setItem('theme-storage',JSON.stringify({state:{theme:'dark'},version:0}));localStorage.setItem('stars-above-star-hint-seen','1')});
+    const p=await c.newPage();p.on('pageerror',e=>report.errors.push(e.message));await p.clock.install({time:new Date('2026-01-15T13:00:00Z')});
+    await p.goto(baseUrl+'/stars-above/?skydebug=1&skyUtc=2026-01-15T13:00:00Z');await p.waitForFunction(()=>window.__sky?.lightPollution.source==='viirs');await p.waitForTimeout(850);await p.clock.pauseAt(new Date(await p.evaluate(()=>Date.now()+200)));
+    const expose=async()=>{const b=await p.locator('.sky-time-button').boundingBox();await p.mouse.move(b.x+b.width/2,b.y+b.height/2);await p.mouse.down();await p.clock.runFor(2400);await p.mouse.up();await p.clock.runFor(32)};
+    await expose();
+    const before=await p.evaluate(()=>({time:document.querySelector('footer time').dateTime,view:window.__sky.view,stars:window.__sky.snapshot.celestialStars.length,active:document.querySelector('.look-up-sky').hasAttribute('data-trails-active')}));
+    await p.getByRole('button',{name:'Fudan University, location details'}).click();await p.getByRole('button',{name:'Ideal dark sky',exact:true}).click();
+    assert(await p.getByRole('button',{name:'Ideal dark sky',exact:true}).getAttribute('aria-pressed')==='true',`${mode}: the selected lighting control updates immediately`);
+    await p.locator('.sky-time-button').click();await p.getByRole('button',{name:'City sky',exact:true}).click();await p.clock.runFor(300);
+    const reversed=await p.evaluate(()=>({mode:window.__sky.lightPollution.bortleApprox,active:document.querySelector('.look-up-sky').hasAttribute('data-trails-active'),rendered:window.__sky.rendered.length}));
+    assert(reversed.mode!==1&&!reversed.active&&reversed.rendered>0,`${mode}: an immediate reverse keeps the city frame coherent and ignores a hold during preparation`);
+    await p.getByRole('button',{name:'Ideal dark sky',exact:true}).click();
+    await p.clock.runFor(1200);await p.waitForFunction(()=>window.__sky?.lightPollution.bortleApprox===1&&!document.querySelector('.look-up-sky').hasAttribute('data-trails-active'));
+    const ideal=await p.evaluate(()=>({time:document.querySelector('footer time').dateTime,view:window.__sky.view,stars:window.__sky.snapshot.celestialStars.length,active:document.querySelector('.look-up-sky').hasAttribute('data-trails-active')}));
+    assert(before.active&&!ideal.active&&ideal.stars>before.stars,`${mode}: switching ends the exposure and reveals the prepared dark sky`);
+    assert(ideal.time===before.time&&JSON.stringify(ideal.view)===JSON.stringify(before.view),`${mode}: switching preserves simulated time and view`);
+    await expose();await p.getByRole('button',{name:'City sky',exact:true}).click();await p.clock.runFor(600);await p.waitForFunction(()=>window.__sky?.lightPollution.bortleApprox!==1&&!document.querySelector('.look-up-sky').hasAttribute('data-trails-active'));
+    const city=await p.evaluate(()=>({time:document.querySelector('footer time').dateTime,view:window.__sky.view,stars:window.__sky.snapshot.celestialStars.length,active:document.querySelector('.look-up-sky').hasAttribute('data-trails-active')}));
+    assert(!city.active&&city.stars<ideal.stars,`${mode}: switching back also ends the new exposure`);
+    report.checks.push({mode,before,reversed,ideal,city});await c.close();
+  }
   return report;
 }

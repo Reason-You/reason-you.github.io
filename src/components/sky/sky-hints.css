@@ -28,8 +28,13 @@
 }
 
 .sky-discovery-hint--trails {
-  left: 7.75px;
-  bottom: calc(100% + 10px);
+  left: 0;
+  bottom: 100%;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--sky-control-inset));
+  min-height: 44px;
+  white-space: normal;
+  text-align: left;
 }
 
 @keyframes sky-discovery-hint-in {
@@ -38,5 +43,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sky-discovery-hint { animation: none; }
+  .sky-discovery-hint { animation: none; transition: none; }
 }

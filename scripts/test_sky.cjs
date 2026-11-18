@@ -13,10 +13,10 @@ require.extensions['.ts'] = (module, filename) => {
 };
 
 const { getCatalog } = require('../src/lib/sky/catalog.ts');
-const { computeSky, twilightFactor } = require('../src/lib/sky/astro.ts');
+const { computeSky, createSkyComputation, twilightFactor } = require('../src/lib/sky/astro.ts');
 const { DEFAULT_OBSERVER, SKY_DAYTIME_VISIBILITY } = require('../src/lib/sky/constants.ts');
 const { createCamera, project } = require('../src/lib/sky/projection.ts');
-const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb, trailHeadPoint } = require('../src/lib/sky/renderer.ts');
+const { drawSky, projectSkyStars, magnitudeToAlpha, magnitudeToRadius, colorIndexToRgb, starInkRgb, trailHeadPoint } = require('../src/lib/sky/renderer.ts');
 const {
   createLookUpCamera, interactiveStars, hitTestStar, togglePinnedId, reconcilePinnedIds, positionStarLabel, positionStarLabels,
   readFacing, SKY_DIRECTIONS, viewForFacing, normalizeSkyView, directionName, cardinalFacing, dragSkyView,
@@ -52,6 +52,22 @@ test('all 145 bilingual names join unique HYG/HIP identities; 179 entries satisf
   assert.equal(names.find(star => star.hygId === 39644).chinese, '弧矢增三十二');
   assert.equal(names.find(star => star.hygId === 107742).chinese, '败臼一');
   assert.equal(names.find(star => star.hygId === 118485).chinese, '北河二B');
+});
+
+test('incremental sky preparation yields between frames without changing the astronomy result', () => {
+  const date = new Date('2026-11-18T12:00:00Z');
+  const ideal = { ...city, limitingMagnitude: 7.6, bortleApprox: 1 };
+  const computation = createSkyComputation(date, DEFAULT_OBSERVER, ideal);
+  let snapshot = null;
+  let chunks = 0;
+  while (!snapshot) {
+    snapshot = computation.runFor(0);
+    chunks += 1;
+    assert.ok(chunks < 1000);
+  }
+  assert.ok(chunks > 2);
+  assert.deepEqual(snapshot, computeSky(date, DEFAULT_OBSERVER, ideal));
+  assert.equal(snapshot.celestialStars.length, 8920);
 });
 
 test('pinhole camera stays orthonormal with square pixels and valid FOV across supported viewports', () => {
@@ -248,7 +264,7 @@ test('Look Up renders bottom-of-frame stars with unchanged magnitude limit; home
   assert.equal(createCamera(1280, 720).centerYFraction, 0.5);
 });
 
-test('daytime floor, light theme suppression, size and low-saturation color mappings remain', () => {
+test('daylight keeps the star chart legible and the homepage star window faint', () => {
   assert.equal(twilightFactor(20), 0);
   assert.equal(twilightFactor(-20), 1);
   const snapshot = computeSky(new Date('2026-01-15T04:00:00Z'), DEFAULT_OBSERVER, city);
@@ -257,10 +273,27 @@ test('daytime floor, light theme suppression, size and low-saturation color mapp
   const dark = projectSkyStars(snapshot, camera, { isDark: true, mobile: false, presentation: 'look-up' });
   const light = projectSkyStars(snapshot, camera, { isDark: false, mobile: false, presentation: 'look-up' });
   assert.ok(dark.length > 0 && light.length > 0);
-  near(light[0].alpha / dark[0].alpha, 0.14);
+  assert.ok(light[0].alpha >= dark[0].alpha);
+  const darkWindow = projectSkyStars(snapshot, camera, { isDark: true, mobile: false });
+  const lightWindow = projectSkyStars(snapshot, camera, { isDark: false, mobile: false });
+  near(lightWindow[0].alpha / darkWindow[0].alpha, 0.14);
   assert.ok(magnitudeToRadius(-1) > magnitudeToRadius(3));
   assert.ok(magnitudeToAlpha(1, 4, 1) > magnitudeToAlpha(3, 4, 1));
   assert.deepEqual(colorIndexToRgb(undefined), [255, 253, 248]);
+});
+
+test('Shanghai comparison adds faint stars after sunset without shifting bright stars', () => {
+  const camera = createLookUpCamera(390, 690, { azimuth: 0, altitude: 47.5 });
+  const style = { isDark: true, mobile: true, presentation: 'look-up' };
+  const stars = [1, 6].map((mag, index) => ({ id: index, mag, altitude: 48, azimuth: index }));
+  const scene = { stars, pollution: darkSky, cityLimitingMagnitude: 4, visibility: 1, twilight: 1 };
+  const night = projectSkyStars(scene, camera, style);
+  const dusk = projectSkyStars({ ...scene, twilight: 0.5 }, camera, style);
+  const day = projectSkyStars({ ...scene, twilight: 0 }, camera, style);
+  assert.equal(night.length, 2);
+  assert.deepEqual(day.map(entry => entry.star.mag), [1]);
+  near(dusk[1].alpha, night[1].alpha / 2);
+  assert.deepEqual(night[0].point, day[0].point);
 });
 
 test('bright-star radius gain is bounded, monotonic and smooth at mag 0.6', () => {
@@ -310,9 +343,10 @@ test('both sky presentations share soft bright-star halos without changing proje
         const gradient = gradients[i];
         near(gradient.x, point.x); near(gradient.y, point.y);
         near(gradient.radius, magnitudeToRadius(star.mag) * 3.8);
-        const color = colorIndexToRgb(star.colorIndex).join(', ');
+        const ink = !isDark && presentation === 'look-up';
+        const color = (ink ? starInkRgb(star.colorIndex) : colorIndexToRgb(star.colorIndex)).join(', ');
         assert.deepEqual(gradient.stops, [
-          [0, `rgba(${color}, ${(alpha * 0.42).toFixed(3)})`], [1, `rgba(${color}, 0)`],
+          [0, `rgba(${color}, ${(alpha * (ink ? 0.14 : 0.42)).toFixed(3)})`], [1, `rgba(${color}, 0)`],
         ]);
       }
     }

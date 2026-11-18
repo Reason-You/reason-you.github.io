@@ -19,7 +19,6 @@ interface SkyHintsValue {
   canStartTrails: boolean;
   dismiss: () => void;
   trailStarted: (reduced: boolean) => void;
-  trailEnded: () => void;
   campfireChanged: (state: CampfireState) => void;
   fireClicked: (lighting: boolean) => void;
   tasteClicked: () => void;
@@ -28,7 +27,7 @@ interface SkyHintsValue {
 
 const SkyHintsContext = createContext<SkyHintsValue>({
   hint: null, touch: false, canStartTrails: true,
-  dismiss: () => {}, trailStarted: () => {}, trailEnded: () => {}, campfireChanged: () => {},
+  dismiss: () => {}, trailStarted: () => {}, campfireChanged: () => {},
   fireClicked: () => {}, tasteClicked: () => {}, tasteCompleted: () => {},
 });
 
@@ -36,10 +35,11 @@ export function useSkyHints() {
   return useContext(SkyHintsContext);
 }
 
-export function SkyHintsProvider({ ready, holding, dragging, children }: {
+export function SkyHintsProvider({ ready, holding, dragging, polarisVisible, children }: {
   ready: boolean;
   holding: boolean;
   dragging: boolean;
+  polarisVisible?: boolean;
   children: ReactNode;
 }) {
   const [hint, setHint] = useState<Hint | null>(null);
@@ -57,7 +57,6 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
   const introEnded = useRef(false);
   const introStarted = useRef(false);
   const tasteChecked = useRef(false);
-  const shortPressHintShown = useRef(false);
   const bootTimer = useRef(0);
   const expiryTimer = useRef(0);
   const fadeTimer = useRef(0);
@@ -147,11 +146,15 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
       if (document.hidden) return;
       introStarted.current = true;
       claimRound();
-      if (learned.current.trails) nextFire();
-      else present('trails', nextFire);
+      if (polarisVisible && !learned.current.trails) present('trails', nextFire);
+      else nextFire();
     }, 1_000);
     return () => window.clearTimeout(bootTimer.current);
-  }, [loaded, ready, pageVisible, dragging, holding, claimRound, nextFire, present]);
+  }, [loaded, ready, pageVisible, dragging, holding, polarisVisible, claimRound, nextFire, present]);
+
+  useEffect(() => {
+    if (!polarisVisible && hintRef.current?.kind === 'trails' && !hintRef.current.leaving) retire(nextFire);
+  }, [polarisVisible, retire, nextFire]);
 
   useEffect(() => {
     if (!pageVisible && hintRef.current) endIntro();
@@ -197,12 +200,6 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
     if (reduced) learn('trails');
   }, [claimRound, endIntro, learn]);
 
-  const trailEnded = useCallback(() => {
-    if (learned.current.trails || shortPressHintShown.current || document.hidden || !activityRef.current.ready) return;
-    shortPressHintShown.current = true;
-    present('trails', undefined, 'Press & hold');
-  }, [present]);
-
   const campfireChanged = useCallback((next: CampfireState) => {
     campfireRef.current = next;
     setCampfire(current => current.visible === next.visible && current.fireOn === next.fireOn && current.ready === next.ready ? current : next);
@@ -219,8 +216,8 @@ export function SkyHintsProvider({ ready, holding, dragging, children }: {
 
   const value = useMemo(() => ({
     hint, touch, canStartTrails: ready && !dragging,
-    dismiss: endIntro, trailStarted, trailEnded, campfireChanged, fireClicked, tasteClicked, tasteCompleted,
-  }), [hint, touch, ready, dragging, endIntro, trailStarted, trailEnded, campfireChanged, fireClicked, tasteClicked, tasteCompleted]);
+    dismiss: endIntro, trailStarted, campfireChanged, fireClicked, tasteClicked, tasteCompleted,
+  }), [hint, touch, ready, dragging, endIntro, trailStarted, campfireChanged, fireClicked, tasteClicked, tasteCompleted]);
 
   return <SkyHintsContext.Provider value={value}>{children}</SkyHintsContext.Provider>;
 }
