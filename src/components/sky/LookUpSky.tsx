@@ -48,7 +48,6 @@ interface RetainedTrailFrame {
   camera: Camera;
   isDark: boolean;
   maxMagnitude: number;
-  restoreRaf: number;
 }
 
 export default function LookUpSky() {
@@ -270,31 +269,17 @@ export default function LookUpSky() {
     if (!camera || holdRef.current.active || (!buffer.hasTrails() && !previous)) return;
     const isDark = isDarkRef.current;
     const pan = pointerDown.current?.dragging ? pointerDown.current : null;
-    let frame = previous?.camera === camera && previous.isDark === isDark ? previous : null;
+    const frame = previous?.camera === camera && previous.isDark === isDark ? previous : null;
     if (frame?.maxMagnitude === Infinity) return;
-    if (frame && (pan || frame.restoreRaf)) return;
+    if (frame && pan) return;
     const ctx = trailCanvasRef.current?.getContext('2d');
     if (!ctx) return;
     const style = { isDark, camera };
     if (!frame) {
-      if (previous?.restoreRaf) cancelAnimationFrame(previous.restoreRaf);
-      // Keep the current bright-star selection when another drag interrupts restoration.
       const limit = Math.min(previous?.maxMagnitude ?? Infinity, pan?.magnitudeLimit ?? Infinity);
       const complete = buffer.draw(ctx, style, limit);
-      frame = { ...style, maxMagnitude: complete ? Infinity : limit, restoreRaf: 0 };
-      retainedTrailFrameRef.current = frame;
+      retainedTrailFrameRef.current = { ...style, maxMagnitude: complete ? Infinity : limit };
     }
-    if (frame.maxMagnitude === Infinity) return;
-    if (pan) return;
-    const pending = frame;
-    const restore = () => {
-      pending.restoreRaf = 0;
-      if (retainedTrailFrameRef.current !== pending || draggingRef.current) return;
-      if (buffer.draw(ctx, style, 'restore')) {
-        pending.maxMagnitude = Infinity;
-      } else pending.restoreRaf = requestAnimationFrame(restore);
-    };
-    pending.restoreRaf = requestAnimationFrame(restore);
   }, []);
 
   const clearTrails = useCallback((preserveLightingLayer = false) => {
@@ -314,7 +299,6 @@ export default function LookUpSky() {
     trailPositionBlendRef.current = 0;
     trailHeadPositionsRef.current = new Map();
     trailHeadDirectionsRef.current = new Map();
-    if (retainedTrailFrameRef.current?.restoreRaf) cancelAnimationFrame(retainedTrailFrameRef.current.restoreRaf);
     retainedTrailFrameRef.current = null;
     setTrailsActive(false);
   }, [removeLightingLayer]);
