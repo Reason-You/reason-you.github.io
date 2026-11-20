@@ -164,6 +164,13 @@ export default function Campfire({ camera, dragging, skyRef }: {
     return () => window.clearInterval(timer);
   }, [fireOn, reducedMotion]);
 
+  const setFire = (lit: boolean) => {
+    if (sessionRef.current.fireOn === lit) return;
+    fireClicked(lit);
+    setMessages(current => current.filter(message => message.type === 'achievement'));
+    dispatch({ type: 'toggle' });
+  };
+
   // Only a rested, fully roasted marshmallow counts; clicks during any other
   // phase (or a second bite mid-animation) are ignored.
   const eatMarshmallow = () => {
@@ -187,7 +194,7 @@ export default function Campfire({ camera, dragging, skyRef }: {
         onDismiss={dismissMessage} />
       {flights.map(flight => <MarshmallowMeteor key={flight.id} flight={flight} onFinish={finishFlight} />)}
       {visible && !dragging && placement && <>
-        <SkyHint kind="fire" className="campfire-discovery-hint"
+        <SkyHint kind="fire" className="campfire-discovery-hint" onActivate={() => setFire(true)}
           style={{ left: placement.x, top: placement.y - 46 * placement.scale }}>
           {`${touch ? 'Tap' : 'Click'} to roast`}
         </SkyHint>
@@ -349,9 +356,7 @@ export default function Campfire({ camera, dragging, skyRef }: {
         onPointerLeave={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.stopPropagation();
-          fireClicked(!sessionRef.current.fireOn);
-          setMessages(current => current.filter(message => message.type === 'achievement'));
-          dispatch({ type: 'toggle' });
+          setFire(!sessionRef.current.fireOn);
         }}
       />
       </div>

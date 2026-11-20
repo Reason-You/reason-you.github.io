@@ -36,7 +36,7 @@ export default function TrailControls({
   onReturnNow,
   onBackToLive,
 }: TrailControlsProps) {
-  const { canStartTrails, trailStarted } = useSkyHints();
+  const { touch, canStartTrails, trailStarted } = useSkyHints();
   const resetLabel = preview ? 'Reset preview' : 'Back to now';
   const stop = (event: { stopPropagation(): void }) => event.stopPropagation();
   const start = () => {
@@ -86,7 +86,7 @@ export default function TrailControls({
         <span>{reduced ? 'Show 1 hour of trails' : holding && speed ? `${speedText(speed)}×` : 'Hold for trails'}</span>
       </button>
       <SkyHint kind="trails" className="sky-discovery-hint--trails">
-        {reduced ? 'Show an hour of trails. Which star barely moves?' : 'Hold for about 3 seconds. Which star barely moves?'}
+        {reduced ? `${touch ? 'Tap' : 'Click'} for trails` : 'Hold for trails'}
       </SkyHint>
       {!holding && (offsetLabel || preview) && (
         <div className="sky-time-offset">

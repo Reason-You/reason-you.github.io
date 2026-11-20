@@ -222,11 +222,12 @@ export function SkyHintsProvider({ ready, holding, dragging, polarisVisible, chi
   return <SkyHintsContext.Provider value={value}>{children}</SkyHintsContext.Provider>;
 }
 
-export function SkyHint({ kind, children, className = '', style }: {
+export function SkyHint({ kind, children, className = '', style, onActivate }: {
   kind: HintKind;
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
+  onActivate?: () => void;
 }) {
   const { hint, dismiss } = useSkyHints();
   if (hint?.kind !== kind) return null;
@@ -237,7 +238,7 @@ export function SkyHint({ kind, children, className = '', style }: {
       data-leaving={hint.leaving} style={style}
       aria-label={`${typeof content === 'string' ? content : 'Sky hint'}. Dismiss hint`}
       onPointerDown={stop} onPointerUp={stop} onPointerMove={stop} onPointerCancel={stop}
-      onClick={event => { event.stopPropagation(); dismiss(); }}>
+      onClick={event => { event.stopPropagation(); (onActivate ?? dismiss)(); }}>
       {content}
     </button>
   );

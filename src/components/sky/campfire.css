@@ -329,9 +329,9 @@ html.dark .campfire-notifications { color: var(--neutral-500); }
 .campfire-eat {
   position: absolute;
   left: calc(50% + 24px);
-  bottom: 29px;
-  width: 46px;
-  height: 46px;
+  bottom: 18px;
+  width: 80px;
+  height: 68px;
   transform: translateX(-50%);
   z-index: 40;
   border: 0;

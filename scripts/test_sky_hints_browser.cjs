@@ -16,8 +16,8 @@ async page => {
     await p.clock.pauseAt(new Date(await p.evaluate(() => Date.now() + 100)));
     return { c, p };
   };
-  const polarisPrompt = 'Hold for about 3 seconds. Which star barely moves?';
-  const staticPrompt = 'Show an hour of trails. Which star barely moves?';
+  const polarisPrompt = 'Hold for trails';
+  const staticPrompt = 'Tap for trails';
   const hint = p => p.locator('.sky-discovery-hint');
   const text = async p => (await hint(p).allTextContents()).map(t => t.trim());
   const advance = (p, ms) => p.clock.runFor(ms);
